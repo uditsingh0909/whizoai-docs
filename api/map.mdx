@@ -1,0 +1,423 @@
+---
+title: "Map API"
+description: "Discover and map all pages, links, and resources on a website for comprehensive site analysis"
+---
+
+# Map API
+
+The Map API allows you to discover and map all pages, links, and resources on a website. It's perfect for site analysis, SEO audits, competitive research, and understanding website structure.
+
+## Base URL
+
+```
+https://api.whizoai.com/v1
+```
+
+## Authentication
+
+All requests require authentication using your API key in the Authorization header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Single Domain Mapping
+
+### `POST /v1/map`
+
+Map all discoverable pages and resources on a single domain.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | The root URL to start mapping from |
+| `options` | object | No | Mapping configuration options |
+
+#### Options Object
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `maxDepth` | number | `3` | Maximum crawl depth (1-10) |
+| `maxPages` | number | `100` | Maximum pages to discover |
+| `includeSubdomains` | boolean | `false` | Include subdomains in mapping |
+| `includeExternal` | boolean | `false` | Include external links |
+| `respectRobots` | boolean | `true` | Respect robots.txt restrictions |
+| `followRedirects` | boolean | `true` | Follow HTTP redirects |
+| `includeAssets` | boolean | `false` | Include CSS, JS, and image assets |
+| `includeMetadata` | boolean | `true` | Extract page metadata |
+| `delay` | number | `1000` | Delay between requests in milliseconds |
+| `userAgent` | string | - | Custom user agent string |
+| `webhook` | string | - | Webhook URL for completion notification |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "map_abc123",
+    "domain": "example.com",
+    "status": "processing",
+    "startedAt": "2025-01-15T10:30:00Z",
+    "estimatedCompletion": "2025-01-15T10:45:00Z",
+    "settings": {
+      "maxDepth": 3,
+      "maxPages": 100,
+      "includeSubdomains": false
+    }
+  }
+}
+```
+
+## Bulk Domain Mapping
+
+### `POST /v1/map/batch`
+
+Map multiple domains simultaneously for competitive analysis.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `domains` | array | Yes | Array of domain URLs (max 10) |
+| `options` | object | No | Global mapping options |
+| `webhook` | string | No | Webhook URL for batch completion |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "batchId": "batch_map_xyz789",
+    "domains": [
+      "https://example.com",
+      "https://competitor1.com",
+      "https://competitor2.com"
+    ],
+    "status": "processing",
+    "totalDomains": 3,
+    "estimatedCompletion": "2025-01-15T11:00:00Z",
+    "creditsEstimate": 150
+  }
+}
+```
+
+## Get Mapping Results
+
+### `GET /v1/map/{jobId}`
+
+Retrieve the mapping results for a completed job.
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "map_abc123",
+    "domain": "example.com",
+    "status": "completed",
+    "completedAt": "2025-01-15T10:42:00Z",
+    "summary": {
+      "totalPages": 87,
+      "totalLinks": 342,
+      "totalAssets": 156,
+      "maxDepthReached": 3,
+      "crawlDuration": 720000,
+      "creditsUsed": 87
+    },
+    "pages": [
+      {
+        "url": "https://example.com",
+        "title": "Example Homepage",
+        "description": "Welcome to Example.com",
+        "statusCode": 200,
+        "depth": 0,
+        "lastModified": "2025-01-10T15:30:00Z",
+        "contentType": "text/html",
+        "size": 45678,
+        "loadTime": 1250,
+        "links": {
+          "internal": 12,
+          "external": 3
+        },
+        "metadata": {
+          "h1": "Welcome to Example",
+          "metaKeywords": "example, demo, website",
+          "canonicalUrl": "https://example.com",
+          "openGraph": {
+            "title": "Example Homepage",
+            "description": "Welcome to Example.com",
+            "image": "https://example.com/og-image.png"
+          }
+        }
+      }
+    ],
+    "structure": {
+      "depth0": 1,
+      "depth1": 8,
+      "depth2": 23,
+      "depth3": 55
+    },
+    "analytics": {
+      "errorPages": 3,
+      "redirectPages": 5,
+      "duplicateContent": 2,
+      "missingTitles": 1,
+      "missingDescriptions": 4
+    }
+  }
+}
+```
+
+## Code Examples
+
+<CodeGroup>
+
+```javascript Node.js
+// Start mapping a domain
+const mapResponse = await fetch('https://api.whizoai.com/v1/map', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com',
+    options: {
+      maxDepth: 3,
+      maxPages: 100,
+      includeSubdomains: false,
+      includeMetadata: true
+    }
+  })
+});
+
+const mapData = await mapResponse.json();
+const jobId = mapData.data.jobId;
+
+// Poll for results
+const checkResults = async () => {
+  const resultResponse = await fetch(`https://api.whizoai.com/v1/map/${jobId}`, {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY'
+    }
+  });
+
+  const resultData = await resultResponse.json();
+
+  if (resultData.data.status === 'completed') {
+    console.log('Mapping completed!');
+    console.log(`Found ${resultData.data.summary.totalPages} pages`);
+    return resultData;
+  } else {
+    console.log('Still processing...');
+    setTimeout(checkResults, 5000); // Check again in 5 seconds
+  }
+};
+
+checkResults();
+```
+
+```python Python
+import requests
+import time
+
+# Start mapping
+response = requests.post(
+    'https://api.whizoai.com/v1/map',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://example.com',
+        'options': {
+            'maxDepth': 3,
+            'maxPages': 100,
+            'includeSubdomains': False,
+            'includeMetadata': True
+        }
+    }
+)
+
+job_id = response.json()['data']['jobId']
+
+# Poll for results
+while True:
+    result_response = requests.get(
+        f'https://api.whizoai.com/v1/map/{job_id}',
+        headers={'Authorization': 'Bearer YOUR_API_KEY'}
+    )
+
+    result_data = result_response.json()
+
+    if result_data['data']['status'] == 'completed':
+        print('Mapping completed!')
+        print(f"Found {result_data['data']['summary']['totalPages']} pages")
+        break
+    else:
+        print('Still processing...')
+        time.sleep(5)
+```
+
+```php PHP
+<?php
+// Start mapping
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://api.whizoai.com/v1/map');
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+    'url' => 'https://example.com',
+    'options' => [
+        'maxDepth' => 3,
+        'maxPages' => 100,
+        'includeSubdomains' => false,
+        'includeMetadata' => true
+    ]
+]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer YOUR_API_KEY',
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+$data = json_decode($response, true);
+$jobId = $data['data']['jobId'];
+
+// Poll for results
+while (true) {
+    curl_setopt($ch, CURLOPT_URL, "https://api.whizoai.com/v1/map/{$jobId}");
+    curl_setopt($ch, CURLOPT_POST, 0);
+
+    $resultResponse = curl_exec($ch);
+    $resultData = json_decode($resultResponse, true);
+
+    if ($resultData['data']['status'] === 'completed') {
+        echo "Mapping completed!\n";
+        echo "Found " . $resultData['data']['summary']['totalPages'] . " pages\n";
+        break;
+    } else {
+        echo "Still processing...\n";
+        sleep(5);
+    }
+}
+
+curl_close($ch);
+?>
+```
+
+```bash cURL
+# Start mapping
+curl -X POST "https://api.whizoai.com/v1/map" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "maxDepth": 3,
+      "maxPages": 100,
+      "includeSubdomains": false,
+      "includeMetadata": true
+    }
+  }'
+
+# Check results (replace {jobId} with actual job ID)
+curl -X GET "https://api.whizoai.com/v1/map/{jobId}" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+</CodeGroup>
+
+## Site Structure Analysis
+
+The Map API provides detailed insights into website structure:
+
+### Navigation Patterns
+
+Understand how users navigate through the site by analyzing link relationships and page hierarchies.
+
+### Content Organization
+
+Discover content categories, page types, and information architecture patterns.
+
+### Technical SEO Analysis
+
+Identify technical issues like:
+- Missing meta descriptions
+- Duplicate content
+- Broken internal links
+- Redirect chains
+- Page load performance
+
+## Use Cases
+
+### SEO Audits
+
+Perform comprehensive SEO audits by mapping entire websites and identifying optimization opportunities.
+
+### Competitive Analysis
+
+Map competitor websites to understand their structure, content strategy, and page organization.
+
+### Site Migration Planning
+
+Before migrating a website, map the current structure to ensure no important pages are missed.
+
+### Content Inventory
+
+Create complete inventories of website content for content strategy and governance.
+
+### Link Building Research
+
+Discover internal linking opportunities and understand site architecture for better SEO.
+
+## Credit Costs
+
+| Feature | Credits |
+|---------|---------|
+| Basic page mapping | 1 credit per page |
+| Metadata extraction | Included |
+| Asset discovery | +0.1 credit per asset |
+| Deep content analysis | +0.5 credit per page |
+
+## Rate Limits
+
+Mapping operations have special rate limits due to their intensive nature:
+
+| Plan | Concurrent Maps | Max Depth | Max Pages |
+|------|-----------------|-----------|-----------|
+| Free | 1 | 2 | 50 |
+| Starter | 2 | 3 | 100 |
+| Pro | 5 | 5 | 500 |
+| Enterprise | 10 | 10 | 2000 |
+
+## Webhooks
+
+Receive notifications when mapping jobs complete:
+
+```json
+{
+  "event": "map.completed",
+  "jobId": "map_abc123",
+  "domain": "example.com",
+  "status": "completed",
+  "summary": {
+    "totalPages": 87,
+    "totalLinks": 342,
+    "creditsUsed": 87
+  },
+  "completedAt": "2025-01-15T10:42:00Z"
+}
+```
+
+## Best Practices
+
+1. **Start with smaller depths** - Begin with depth 2-3 and increase as needed
+2. **Use appropriate delays** - Respect server resources with reasonable delays
+3. **Monitor robots.txt** - Always respect website crawling guidelines
+4. **Cache results** - Mapping results can be cached for analysis
+5. **Handle large sites carefully** - Use maxPages limits for very large websites

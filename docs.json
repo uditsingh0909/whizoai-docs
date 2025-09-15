@@ -1,68 +1,101 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "WhizoAI API Documentation",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#2563EB",
+    "light": "#3B82F6",
+    "dark": "#1D4ED8"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Get Started",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Introduction",
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "authentication"
             ]
           },
           {
-            "group": "Customization",
+            "group": "API Fundamentals",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "fundamentals/api-keys",
+              "fundamentals/rate-limits",
+              "fundamentals/pricing",
+              "fundamentals/errors"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "SDKs & Libraries",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "sdks/javascript",
+              "sdks/python",
+              "sdks/php",
+              "sdks/curl"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Core APIs",
             "pages": [
-              "api-reference/introduction"
+              "api/scrape",
+              "api/map",
+              "api/extract",
+              "api/monitor"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Batch Operations",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/batch-scrape",
+              "api/batch-extract"
+            ]
+          },
+          {
+            "group": "Job Management",
+            "pages": [
+              "api/jobs",
+              "api/job-status",
+              "api/job-results"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api/webhooks",
+              "api/webhook-events"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Use Cases",
+        "groups": [
+          {
+            "group": "Common Scenarios",
+            "pages": [
+              "use-cases/web-scraping",
+              "use-cases/data-extraction",
+              "use-cases/website-monitoring",
+              "use-cases/content-analysis"
+            ]
+          },
+          {
+            "group": "Advanced Examples",
+            "pages": [
+              "use-cases/ecommerce-scraping",
+              "use-cases/news-monitoring",
+              "use-cases/research-automation",
+              "use-cases/competitor-analysis"
             ]
           }
         ]
@@ -71,19 +104,24 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Dashboard",
+          "href": "https://app.whizoai.com",
+          "icon": "chart-line"
         },
         {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
+          "anchor": "Support",
+          "href": "mailto:support@whizoai.com",
+          "icon": "life-ring"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "GitHub",
+          "href": "https://github.com/whizoai",
+          "icon": "github"
+        },
+        {
+          "anchor": "Status",
+          "href": "https://status.whizoai.com",
+          "icon": "signal"
         }
       ]
     }
@@ -95,14 +133,18 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "Pricing",
+        "href": "https://whizoai.com/pricing"
+      },
+      {
+        "label": "Blog",
+        "href": "https://whizoai.com/blog"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get API Key",
+      "href": "https://app.whizoai.com/api-keys"
     }
   },
   "contextual": {
@@ -112,16 +154,23 @@
      "chatgpt",
      "claude",
      "perplexity",
-     "mcp",
      "cursor",
      "vscode"
    ]
   },
   "footer": {
+    "text": "© 2025 WhizoAI. All rights reserved.",
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/whizoai",
+      "github": "https://github.com/whizoai",
+      "linkedin": "https://linkedin.com/company/whizoai"
     }
-  }
+  },
+  "api": {
+    "baseUrl": "https://api.whizoai.com/v1",
+    "auth": {
+      "method": "bearer"
+    }
+  },
+  "openapi": "/openapi.json"
 }

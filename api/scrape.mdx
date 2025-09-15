@@ -1,0 +1,299 @@
+---
+title: "Scrape API"
+description: "Extract clean, structured content from any webpage in multiple formats"
+---
+
+# Scrape API
+
+The Scrape API allows you to extract clean, structured content from any webpage in multiple formats including markdown, HTML, and JSON. It's perfect for content extraction, data mining, and web automation tasks.
+
+## Base URL
+
+```
+https://api.whizoai.com/v1
+```
+
+## Authentication
+
+All requests require authentication using your API key in the Authorization header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Single Page Scraping
+
+### `POST /v1/scrape`
+
+Extract content from a single webpage with customizable options.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | The URL to scrape |
+| `options` | object | No | Scraping configuration options |
+
+#### Options Object
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `format` | string | `markdown` | Output format: `markdown`, `html`, `text`, `json`, `structured` |
+| `engine` | string | `lightweight` | Scraping engine: `lightweight`, `playwright`, `puppeteer` |
+| `includeScreenshot` | boolean | `false` | Capture a screenshot of the page |
+| `includePdf` | boolean | `false` | Generate a PDF of the page |
+| `mobile` | boolean | `false` | Use mobile user agent |
+| `waitTime` | number | `0` | Time to wait before scraping (0-30 seconds) |
+| `javascript` | boolean | `false` | Enable JavaScript rendering |
+| `cookies` | object | `{}` | Custom cookies to send with request |
+| `headers` | object | `{}` | Custom headers to send with request |
+| `timeout` | number | `30` | Request timeout in seconds (5-120) |
+| `useCache` | boolean | `false` | Use cached results if available |
+| `cacheTtl` | number | `300` | Cache time-to-live in seconds |
+| `webhook` | string | - | Webhook URL for completion notification |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "content": "# Page Title\n\nPage content in markdown format...",
+    "metadata": {
+      "title": "Example Page Title",
+      "description": "Page meta description",
+      "url": "https://example.com",
+      "statusCode": 200,
+      "contentType": "text/html",
+      "extractedAt": "2025-01-15T10:30:00Z",
+      "processingTime": 1250,
+      "creditsUsed": 1
+    },
+    "screenshots": [
+      "https://storage.whizoai.com/screenshots/abc123.png"
+    ],
+    "pdf": "https://storage.whizoai.com/pdfs/abc123.pdf",
+    "files": []
+  }
+}
+```
+
+## Code Examples
+
+<CodeGroup>
+
+```javascript Node.js
+const response = await fetch('https://api.whizoai.com/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com',
+    options: {
+      format: 'markdown',
+      includeScreenshot: true,
+      javascript: true,
+      waitTime: 5
+    }
+  })
+});
+
+const data = await response.json();
+console.log(data.data.content);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizoai.com/v1/scrape',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://example.com',
+        'options': {
+            'format': 'markdown',
+            'includeScreenshot': True,
+            'javascript': True,
+            'waitTime': 5
+        }
+    }
+)
+
+data = response.json()
+print(data['data']['content'])
+```
+
+```php PHP
+<?php
+$ch = curl_init();
+
+curl_setopt($ch, CURLOPT_URL, 'https://api.whizoai.com/v1/scrape');
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+    'url' => 'https://example.com',
+    'options' => [
+        'format' => 'markdown',
+        'includeScreenshot' => true,
+        'javascript' => true,
+        'waitTime' => 5
+    ]
+]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer YOUR_API_KEY',
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+$data = json_decode($response, true);
+
+echo $data['data']['content'];
+curl_close($ch);
+?>
+```
+
+```bash cURL
+curl -X POST "https://api.whizoai.com/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "format": "markdown",
+      "includeScreenshot": true,
+      "javascript": true,
+      "waitTime": 5
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Batch Scraping
+
+### `POST /v1/scrape/batch`
+
+Scrape multiple URLs simultaneously for efficient bulk operations.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `urls` | array | Yes | Array of URLs to scrape (max 100) |
+| `options` | object | No | Global scraping options |
+| `webhook` | string | No | Webhook URL for batch completion |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "batch_abc123",
+    "status": "processing",
+    "totalUrls": 10,
+    "estimatedCompletionTime": "2025-01-15T10:35:00Z",
+    "creditsEstimate": 10
+  }
+}
+```
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| `200` | Success |
+| `400` | Bad Request - Invalid parameters |
+| `401` | Unauthorized - Invalid API key |
+| `402` | Payment Required - Insufficient credits |
+| `429` | Too Many Requests - Rate limit exceeded |
+| `500` | Internal Server Error |
+
+### Error Response Format
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_URL",
+    "message": "The provided URL is not valid",
+    "details": {
+      "url": "invalid-url",
+      "reason": "malformed_url"
+    }
+  }
+}
+```
+
+## Rate Limits
+
+Rate limits vary by plan:
+
+| Plan | Requests/Hour | Requests/Day | Concurrent Jobs |
+|------|---------------|--------------|-----------------|
+| Free | 10 | 100 | 1 |
+| Starter | 50 | 500 | 3 |
+| Pro | 200 | 2000 | 10 |
+| Enterprise | 1000 | 10000 | 50 |
+
+## Credit Costs
+
+| Feature | Credits |
+|---------|---------|
+| Basic scraping | 1 credit per page |
+| JavaScript rendering | +1 credit |
+| Screenshot capture | +1 credit |
+| PDF generation | +1 credit |
+| AI extraction | +2 credits |
+
+## Use Cases
+
+### Content Aggregation
+
+Perfect for news sites, blogs, and content platforms that need to aggregate content from multiple sources.
+
+### Market Research
+
+Extract product information, pricing data, and competitor analysis from e-commerce sites.
+
+### SEO Analysis
+
+Scrape meta tags, headings, and content structure for SEO optimization and analysis.
+
+### Lead Generation
+
+Extract contact information and business data from directories and websites.
+
+## Best Practices
+
+1. **Respect robots.txt** - Always check and respect website robots.txt files
+2. **Use appropriate delays** - Set reasonable wait times between requests
+3. **Handle errors gracefully** - Implement proper error handling and retry logic
+4. **Cache when possible** - Use caching to reduce API calls and costs
+5. **Monitor rate limits** - Track your usage to avoid hitting rate limits
+
+## Webhooks
+
+Configure webhooks to receive notifications when scraping jobs complete:
+
+```json
+{
+  "event": "scrape.completed",
+  "jobId": "job_abc123",
+  "url": "https://example.com",
+  "status": "completed",
+  "creditsUsed": 3,
+  "completedAt": "2025-01-15T10:35:00Z",
+  "results": {
+    "content": "...",
+    "metadata": {...}
+  }
+}
+```

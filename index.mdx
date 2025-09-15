@@ -1,97 +1,208 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: WhizoAI API Documentation
+description: 'Powerful web scraping, data extraction, and website monitoring APIs'
 ---
 
-## Setting up
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.png"
+  alt="Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.png"
+  alt="Hero Dark"
+/>
 
-Get your documentation site up and running in minutes.
+## Welcome to WhizoAI API
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+Transform any website into structured data with our powerful, reliable, and easy-to-use APIs. Whether you're scraping content, extracting specific data, or monitoring websites for changes, WhizoAI provides the tools you need.
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
   >
-    Edit your docs locally and preview them in real time.
+    Get up and running with WhizoAI APIs in minutes
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
+    title="API Reference"
     icon="code"
-    href="/essentials/code"
+    href="/api/scrape"
   >
-    Add sample code to demonstrate how to use your product.
+    Complete reference for all WhizoAI API endpoints
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="Use Cases"
+    icon="lightbulb"
+    href="/use-cases/web-scraping"
   >
-    Display images and other media.
+    Real-world examples and implementation guides
   </Card>
   <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
+    title="SDKs & Libraries"
+    icon="package"
+    href="/sdks/javascript"
   >
-    Write once and reuse across your docs.
+    Official SDKs for JavaScript, Python, PHP, and more
   </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+## Core APIs
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+WhizoAI offers four powerful APIs that work together to provide comprehensive web data solutions:
+
+### 🔧 Scrape API
+Extract clean, structured content from any webpage in multiple formats including markdown, HTML, and JSON.
+
+```bash
+curl -X POST "https://api.whizoai.com/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "format": "markdown",
+      "includeScreenshot": true
+    }
+  }'
+```
+
+### 🗺️ Map API
+Discover and map all pages, links, and resources on a website for comprehensive site analysis.
+
+```bash
+curl -X POST "https://api.whizoai.com/v1/map" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "maxDepth": 3,
+      "includeSubdomains": false
+    }
+  }'
+```
+
+### 🎯 Extract API
+Use AI-powered extraction to pull specific data points from web pages using custom schemas.
+
+```bash
+curl -X POST "https://api.whizoai.com/v1/extract" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/product",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "title": {"type": "string"},
+        "price": {"type": "number"},
+        "description": {"type": "string"}
+      }
+    }
+  }'
+```
+
+### 👁️ Monitor API
+Track websites for changes and get notified when content updates, prices change, or new content appears.
+
+```bash
+curl -X POST "https://api.whizoai.com/v1/monitor" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "frequency": "daily",
+      "changeThreshold": 5
+    }
+  }'
+```
+
+## Getting Started
+
+<Steps>
+  <Step title="Get Your API Key">
+    Sign up at [app.whizoai.com](https://app.whizoai.com) and generate your API key from the dashboard.
+  </Step>
+  <Step title="Make Your First Request">
+    Try our Scrape API to extract content from any webpage.
+  </Step>
+  <Step title="Explore Advanced Features">
+    Use our Extract API for AI-powered data extraction or Monitor API for change detection.
+  </Step>
+  <Step title="Scale Your Integration">
+    Implement batch processing, webhooks, and advanced configurations for production use.
+  </Step>
+</Steps>
+
+## Key Features
+
+<AccordionGroup>
+  <Accordion title="Multiple Output Formats">
+    Get data in markdown, HTML, JSON, or structured formats depending on your needs.
+  </Accordion>
+
+  <Accordion title="AI-Powered Extraction">
+    Use custom schemas to extract specific data points with high accuracy using advanced AI models.
+  </Accordion>
+
+  <Accordion title="Real-time Monitoring">
+    Track websites for changes with configurable frequency and change detection sensitivity.
+  </Accordion>
+
+  <Accordion title="Batch Processing">
+    Process multiple URLs simultaneously for efficient large-scale operations.
+  </Accordion>
+
+  <Accordion title="Enterprise Features">
+    Advanced rate limiting, priority processing, dedicated support, and custom integrations.
+  </Accordion>
+
+  <Accordion title="Developer-Friendly">
+    Comprehensive SDKs, detailed documentation, interactive examples, and webhook support.
+  </Accordion>
+</AccordionGroup>
+
+## Pricing & Credits
+
+WhizoAI uses a credit-based system that scales with your usage:
+
+- **Scrape API**: 1 credit per page
+- **Map API**: 1 credit per page discovered
+- **Extract API**: 5 credits per page (includes AI processing)
+- **Monitor API**: 1 credit per check
+
+Additional features like screenshots, PDFs, and stealth mode may require extra credits. See our [pricing page](https://whizoai.com/pricing) for detailed plan information.
+
+<Warning>
+**API Key Required**: All API endpoints require authentication using your API key. Generate one from your [dashboard](https://app.whizoai.com/api-keys).
+</Warning>
+
+## Support & Resources
+
+<CardGroup cols={3}>
+  <Card
+    title="Support Center"
+    icon="life-ring"
+    href="mailto:support@whizoai.com"
+  >
+    Get help from our support team
+  </Card>
+  <Card
+    title="API Status"
+    icon="signal"
+    href="https://status.whizoai.com"
+  >
+    Check real-time API status and uptime
+  </Card>
+  <Card
+    title="GitHub"
+    icon="github"
+    href="https://github.com/whizoai"
+  >
+    Open source SDKs and examples
+  </Card>
+</CardGroup>

@@ -1,0 +1,775 @@
+---
+title: "Monitor API"
+description: "Monitor websites for changes, track performance, and receive notifications when content updates"
+---
+
+# Monitor API
+
+The Monitor API allows you to continuously monitor websites for changes, track performance metrics, and receive notifications when content updates. Perfect for competitive intelligence, compliance monitoring, and website health tracking.
+
+## Base URL
+
+```
+https://api.whizoai.com/v1
+```
+
+## Authentication
+
+All requests require authentication using your API key in the Authorization header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Create Monitor
+
+### `POST /v1/monitor`
+
+Create a new website monitor with customizable detection rules and notification settings.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | The URL to monitor |
+| `name` | string | Yes | Monitor name for identification |
+| `settings` | object | Yes | Monitoring configuration |
+| `notifications` | object | No | Notification preferences |
+
+#### Settings Object
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `frequency` | string | `hourly` | Check frequency: `5min`, `15min`, `hourly`, `daily`, `weekly` |
+| `changeThreshold` | number | `5` | Minimum percentage change to trigger (1-100) |
+| `detectChanges` | array | `["content"]` | What to monitor: `content`, `images`, `links`, `structure`, `metadata` |
+| `includeRegions` | array | - | Specific CSS selectors to monitor |
+| `excludeRegions` | array | - | CSS selectors to ignore |
+| `ignoreWhitespace` | boolean | `true` | Ignore whitespace-only changes |
+| `ignoreCaseChanges` | boolean | `true` | Ignore case-only changes |
+| `trackPerformance` | boolean | `false` | Monitor page load performance |
+| `trackAvailability` | boolean | `true` | Monitor site availability |
+| `screenshot` | boolean | `false` | Capture screenshots on changes |
+| `retryOnFailure` | boolean | `true` | Retry on connection failures |
+| `userAgent` | string | - | Custom user agent string |
+| `cookies` | object | `{}` | Custom cookies |
+| `headers` | object | `{}` | Custom headers |
+
+#### Notifications Object
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `email` | boolean | `true` | Send email notifications |
+| `webhook` | string | - | Webhook URL for notifications |
+| `webhookSecret` | string | - | Secret for webhook verification |
+| `slack` | object | - | Slack integration settings |
+| `discord` | object | - | Discord integration settings |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "monitor": {
+      "id": "mon_abc123",
+      "url": "https://example.com",
+      "name": "Example Homepage Monitor",
+      "status": "active",
+      "settings": {
+        "frequency": "hourly",
+        "changeThreshold": 5,
+        "detectChanges": ["content", "links"]
+      },
+      "lastCheckedAt": "2025-01-15T10:30:00Z",
+      "nextCheckAt": "2025-01-15T11:30:00Z",
+      "createdAt": "2025-01-15T10:30:00Z"
+    },
+    "initialSnapshot": {
+      "contentHash": "abc123def456",
+      "screenshotUrl": "https://storage.whizoai.com/screenshots/mon_abc123_initial.png"
+    }
+  }
+}
+```
+
+## List Monitors
+
+### `GET /v1/monitor`
+
+Retrieve all monitors for your account with filtering and pagination.
+
+#### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status: `active`, `paused`, `failed` |
+| `frequency` | string | Filter by frequency |
+| `limit` | number | Number of results (max 100) |
+| `offset` | number | Pagination offset |
+| `sort` | string | Sort by: `created_at`, `last_checked`, `next_check` |
+| `order` | string | Sort order: `asc`, `desc` |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "monitors": [
+      {
+        "id": "mon_abc123",
+        "url": "https://example.com",
+        "name": "Example Homepage Monitor",
+        "status": "active",
+        "lastCheckedAt": "2025-01-15T10:30:00Z",
+        "nextCheckAt": "2025-01-15T11:30:00Z",
+        "changesDetected": 5,
+        "uptime": 99.8,
+        "avgResponseTime": 850
+      }
+    ],
+    "pagination": {
+      "total": 25,
+      "limit": 10,
+      "offset": 0,
+      "hasNext": true
+    }
+  }
+}
+```
+
+## Get Monitor Details
+
+### `GET /v1/monitor/{monitorId}`
+
+Retrieve detailed information about a specific monitor including recent changes and performance metrics.
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "monitor": {
+      "id": "mon_abc123",
+      "url": "https://example.com",
+      "name": "Example Homepage Monitor",
+      "status": "active",
+      "settings": {
+        "frequency": "hourly",
+        "changeThreshold": 5,
+        "detectChanges": ["content", "links"],
+        "includeRegions": [".main-content", ".sidebar"],
+        "trackPerformance": true
+      },
+      "statistics": {
+        "totalChecks": 168,
+        "changesDetected": 12,
+        "uptime": 99.4,
+        "avgResponseTime": 890,
+        "lastDowntime": "2025-01-10T14:22:00Z",
+        "creditsUsed": 168
+      },
+      "lastChange": {
+        "detectedAt": "2025-01-14T16:45:00Z",
+        "changeType": "content",
+        "changePercentage": 8.5,
+        "affectedRegions": [".main-content"]
+      },
+      "performance": {
+        "responseTime": 850,
+        "ttfb": 245,
+        "loadTime": 1200,
+        "pageSize": 2450000
+      }
+    },
+    "recentChanges": [
+      {
+        "id": "change_xyz789",
+        "detectedAt": "2025-01-14T16:45:00Z",
+        "changeType": "content",
+        "changePercentage": 8.5,
+        "description": "Content updated in main article section",
+        "beforeScreenshot": "https://storage.whizoai.com/screenshots/before_xyz789.png",
+        "afterScreenshot": "https://storage.whizoai.com/screenshots/after_xyz789.png",
+        "diff": {
+          "added": 156,
+          "removed": 89,
+          "modified": 23
+        }
+      }
+    ]
+  }
+}
+```
+
+## Monitor Changes
+
+### `GET /v1/monitor/{monitorId}/changes`
+
+Retrieve the complete change history for a monitor with detailed diff information.
+
+#### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `since` | string | ISO date to filter changes since |
+| `until` | string | ISO date to filter changes until |
+| `type` | string | Filter by change type |
+| `limit` | number | Number of results (max 100) |
+| `include_diff` | boolean | Include detailed diff data |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "changes": [
+      {
+        "id": "change_xyz789",
+        "monitorId": "mon_abc123",
+        "detectedAt": "2025-01-14T16:45:00Z",
+        "changeType": "content",
+        "changePercentage": 8.5,
+        "description": "Content updated in main article section",
+        "affectedRegions": [".main-content"],
+        "beforeHash": "abc123",
+        "afterHash": "def456",
+        "screenshots": {
+          "before": "https://storage.whizoai.com/screenshots/before_xyz789.png",
+          "after": "https://storage.whizoai.com/screenshots/after_xyz789.png",
+          "diff": "https://storage.whizoai.com/screenshots/diff_xyz789.png"
+        },
+        "diff": {
+          "format": "unified",
+          "added": 156,
+          "removed": 89,
+          "modified": 23,
+          "content": "--- Before\n+++ After\n@@ -1,4 +1,4 @@\n-Old content here\n+New content here"
+        },
+        "metadata": {
+          "userAgent": "WhizoAI Monitor Bot/1.0",
+          "responseTime": 850,
+          "statusCode": 200
+        }
+      }
+    ],
+    "summary": {
+      "totalChanges": 12,
+      "periodStart": "2025-01-01T00:00:00Z",
+      "periodEnd": "2025-01-15T10:30:00Z",
+      "changeTypes": {
+        "content": 8,
+        "links": 2,
+        "images": 1,
+        "structure": 1
+      }
+    }
+  }
+}
+```
+
+## Update Monitor
+
+### `PUT /v1/monitor/{monitorId}`
+
+Update an existing monitor's configuration or settings.
+
+#### Request Body
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | string | Monitor name |
+| `settings` | object | Updated monitoring settings |
+| `notifications` | object | Updated notification preferences |
+| `status` | string | Monitor status: `active`, `paused` |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "monitor": {
+      "id": "mon_abc123",
+      "url": "https://example.com",
+      "name": "Updated Monitor Name",
+      "status": "active",
+      "settings": {
+        "frequency": "30min",
+        "changeThreshold": 3
+      },
+      "updatedAt": "2025-01-15T10:35:00Z"
+    }
+  }
+}
+```
+
+## Delete Monitor
+
+### `DELETE /v1/monitor/{monitorId}`
+
+Stop monitoring and delete a monitor along with its change history.
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Monitor deleted successfully",
+  "data": {
+    "deletedMonitor": {
+      "id": "mon_abc123",
+      "name": "Example Monitor",
+      "totalChanges": 12,
+      "totalCreditsUsed": 168
+    }
+  }
+}
+```
+
+## Bulk Operations
+
+### `POST /v1/monitor/batch`
+
+Create multiple monitors simultaneously for efficient bulk setup.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `monitors` | array | Yes | Array of monitor configurations (max 50) |
+| `globalSettings` | object | No | Settings applied to all monitors |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "batch_mon_abc123",
+    "status": "processing",
+    "totalMonitors": 10,
+    "estimatedCompletionTime": "2025-01-15T10:40:00Z"
+  }
+}
+```
+
+## Code Examples
+
+<CodeGroup>
+
+```javascript Node.js
+// Create a content change monitor
+const monitorResponse = await fetch('https://api.whizoai.com/v1/monitor', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://competitor.com/pricing',
+    name: 'Competitor Pricing Monitor',
+    settings: {
+      frequency: 'daily',
+      changeThreshold: 2,
+      detectChanges: ['content', 'structure'],
+      includeRegions: ['.pricing-table', '.plans-section'],
+      screenshot: true,
+      trackPerformance: true
+    },
+    notifications: {
+      email: true,
+      webhook: 'https://your-app.com/webhooks/monitor',
+      webhookSecret: 'your-webhook-secret'
+    }
+  })
+});
+
+const monitor = await monitorResponse.json();
+console.log(`Monitor created: ${monitor.data.monitor.id}`);
+
+// Check for changes
+const changesResponse = await fetch(`https://api.whizoai.com/v1/monitor/${monitor.data.monitor.id}/changes`, {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+
+const changes = await changesResponse.json();
+console.log(`Found ${changes.data.changes.length} changes`);
+```
+
+```python Python
+import requests
+from datetime import datetime, timedelta
+
+# Create a monitor for news website
+monitor_config = {
+    "url": "https://news-site.com/tech",
+    "name": "Tech News Monitor",
+    "settings": {
+        "frequency": "15min",
+        "changeThreshold": 1,
+        "detectChanges": ["content"],
+        "includeRegions": [".article-list", ".breaking-news"],
+        "ignoreWhitespace": True,
+        "screenshot": True
+    },
+    "notifications": {
+        "email": True,
+        "webhook": "https://your-app.com/news-updates"
+    }
+}
+
+response = requests.post(
+    'https://api.whizoai.com/v1/monitor',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json=monitor_config
+)
+
+monitor_data = response.json()
+monitor_id = monitor_data['data']['monitor']['id']
+print(f"Monitor created: {monitor_id}")
+
+# Get recent changes
+changes_response = requests.get(
+    f'https://api.whizoai.com/v1/monitor/{monitor_id}/changes',
+    headers={'Authorization': 'Bearer YOUR_API_KEY'},
+    params={
+        'since': (datetime.now() - timedelta(days=7)).isoformat(),
+        'include_diff': True
+    }
+)
+
+changes_data = changes_response.json()
+print(f"Changes in last 7 days: {len(changes_data['data']['changes'])}")
+```
+
+```php PHP
+<?php
+// Create multiple monitors for different pages
+$monitors = [
+    [
+        'url' => 'https://example.com',
+        'name' => 'Homepage Monitor',
+        'settings' => [
+            'frequency' => 'hourly',
+            'detectChanges' => ['content', 'links'],
+            'screenshot' => true
+        ]
+    ],
+    [
+        'url' => 'https://example.com/products',
+        'name' => 'Products Monitor',
+        'settings' => [
+            'frequency' => 'daily',
+            'detectChanges' => ['content'],
+            'includeRegions' => ['.product-grid']
+        ]
+    ]
+];
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, 'https://api.whizoai.com/v1/monitor/batch');
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+    'monitors' => $monitors,
+    'globalSettings' => [
+        'trackPerformance' => true,
+        'retryOnFailure' => true
+    ]
+]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer YOUR_API_KEY',
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+$data = json_decode($response, true);
+
+echo "Batch job created: " . $data['data']['jobId'] . "\n";
+curl_close($ch);
+?>
+```
+
+```bash cURL
+# Create a monitor
+curl -X POST "https://api.whizoai.com/v1/monitor" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/blog",
+    "name": "Blog Updates Monitor",
+    "settings": {
+      "frequency": "hourly",
+      "changeThreshold": 5,
+      "detectChanges": ["content"],
+      "includeRegions": [".post-list"],
+      "screenshot": true
+    },
+    "notifications": {
+      "email": true,
+      "webhook": "https://your-app.com/monitor-webhook"
+    }
+  }'
+
+# List all monitors
+curl -X GET "https://api.whizoai.com/v1/monitor?status=active&limit=50" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+# Get monitor changes
+curl -X GET "https://api.whizoai.com/v1/monitor/mon_abc123/changes?include_diff=true" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+</CodeGroup>
+
+## Advanced Monitoring Features
+
+### Change Detection Algorithms
+
+#### Content-Based Detection
+Monitor textual content changes with configurable sensitivity:
+
+```json
+{
+  "settings": {
+    "detectChanges": ["content"],
+    "changeThreshold": 3,
+    "contentAlgorithm": "semantic",
+    "ignoreWhitespace": true,
+    "ignoreCaseChanges": true,
+    "ignoreNumberChanges": false
+  }
+}
+```
+
+#### Visual Detection
+Detect visual changes using screenshot comparison:
+
+```json
+{
+  "settings": {
+    "detectChanges": ["visual"],
+    "visualThreshold": 5,
+    "screenshotOptions": {
+      "fullPage": true,
+      "deviceType": "desktop",
+      "waitForLoad": 3000
+    }
+  }
+}
+```
+
+#### Structural Detection
+Monitor HTML structure and layout changes:
+
+```json
+{
+  "settings": {
+    "detectChanges": ["structure"],
+    "structuralElements": ["headings", "links", "forms"],
+    "ignoreAttributeChanges": ["style", "class"]
+  }
+}
+```
+
+### Smart Notifications
+
+#### Intelligent Filtering
+Reduce noise with AI-powered change classification:
+
+```json
+{
+  "notifications": {
+    "smartFilter": true,
+    "minImportanceLevel": "medium",
+    "categorizeChanges": true,
+    "summarizeChanges": true
+  }
+}
+```
+
+#### Custom Webhooks
+Receive detailed webhook notifications:
+
+```json
+{
+  "event": "monitor.change_detected",
+  "monitorId": "mon_abc123",
+  "monitorName": "Example Monitor",
+  "url": "https://example.com",
+  "change": {
+    "type": "content",
+    "percentage": 8.5,
+    "description": "New article added to homepage",
+    "detectedAt": "2025-01-15T10:30:00Z"
+  },
+  "screenshots": {
+    "before": "https://storage.whizoai.com/before.png",
+    "after": "https://storage.whizoai.com/after.png",
+    "diff": "https://storage.whizoai.com/diff.png"
+  }
+}
+```
+
+## Use Cases
+
+### Competitive Intelligence
+
+Monitor competitor websites for pricing changes, new products, and marketing updates.
+
+```json
+{
+  "url": "https://competitor.com/pricing",
+  "settings": {
+    "frequency": "hourly",
+    "includeRegions": [".pricing-table", ".special-offers"],
+    "detectChanges": ["content", "structure"]
+  }
+}
+```
+
+### Compliance Monitoring
+
+Track regulatory websites for policy updates and compliance requirements.
+
+```json
+{
+  "url": "https://regulatory-agency.gov/guidelines",
+  "settings": {
+    "frequency": "daily",
+    "detectChanges": ["content"],
+    "changeThreshold": 1,
+    "screenshot": true
+  }
+}
+```
+
+### Website Health Monitoring
+
+Monitor your own website for unexpected changes or issues.
+
+```json
+{
+  "url": "https://your-site.com",
+  "settings": {
+    "frequency": "5min",
+    "trackPerformance": true,
+    "trackAvailability": true,
+    "detectChanges": ["availability", "performance"]
+  }
+}
+```
+
+### Content Aggregation
+
+Monitor news sites and blogs for new content.
+
+```json
+{
+  "url": "https://news-site.com/tech",
+  "settings": {
+    "frequency": "15min",
+    "includeRegions": [".article-list", ".headline-news"],
+    "detectChanges": ["content"]
+  }
+}
+```
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| `200` | Success |
+| `400` | Bad Request - Invalid parameters |
+| `401` | Unauthorized - Invalid API key |
+| `402` | Payment Required - Insufficient credits |
+| `404` | Not Found - Monitor not found |
+| `429` | Too Many Requests - Rate limit exceeded |
+| `500` | Internal Server Error |
+
+### Error Response Format
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "MONITOR_NOT_FOUND",
+    "message": "The specified monitor could not be found",
+    "details": {
+      "monitorId": "mon_abc123",
+      "reason": "monitor_deleted_or_not_accessible"
+    }
+  }
+}
+```
+
+## Credit Costs
+
+| Feature | Credits |
+|---------|---------|
+| Basic monitoring check | 1 credit per check |
+| Screenshot capture | +1 credit per screenshot |
+| Performance monitoring | +0.5 credits per check |
+| Change detection (AI) | +1 credit when changes detected |
+| Visual diff generation | +1 credit per diff |
+| Bulk monitoring | 10% discount for 10+ monitors |
+
+## Rate Limits
+
+| Plan | Active Monitors | Check Frequency | API Calls/Hour |
+|------|-----------------|-----------------|----------------|
+| Free | 3 | Hourly minimum | 50 |
+| Starter | 10 | 15min minimum | 200 |
+| Pro | 50 | 5min minimum | 1000 |
+| Enterprise | 500 | 1min minimum | 5000 |
+
+## Webhooks
+
+Monitor webhooks are sent for various events:
+
+### Change Detected
+```json
+{
+  "event": "monitor.change_detected",
+  "monitorId": "mon_abc123",
+  "change": {
+    "type": "content",
+    "percentage": 8.5,
+    "detectedAt": "2025-01-15T10:30:00Z"
+  }
+}
+```
+
+### Monitor Failed
+```json
+{
+  "event": "monitor.check_failed",
+  "monitorId": "mon_abc123",
+  "error": {
+    "code": "CONNECTION_TIMEOUT",
+    "message": "Unable to connect to website",
+    "failedAt": "2025-01-15T10:30:00Z"
+  }
+}
+```
+
+## Best Practices
+
+1. **Choose appropriate frequencies** - More frequent checks cost more credits
+2. **Use region targeting** - Monitor specific page sections to reduce noise
+3. **Configure smart thresholds** - Set meaningful change percentages
+4. **Implement webhook verification** - Secure your webhook endpoints
+5. **Monitor your monitors** - Track credit usage and success rates
+6. **Archive old data** - Remove unused monitors to optimize costs
+7. **Test configurations** - Start with higher thresholds and adjust based on results

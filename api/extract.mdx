@@ -1,0 +1,589 @@
+---
+title: "Extract API"
+description: "Extract specific data elements from web pages using AI-powered extraction and custom selectors"
+---
+
+# Extract API
+
+The Extract API allows you to extract specific data elements from web pages using AI-powered extraction, CSS selectors, or custom schemas. Perfect for data mining, lead generation, and structured data extraction from any website.
+
+## Base URL
+
+```
+https://api.whizoai.com/v1
+```
+
+## Authentication
+
+All requests require authentication using your API key in the Authorization header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+## AI-Powered Extraction
+
+### `POST /v1/extract`
+
+Extract specific data using natural language instructions and AI.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | The URL to extract data from |
+| `schema` | object | Yes | Extraction schema with field definitions |
+| `options` | object | No | Extraction configuration options |
+
+#### Schema Object
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `fields` | array | Array of field definitions to extract |
+| `mode` | string | Extraction mode: `ai`, `css`, `xpath`, `mixed` |
+| `output` | string | Output format: `json`, `csv`, `structured` |
+
+#### Field Definition
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | string | Field name for output |
+| `description` | string | Description of what to extract |
+| `type` | string | Data type: `text`, `number`, `url`, `email`, `date` |
+| `selector` | string | CSS selector (optional) |
+| `required` | boolean | Whether field is required |
+| `multiple` | boolean | Extract multiple values |
+
+#### Options Object
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `engine` | string | `ai` | Extraction engine: `ai`, `rules`, `hybrid` |
+| `confidence` | number | `0.8` | Minimum confidence threshold (0-1) |
+| `javascript` | boolean | `false` | Enable JavaScript rendering |
+| `waitTime` | number | `0` | Time to wait before extraction (0-30 seconds) |
+| `mobile` | boolean | `false` | Use mobile user agent |
+| `timeout` | number | `30` | Request timeout in seconds |
+| `retries` | number | `3` | Number of retry attempts |
+| `webhook` | string | - | Webhook URL for completion notification |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "results": [
+      {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "phone": "+1-555-0123",
+        "company": "Example Corp",
+        "title": "Software Engineer"
+      }
+    ],
+    "metadata": {
+      "url": "https://example.com",
+      "extractedAt": "2025-01-15T10:30:00Z",
+      "confidence": 0.95,
+      "fieldsFound": 5,
+      "totalFields": 5,
+      "processingTime": 2500,
+      "creditsUsed": 3
+    },
+    "statistics": {
+      "totalMatches": 1,
+      "confidenceDistribution": {
+        "high": 4,
+        "medium": 1,
+        "low": 0
+      }
+    }
+  }
+}
+```
+
+## Batch Extraction
+
+### `POST /v1/extract/batch`
+
+Extract data from multiple URLs simultaneously using the same schema.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `urls` | array | Yes | Array of URLs to extract from (max 50) |
+| `schema` | object | Yes | Extraction schema |
+| `options` | object | No | Global extraction options |
+| `webhook` | string | No | Webhook URL for batch completion |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "extract_batch_abc123",
+    "status": "processing",
+    "totalUrls": 10,
+    "estimatedCompletionTime": "2025-01-15T10:40:00Z",
+    "creditsEstimate": 30
+  }
+}
+```
+
+## Schema-Based Extraction
+
+### `POST /v1/extract/schema`
+
+Extract data using predefined schemas for common data types.
+
+#### Available Schemas
+
+| Schema | Description |
+|--------|-------------|
+| `contact` | Names, emails, phones, addresses |
+| `product` | Product names, prices, descriptions, images |
+| `article` | Titles, authors, dates, content |
+| `business` | Company names, addresses, contacts |
+| `event` | Event names, dates, locations, descriptions |
+| `job` | Job titles, companies, locations, requirements |
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | The URL to extract data from |
+| `schemaType` | string | Yes | Predefined schema type |
+| `options` | object | No | Extraction options |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "results": [
+      {
+        "name": "iPhone 15 Pro",
+        "price": "$999.00",
+        "description": "Professional camera system...",
+        "image": "https://example.com/iphone15.jpg",
+        "availability": "In Stock"
+      }
+    ],
+    "schema": "product",
+    "metadata": {
+      "confidence": 0.92,
+      "fieldsExtracted": 5
+    }
+  }
+}
+```
+
+## Get Extraction Results
+
+### `GET /v1/extract/{jobId}`
+
+Retrieve results from a batch extraction job.
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "extract_batch_abc123",
+    "status": "completed",
+    "completedAt": "2025-01-15T10:38:00Z",
+    "summary": {
+      "totalUrls": 10,
+      "successfulExtractions": 9,
+      "failedExtractions": 1,
+      "totalRecords": 87,
+      "creditsUsed": 27
+    },
+    "results": [
+      {
+        "url": "https://example1.com",
+        "status": "success",
+        "data": [
+          {
+            "name": "John Smith",
+            "email": "john@example1.com",
+            "phone": "+1-555-0001"
+          }
+        ],
+        "confidence": 0.94
+      }
+    ],
+    "errors": [
+      {
+        "url": "https://example10.com",
+        "error": "Page not found",
+        "statusCode": 404
+      }
+    ]
+  }
+}
+```
+
+## Code Examples
+
+<CodeGroup>
+
+```javascript Node.js
+// Extract contact information using AI
+const extractResponse = await fetch('https://api.whizoai.com/v1/extract', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com/team',
+    schema: {
+      fields: [
+        {
+          name: 'name',
+          description: 'Person full name',
+          type: 'text',
+          required: true
+        },
+        {
+          name: 'email',
+          description: 'Email address',
+          type: 'email',
+          required: true
+        },
+        {
+          name: 'title',
+          description: 'Job title or position',
+          type: 'text',
+          required: false
+        }
+      ],
+      mode: 'ai',
+      output: 'json'
+    },
+    options: {
+      confidence: 0.8,
+      javascript: true,
+      multiple: true
+    }
+  })
+});
+
+const data = await extractResponse.json();
+console.log(`Extracted ${data.data.results.length} contacts`);
+```
+
+```python Python
+import requests
+
+# Extract product information
+response = requests.post(
+    'https://api.whizoai.com/v1/extract',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://ecommerce-site.com/products',
+        'schema': {
+            'fields': [
+                {
+                    'name': 'product_name',
+                    'description': 'Product title or name',
+                    'type': 'text',
+                    'required': True
+                },
+                {
+                    'name': 'price',
+                    'description': 'Product price',
+                    'type': 'text',
+                    'required': True
+                },
+                {
+                    'name': 'rating',
+                    'description': 'Customer rating or stars',
+                    'type': 'number',
+                    'required': False
+                }
+            ],
+            'mode': 'ai',
+            'output': 'json'
+        },
+        'options': {
+            'confidence': 0.85,
+            'multiple': True
+        }
+    }
+)
+
+data = response.json()
+print(f"Found {len(data['data']['results'])} products")
+```
+
+```php PHP
+<?php
+// Extract job listings
+$ch = curl_init();
+
+curl_setopt($ch, CURLOPT_URL, 'https://api.whizoai.com/v1/extract');
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+    'url' => 'https://jobboard.com/listings',
+    'schema' => [
+        'fields' => [
+            [
+                'name' => 'job_title',
+                'description' => 'Job position title',
+                'type' => 'text',
+                'required' => true
+            ],
+            [
+                'name' => 'company',
+                'description' => 'Company name',
+                'type' => 'text',
+                'required' => true
+            ],
+            [
+                'name' => 'location',
+                'description' => 'Job location',
+                'type' => 'text',
+                'required' => false
+            ],
+            [
+                'name' => 'salary',
+                'description' => 'Salary range',
+                'type' => 'text',
+                'required' => false
+            ]
+        ],
+        'mode' => 'ai',
+        'output' => 'json'
+    ],
+    'options' => [
+        'confidence' => 0.8,
+        'multiple' => true
+    ]
+]));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer YOUR_API_KEY',
+    'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+$data = json_decode($response, true);
+
+echo "Extracted " . count($data['data']['results']) . " job listings\n";
+curl_close($ch);
+?>
+```
+
+```bash cURL
+# Extract using predefined schema
+curl -X POST "https://api.whizoai.com/v1/extract/schema" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://business-directory.com/listing/123",
+    "schemaType": "business",
+    "options": {
+      "confidence": 0.9,
+      "javascript": true
+    }
+  }'
+
+# Batch extraction
+curl -X POST "https://api.whizoai.com/v1/extract/batch" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://example1.com",
+      "https://example2.com",
+      "https://example3.com"
+    ],
+    "schema": {
+      "fields": [
+        {
+          "name": "title",
+          "description": "Page title",
+          "type": "text",
+          "required": true
+        }
+      ],
+      "mode": "ai",
+      "output": "json"
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Advanced Features
+
+### Custom Selectors
+
+Combine AI extraction with CSS selectors for precise targeting:
+
+```json
+{
+  "schema": {
+    "fields": [
+      {
+        "name": "price",
+        "description": "Product price",
+        "type": "text",
+        "selector": ".price-current",
+        "required": true
+      }
+    ],
+    "mode": "mixed"
+  }
+}
+```
+
+### Confidence Filtering
+
+Set confidence thresholds to ensure data quality:
+
+```json
+{
+  "options": {
+    "confidence": 0.9,
+    "filterLowConfidence": true
+  }
+}
+```
+
+### Data Validation
+
+Validate extracted data against patterns:
+
+```json
+{
+  "schema": {
+    "fields": [
+      {
+        "name": "email",
+        "type": "email",
+        "validation": {
+          "pattern": "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
+          "required": true
+        }
+      }
+    ]
+  }
+}
+```
+
+## Use Cases
+
+### Lead Generation
+
+Extract contact information from business directories, LinkedIn profiles, and company websites.
+
+### Price Monitoring
+
+Monitor competitor prices across multiple e-commerce sites with automated extraction.
+
+### Content Aggregation
+
+Extract articles, blog posts, and news content for content curation platforms.
+
+### Real Estate Data
+
+Extract property listings, prices, and details from real estate websites.
+
+### Job Market Analysis
+
+Extract job postings, salaries, and requirements for market research.
+
+### Social Media Monitoring
+
+Extract mentions, reviews, and social media content for brand monitoring.
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| `200` | Success |
+| `400` | Bad Request - Invalid schema or parameters |
+| `401` | Unauthorized - Invalid API key |
+| `402` | Payment Required - Insufficient credits |
+| `429` | Too Many Requests - Rate limit exceeded |
+| `500` | Internal Server Error |
+
+### Error Response Format
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "EXTRACTION_FAILED",
+    "message": "Unable to extract data from the specified URL",
+    "details": {
+      "url": "https://example.com",
+      "reason": "page_not_accessible",
+      "fieldsAttempted": 5,
+      "fieldsExtracted": 0
+    }
+  }
+}
+```
+
+## Credit Costs
+
+| Feature | Credits |
+|---------|---------|
+| Basic AI extraction | 3 credits per page |
+| CSS selector extraction | 1 credit per page |
+| Schema-based extraction | 2 credits per page |
+| High confidence mode | +1 credit per page |
+| JavaScript rendering | +1 credit per page |
+| Multiple field extraction | +0.5 credits per additional field |
+
+## Rate Limits
+
+| Plan | Extractions/Hour | Batch Size | Concurrent Jobs |
+|------|------------------|------------|-----------------|
+| Free | 5 | 5 | 1 |
+| Starter | 25 | 10 | 2 |
+| Pro | 100 | 25 | 5 |
+| Enterprise | 500 | 50 | 15 |
+
+## Webhooks
+
+Receive notifications when extraction jobs complete:
+
+```json
+{
+  "event": "extract.completed",
+  "jobId": "extract_abc123",
+  "url": "https://example.com",
+  "status": "completed",
+  "results": {
+    "totalRecords": 12,
+    "confidence": 0.91,
+    "creditsUsed": 5
+  },
+  "completedAt": "2025-01-15T10:35:00Z"
+}
+```
+
+## Best Practices
+
+1. **Start with simple schemas** - Begin with fewer fields and expand as needed
+2. **Use appropriate confidence levels** - Higher confidence = better quality but fewer results
+3. **Combine extraction modes** - Use 'mixed' mode for optimal accuracy
+4. **Handle pagination** - Extract from multiple pages for complete datasets
+5. **Validate extracted data** - Always verify critical data points
+6. **Cache results** - Store extracted data to avoid repeated API calls
+7. **Monitor extraction quality** - Review confidence scores and adjust schemas
