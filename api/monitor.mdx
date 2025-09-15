@@ -3,6 +3,8 @@ title: "Monitor API"
 description: "Monitor websites for changes, track performance, and receive notifications when content updates"
 ---
 
+<!-- @format -->
+
 # Monitor API
 
 The Monitor API allows you to continuously monitor websites for changes, track performance metrics, and receive notifications when content updates. Perfect for competitive intelligence, compliance monitoring, and website health tracking.
@@ -10,7 +12,7 @@ The Monitor API allows you to continuously monitor websites for changes, track p
 ## Base URL
 
 ```
-https://api.whizoai.com/v1
+https://api.whizo.ai/v1
 ```
 
 ## Authentication
@@ -29,41 +31,41 @@ Create a new website monitor with customizable detection rules and notification 
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `url` | string | Yes | The URL to monitor |
-| `name` | string | Yes | Monitor name for identification |
-| `settings` | object | Yes | Monitoring configuration |
-| `notifications` | object | No | Notification preferences |
+| Parameter       | Type   | Required | Description                     |
+| --------------- | ------ | -------- | ------------------------------- |
+| `url`           | string | Yes      | The URL to monitor              |
+| `name`          | string | Yes      | Monitor name for identification |
+| `settings`      | object | Yes      | Monitoring configuration        |
+| `notifications` | object | No       | Notification preferences        |
 
 #### Settings Object
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `frequency` | string | `hourly` | Check frequency: `5min`, `15min`, `hourly`, `daily`, `weekly` |
-| `changeThreshold` | number | `5` | Minimum percentage change to trigger (1-100) |
-| `detectChanges` | array | `["content"]` | What to monitor: `content`, `images`, `links`, `structure`, `metadata` |
-| `includeRegions` | array | - | Specific CSS selectors to monitor |
-| `excludeRegions` | array | - | CSS selectors to ignore |
-| `ignoreWhitespace` | boolean | `true` | Ignore whitespace-only changes |
-| `ignoreCaseChanges` | boolean | `true` | Ignore case-only changes |
-| `trackPerformance` | boolean | `false` | Monitor page load performance |
-| `trackAvailability` | boolean | `true` | Monitor site availability |
-| `screenshot` | boolean | `false` | Capture screenshots on changes |
-| `retryOnFailure` | boolean | `true` | Retry on connection failures |
-| `userAgent` | string | - | Custom user agent string |
-| `cookies` | object | `{}` | Custom cookies |
-| `headers` | object | `{}` | Custom headers |
+| Parameter           | Type    | Default       | Description                                                            |
+| ------------------- | ------- | ------------- | ---------------------------------------------------------------------- |
+| `frequency`         | string  | `hourly`      | Check frequency: `5min`, `15min`, `hourly`, `daily`, `weekly`          |
+| `changeThreshold`   | number  | `5`           | Minimum percentage change to trigger (1-100)                           |
+| `detectChanges`     | array   | `["content"]` | What to monitor: `content`, `images`, `links`, `structure`, `metadata` |
+| `includeRegions`    | array   | -             | Specific CSS selectors to monitor                                      |
+| `excludeRegions`    | array   | -             | CSS selectors to ignore                                                |
+| `ignoreWhitespace`  | boolean | `true`        | Ignore whitespace-only changes                                         |
+| `ignoreCaseChanges` | boolean | `true`        | Ignore case-only changes                                               |
+| `trackPerformance`  | boolean | `false`       | Monitor page load performance                                          |
+| `trackAvailability` | boolean | `true`        | Monitor site availability                                              |
+| `screenshot`        | boolean | `false`       | Capture screenshots on changes                                         |
+| `retryOnFailure`    | boolean | `true`        | Retry on connection failures                                           |
+| `userAgent`         | string  | -             | Custom user agent string                                               |
+| `cookies`           | object  | `{}`          | Custom cookies                                                         |
+| `headers`           | object  | `{}`          | Custom headers                                                         |
 
 #### Notifications Object
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `email` | boolean | `true` | Send email notifications |
-| `webhook` | string | - | Webhook URL for notifications |
-| `webhookSecret` | string | - | Secret for webhook verification |
-| `slack` | object | - | Slack integration settings |
-| `discord` | object | - | Discord integration settings |
+| Parameter       | Type    | Default | Description                     |
+| --------------- | ------- | ------- | ------------------------------- |
+| `email`         | boolean | `true`  | Send email notifications        |
+| `webhook`       | string  | -       | Webhook URL for notifications   |
+| `webhookSecret` | string  | -       | Secret for webhook verification |
+| `slack`         | object  | -       | Slack integration settings      |
+| `discord`       | object  | -       | Discord integration settings    |
 
 #### Response
 
@@ -87,7 +89,7 @@ Create a new website monitor with customizable detection rules and notification 
     },
     "initialSnapshot": {
       "contentHash": "abc123def456",
-      "screenshotUrl": "https://storage.whizoai.com/screenshots/mon_abc123_initial.png"
+      "screenshotUrl": "https://storage.whizo.ai/screenshots/mon_abc123_initial.png"
     }
   }
 }
@@ -101,14 +103,14 @@ Retrieve all monitors for your account with filtering and pagination.
 
 #### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `status` | string | Filter by status: `active`, `paused`, `failed` |
-| `frequency` | string | Filter by frequency |
-| `limit` | number | Number of results (max 100) |
-| `offset` | number | Pagination offset |
-| `sort` | string | Sort by: `created_at`, `last_checked`, `next_check` |
-| `order` | string | Sort order: `asc`, `desc` |
+| Parameter   | Type   | Description                                         |
+| ----------- | ------ | --------------------------------------------------- |
+| `status`    | string | Filter by status: `active`, `paused`, `failed`      |
+| `frequency` | string | Filter by frequency                                 |
+| `limit`     | number | Number of results (max 100)                         |
+| `offset`    | number | Pagination offset                                   |
+| `sort`      | string | Sort by: `created_at`, `last_checked`, `next_check` |
+| `order`     | string | Sort order: `asc`, `desc`                           |
 
 #### Response
 
@@ -191,8 +193,8 @@ Retrieve detailed information about a specific monitor including recent changes 
         "changeType": "content",
         "changePercentage": 8.5,
         "description": "Content updated in main article section",
-        "beforeScreenshot": "https://storage.whizoai.com/screenshots/before_xyz789.png",
-        "afterScreenshot": "https://storage.whizoai.com/screenshots/after_xyz789.png",
+        "beforeScreenshot": "https://storage.whizo.ai/screenshots/before_xyz789.png",
+        "afterScreenshot": "https://storage.whizo.ai/screenshots/after_xyz789.png",
         "diff": {
           "added": 156,
           "removed": 89,
@@ -212,13 +214,13 @@ Retrieve the complete change history for a monitor with detailed diff informatio
 
 #### Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `since` | string | ISO date to filter changes since |
-| `until` | string | ISO date to filter changes until |
-| `type` | string | Filter by change type |
-| `limit` | number | Number of results (max 100) |
-| `include_diff` | boolean | Include detailed diff data |
+| Parameter      | Type    | Description                      |
+| -------------- | ------- | -------------------------------- |
+| `since`        | string  | ISO date to filter changes since |
+| `until`        | string  | ISO date to filter changes until |
+| `type`         | string  | Filter by change type            |
+| `limit`        | number  | Number of results (max 100)      |
+| `include_diff` | boolean | Include detailed diff data       |
 
 #### Response
 
@@ -238,9 +240,9 @@ Retrieve the complete change history for a monitor with detailed diff informatio
         "beforeHash": "abc123",
         "afterHash": "def456",
         "screenshots": {
-          "before": "https://storage.whizoai.com/screenshots/before_xyz789.png",
-          "after": "https://storage.whizoai.com/screenshots/after_xyz789.png",
-          "diff": "https://storage.whizoai.com/screenshots/diff_xyz789.png"
+          "before": "https://storage.whizo.ai/screenshots/before_xyz789.png",
+          "after": "https://storage.whizo.ai/screenshots/after_xyz789.png",
+          "diff": "https://storage.whizo.ai/screenshots/diff_xyz789.png"
         },
         "diff": {
           "format": "unified",
@@ -279,12 +281,12 @@ Update an existing monitor's configuration or settings.
 
 #### Request Body
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `name` | string | Monitor name |
-| `settings` | object | Updated monitoring settings |
-| `notifications` | object | Updated notification preferences |
-| `status` | string | Monitor status: `active`, `paused` |
+| Parameter       | Type   | Description                        |
+| --------------- | ------ | ---------------------------------- |
+| `name`          | string | Monitor name                       |
+| `settings`      | object | Updated monitoring settings        |
+| `notifications` | object | Updated notification preferences   |
+| `status`        | string | Monitor status: `active`, `paused` |
 
 #### Response
 
@@ -338,10 +340,10 @@ Create multiple monitors simultaneously for efficient bulk setup.
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `monitors` | array | Yes | Array of monitor configurations (max 50) |
-| `globalSettings` | object | No | Settings applied to all monitors |
+| Parameter        | Type   | Required | Description                              |
+| ---------------- | ------ | -------- | ---------------------------------------- |
+| `monitors`       | array  | Yes      | Array of monitor configurations (max 50) |
+| `globalSettings` | object | No       | Settings applied to all monitors         |
 
 #### Response
 
@@ -363,40 +365,43 @@ Create multiple monitors simultaneously for efficient bulk setup.
 
 ```javascript Node.js
 // Create a content change monitor
-const monitorResponse = await fetch('https://api.whizoai.com/v1/monitor', {
-  method: 'POST',
+const monitorResponse = await fetch("https://api.whizo.ai/v1/monitor", {
+  method: "POST",
   headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
+    Authorization: "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    url: 'https://competitor.com/pricing',
-    name: 'Competitor Pricing Monitor',
+    url: "https://competitor.com/pricing",
+    name: "Competitor Pricing Monitor",
     settings: {
-      frequency: 'daily',
+      frequency: "daily",
       changeThreshold: 2,
-      detectChanges: ['content', 'structure'],
-      includeRegions: ['.pricing-table', '.plans-section'],
+      detectChanges: ["content", "structure"],
+      includeRegions: [".pricing-table", ".plans-section"],
       screenshot: true,
-      trackPerformance: true
+      trackPerformance: true,
     },
     notifications: {
       email: true,
-      webhook: 'https://your-app.com/webhooks/monitor',
-      webhookSecret: 'your-webhook-secret'
-    }
-  })
+      webhook: "https://your-app.com/webhooks/monitor",
+      webhookSecret: "your-webhook-secret",
+    },
+  }),
 });
 
 const monitor = await monitorResponse.json();
 console.log(`Monitor created: ${monitor.data.monitor.id}`);
 
 // Check for changes
-const changesResponse = await fetch(`https://api.whizoai.com/v1/monitor/${monitor.data.monitor.id}/changes`, {
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
+const changesResponse = await fetch(
+  `https://api.whizo.ai/v1/monitor/${monitor.data.monitor.id}/changes`,
+  {
+    headers: {
+      Authorization: "Bearer YOUR_API_KEY",
+    },
   }
-});
+);
 
 const changes = await changesResponse.json();
 console.log(`Found ${changes.data.changes.length} changes`);
@@ -425,7 +430,7 @@ monitor_config = {
 }
 
 response = requests.post(
-    'https://api.whizoai.com/v1/monitor',
+    'https://api.whizo.ai/v1/monitor',
     headers={
         'Authorization': 'Bearer YOUR_API_KEY',
         'Content-Type': 'application/json'
@@ -439,7 +444,7 @@ print(f"Monitor created: {monitor_id}")
 
 # Get recent changes
 changes_response = requests.get(
-    f'https://api.whizoai.com/v1/monitor/{monitor_id}/changes',
+    f'https://api.whizo.ai/v1/monitor/{monitor_id}/changes',
     headers={'Authorization': 'Bearer YOUR_API_KEY'},
     params={
         'since': (datetime.now() - timedelta(days=7)).isoformat(),
@@ -476,7 +481,7 @@ $monitors = [
 ];
 
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'https://api.whizoai.com/v1/monitor/batch');
+curl_setopt($ch, CURLOPT_URL, 'https://api.whizo.ai/v1/monitor/batch');
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'monitors' => $monitors,
@@ -501,7 +506,7 @@ curl_close($ch);
 
 ```bash cURL
 # Create a monitor
-curl -X POST "https://api.whizoai.com/v1/monitor" \
+curl -X POST "https://api.whizo.ai/v1/monitor" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -521,11 +526,11 @@ curl -X POST "https://api.whizoai.com/v1/monitor" \
   }'
 
 # List all monitors
-curl -X GET "https://api.whizoai.com/v1/monitor?status=active&limit=50" \
+curl -X GET "https://api.whizo.ai/v1/monitor?status=active&limit=50" \
   -H "Authorization: Bearer YOUR_API_KEY"
 
 # Get monitor changes
-curl -X GET "https://api.whizoai.com/v1/monitor/mon_abc123/changes?include_diff=true" \
+curl -X GET "https://api.whizo.ai/v1/monitor/mon_abc123/changes?include_diff=true" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -536,6 +541,7 @@ curl -X GET "https://api.whizoai.com/v1/monitor/mon_abc123/changes?include_diff=
 ### Change Detection Algorithms
 
 #### Content-Based Detection
+
 Monitor textual content changes with configurable sensitivity:
 
 ```json
@@ -552,6 +558,7 @@ Monitor textual content changes with configurable sensitivity:
 ```
 
 #### Visual Detection
+
 Detect visual changes using screenshot comparison:
 
 ```json
@@ -569,6 +576,7 @@ Detect visual changes using screenshot comparison:
 ```
 
 #### Structural Detection
+
 Monitor HTML structure and layout changes:
 
 ```json
@@ -584,6 +592,7 @@ Monitor HTML structure and layout changes:
 ### Smart Notifications
 
 #### Intelligent Filtering
+
 Reduce noise with AI-powered change classification:
 
 ```json
@@ -598,6 +607,7 @@ Reduce noise with AI-powered change classification:
 ```
 
 #### Custom Webhooks
+
 Receive detailed webhook notifications:
 
 ```json
@@ -613,9 +623,9 @@ Receive detailed webhook notifications:
     "detectedAt": "2025-01-15T10:30:00Z"
   },
   "screenshots": {
-    "before": "https://storage.whizoai.com/before.png",
-    "after": "https://storage.whizoai.com/after.png",
-    "diff": "https://storage.whizoai.com/diff.png"
+    "before": "https://storage.whizo.ai/before.png",
+    "after": "https://storage.whizo.ai/after.png",
+    "diff": "https://storage.whizo.ai/diff.png"
   }
 }
 ```
@@ -688,15 +698,15 @@ Monitor news sites and blogs for new content.
 
 ### HTTP Status Codes
 
-| Code | Description |
-|------|-------------|
-| `200` | Success |
-| `400` | Bad Request - Invalid parameters |
-| `401` | Unauthorized - Invalid API key |
+| Code  | Description                             |
+| ----- | --------------------------------------- |
+| `200` | Success                                 |
+| `400` | Bad Request - Invalid parameters        |
+| `401` | Unauthorized - Invalid API key          |
 | `402` | Payment Required - Insufficient credits |
-| `404` | Not Found - Monitor not found |
+| `404` | Not Found - Monitor not found           |
 | `429` | Too Many Requests - Rate limit exceeded |
-| `500` | Internal Server Error |
+| `500` | Internal Server Error                   |
 
 ### Error Response Format
 
@@ -716,29 +726,30 @@ Monitor news sites and blogs for new content.
 
 ## Credit Costs
 
-| Feature | Credits |
-|---------|---------|
-| Basic monitoring check | 1 credit per check |
-| Screenshot capture | +1 credit per screenshot |
-| Performance monitoring | +0.5 credits per check |
-| Change detection (AI) | +1 credit when changes detected |
-| Visual diff generation | +1 credit per diff |
-| Bulk monitoring | 10% discount for 10+ monitors |
+| Feature                | Credits                         |
+| ---------------------- | ------------------------------- |
+| Basic monitoring check | 1 credit per check              |
+| Screenshot capture     | +1 credit per screenshot        |
+| Performance monitoring | +0.5 credits per check          |
+| Change detection (AI)  | +1 credit when changes detected |
+| Visual diff generation | +1 credit per diff              |
+| Bulk monitoring        | 10% discount for 10+ monitors   |
 
 ## Rate Limits
 
-| Plan | Active Monitors | Check Frequency | API Calls/Hour |
-|------|-----------------|-----------------|----------------|
-| Free | 3 | Hourly minimum | 50 |
-| Starter | 10 | 15min minimum | 200 |
-| Pro | 50 | 5min minimum | 1000 |
-| Enterprise | 500 | 1min minimum | 5000 |
+| Plan       | Active Monitors | Check Frequency | API Calls/Hour |
+| ---------- | --------------- | --------------- | -------------- |
+| Free       | 3               | Hourly minimum  | 50             |
+| Starter    | 10              | 15min minimum   | 200            |
+| Pro        | 50              | 5min minimum    | 1000           |
+| Enterprise | 500             | 1min minimum    | 5000           |
 
 ## Webhooks
 
 Monitor webhooks are sent for various events:
 
 ### Change Detected
+
 ```json
 {
   "event": "monitor.change_detected",
@@ -752,6 +763,7 @@ Monitor webhooks are sent for various events:
 ```
 
 ### Monitor Failed
+
 ```json
 {
   "event": "monitor.check_failed",

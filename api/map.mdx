@@ -3,6 +3,8 @@ title: "Map API"
 description: "Discover and map all pages, links, and resources on a website for comprehensive site analysis"
 ---
 
+<!-- @format -->
+
 # Map API
 
 The Map API allows you to discover and map all pages, links, and resources on a website. It's perfect for site analysis, SEO audits, competitive research, and understanding website structure.
@@ -10,7 +12,7 @@ The Map API allows you to discover and map all pages, links, and resources on a 
 ## Base URL
 
 ```
-https://api.whizoai.com/v1
+https://api.whizo.ai/v1
 ```
 
 ## Authentication
@@ -29,26 +31,26 @@ Map all discoverable pages and resources on a single domain.
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `url` | string | Yes | The root URL to start mapping from |
-| `options` | object | No | Mapping configuration options |
+| Parameter | Type   | Required | Description                        |
+| --------- | ------ | -------- | ---------------------------------- |
+| `url`     | string | Yes      | The root URL to start mapping from |
+| `options` | object | No       | Mapping configuration options      |
 
 #### Options Object
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `maxDepth` | number | `3` | Maximum crawl depth (1-10) |
-| `maxPages` | number | `100` | Maximum pages to discover |
-| `includeSubdomains` | boolean | `false` | Include subdomains in mapping |
-| `includeExternal` | boolean | `false` | Include external links |
-| `respectRobots` | boolean | `true` | Respect robots.txt restrictions |
-| `followRedirects` | boolean | `true` | Follow HTTP redirects |
-| `includeAssets` | boolean | `false` | Include CSS, JS, and image assets |
-| `includeMetadata` | boolean | `true` | Extract page metadata |
-| `delay` | number | `1000` | Delay between requests in milliseconds |
-| `userAgent` | string | - | Custom user agent string |
-| `webhook` | string | - | Webhook URL for completion notification |
+| Parameter           | Type    | Default | Description                             |
+| ------------------- | ------- | ------- | --------------------------------------- |
+| `maxDepth`          | number  | `3`     | Maximum crawl depth (1-10)              |
+| `maxPages`          | number  | `100`   | Maximum pages to discover               |
+| `includeSubdomains` | boolean | `false` | Include subdomains in mapping           |
+| `includeExternal`   | boolean | `false` | Include external links                  |
+| `respectRobots`     | boolean | `true`  | Respect robots.txt restrictions         |
+| `followRedirects`   | boolean | `true`  | Follow HTTP redirects                   |
+| `includeAssets`     | boolean | `false` | Include CSS, JS, and image assets       |
+| `includeMetadata`   | boolean | `true`  | Extract page metadata                   |
+| `delay`             | number  | `1000`  | Delay between requests in milliseconds  |
+| `userAgent`         | string  | -       | Custom user agent string                |
+| `webhook`           | string  | -       | Webhook URL for completion notification |
 
 #### Response
 
@@ -78,11 +80,11 @@ Map multiple domains simultaneously for competitive analysis.
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `domains` | array | Yes | Array of domain URLs (max 10) |
-| `options` | object | No | Global mapping options |
-| `webhook` | string | No | Webhook URL for batch completion |
+| Parameter | Type   | Required | Description                      |
+| --------- | ------ | -------- | -------------------------------- |
+| `domains` | array  | Yes      | Array of domain URLs (max 10)    |
+| `options` | object | No       | Global mapping options           |
+| `webhook` | string | No       | Webhook URL for batch completion |
 
 #### Response
 
@@ -178,21 +180,21 @@ Retrieve the mapping results for a completed job.
 
 ```javascript Node.js
 // Start mapping a domain
-const mapResponse = await fetch('https://api.whizoai.com/v1/map', {
-  method: 'POST',
+const mapResponse = await fetch("https://api.whizo.ai/v1/map", {
+  method: "POST",
   headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
+    Authorization: "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    url: 'https://example.com',
+    url: "https://example.com",
     options: {
       maxDepth: 3,
       maxPages: 100,
       includeSubdomains: false,
-      includeMetadata: true
-    }
-  })
+      includeMetadata: true,
+    },
+  }),
 });
 
 const mapData = await mapResponse.json();
@@ -200,20 +202,20 @@ const jobId = mapData.data.jobId;
 
 // Poll for results
 const checkResults = async () => {
-  const resultResponse = await fetch(`https://api.whizoai.com/v1/map/${jobId}`, {
+  const resultResponse = await fetch(`https://api.whizo.ai/v1/map/${jobId}`, {
     headers: {
-      'Authorization': 'Bearer YOUR_API_KEY'
-    }
+      Authorization: "Bearer YOUR_API_KEY",
+    },
   });
 
   const resultData = await resultResponse.json();
 
-  if (resultData.data.status === 'completed') {
-    console.log('Mapping completed!');
+  if (resultData.data.status === "completed") {
+    console.log("Mapping completed!");
     console.log(`Found ${resultData.data.summary.totalPages} pages`);
     return resultData;
   } else {
-    console.log('Still processing...');
+    console.log("Still processing...");
     setTimeout(checkResults, 5000); // Check again in 5 seconds
   }
 };
@@ -227,7 +229,7 @@ import time
 
 # Start mapping
 response = requests.post(
-    'https://api.whizoai.com/v1/map',
+    'https://api.whizo.ai/v1/map',
     headers={
         'Authorization': 'Bearer YOUR_API_KEY',
         'Content-Type': 'application/json'
@@ -248,7 +250,7 @@ job_id = response.json()['data']['jobId']
 # Poll for results
 while True:
     result_response = requests.get(
-        f'https://api.whizoai.com/v1/map/{job_id}',
+        f'https://api.whizo.ai/v1/map/{job_id}',
         headers={'Authorization': 'Bearer YOUR_API_KEY'}
     )
 
@@ -267,7 +269,7 @@ while True:
 <?php
 // Start mapping
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'https://api.whizoai.com/v1/map');
+curl_setopt($ch, CURLOPT_URL, 'https://api.whizo.ai/v1/map');
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'url' => 'https://example.com',
@@ -290,7 +292,7 @@ $jobId = $data['data']['jobId'];
 
 // Poll for results
 while (true) {
-    curl_setopt($ch, CURLOPT_URL, "https://api.whizoai.com/v1/map/{$jobId}");
+    curl_setopt($ch, CURLOPT_URL, "https://api.whizo.ai/v1/map/{$jobId}");
     curl_setopt($ch, CURLOPT_POST, 0);
 
     $resultResponse = curl_exec($ch);
@@ -312,7 +314,7 @@ curl_close($ch);
 
 ```bash cURL
 # Start mapping
-curl -X POST "https://api.whizoai.com/v1/map" \
+curl -X POST "https://api.whizo.ai/v1/map" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -326,7 +328,7 @@ curl -X POST "https://api.whizoai.com/v1/map" \
   }'
 
 # Check results (replace {jobId} with actual job ID)
-curl -X GET "https://api.whizoai.com/v1/map/{jobId}" \
+curl -X GET "https://api.whizo.ai/v1/map/{jobId}" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -347,6 +349,7 @@ Discover content categories, page types, and information architecture patterns.
 ### Technical SEO Analysis
 
 Identify technical issues like:
+
 - Missing meta descriptions
 - Duplicate content
 - Broken internal links
@@ -377,23 +380,23 @@ Discover internal linking opportunities and understand site architecture for bet
 
 ## Credit Costs
 
-| Feature | Credits |
-|---------|---------|
-| Basic page mapping | 1 credit per page |
-| Metadata extraction | Included |
-| Asset discovery | +0.1 credit per asset |
-| Deep content analysis | +0.5 credit per page |
+| Feature               | Credits               |
+| --------------------- | --------------------- |
+| Basic page mapping    | 1 credit per page     |
+| Metadata extraction   | Included              |
+| Asset discovery       | +0.1 credit per asset |
+| Deep content analysis | +0.5 credit per page  |
 
 ## Rate Limits
 
 Mapping operations have special rate limits due to their intensive nature:
 
-| Plan | Concurrent Maps | Max Depth | Max Pages |
-|------|-----------------|-----------|-----------|
-| Free | 1 | 2 | 50 |
-| Starter | 2 | 3 | 100 |
-| Pro | 5 | 5 | 500 |
-| Enterprise | 10 | 10 | 2000 |
+| Plan       | Concurrent Maps | Max Depth | Max Pages |
+| ---------- | --------------- | --------- | --------- |
+| Free       | 1               | 2         | 50        |
+| Starter    | 2               | 3         | 100       |
+| Pro        | 5               | 5         | 500       |
+| Enterprise | 10              | 10        | 2000      |
 
 ## Webhooks
 

@@ -3,6 +3,8 @@ title: "Extract API"
 description: "Extract specific data elements from web pages using AI-powered extraction and custom selectors"
 ---
 
+<!-- @format -->
+
 # Extract API
 
 The Extract API allows you to extract specific data elements from web pages using AI-powered extraction, CSS selectors, or custom schemas. Perfect for data mining, lead generation, and structured data extraction from any website.
@@ -10,7 +12,7 @@ The Extract API allows you to extract specific data elements from web pages usin
 ## Base URL
 
 ```
-https://api.whizoai.com/v1
+https://api.whizo.ai/v1
 ```
 
 ## Authentication
@@ -29,43 +31,43 @@ Extract specific data using natural language instructions and AI.
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `url` | string | Yes | The URL to extract data from |
-| `schema` | object | Yes | Extraction schema with field definitions |
-| `options` | object | No | Extraction configuration options |
+| Parameter | Type   | Required | Description                              |
+| --------- | ------ | -------- | ---------------------------------------- |
+| `url`     | string | Yes      | The URL to extract data from             |
+| `schema`  | object | Yes      | Extraction schema with field definitions |
+| `options` | object | No       | Extraction configuration options         |
 
 #### Schema Object
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `fields` | array | Array of field definitions to extract |
-| `mode` | string | Extraction mode: `ai`, `css`, `xpath`, `mixed` |
-| `output` | string | Output format: `json`, `csv`, `structured` |
+| Parameter | Type   | Description                                    |
+| --------- | ------ | ---------------------------------------------- |
+| `fields`  | array  | Array of field definitions to extract          |
+| `mode`    | string | Extraction mode: `ai`, `css`, `xpath`, `mixed` |
+| `output`  | string | Output format: `json`, `csv`, `structured`     |
 
 #### Field Definition
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `name` | string | Field name for output |
-| `description` | string | Description of what to extract |
-| `type` | string | Data type: `text`, `number`, `url`, `email`, `date` |
-| `selector` | string | CSS selector (optional) |
-| `required` | boolean | Whether field is required |
-| `multiple` | boolean | Extract multiple values |
+| Parameter     | Type    | Description                                         |
+| ------------- | ------- | --------------------------------------------------- |
+| `name`        | string  | Field name for output                               |
+| `description` | string  | Description of what to extract                      |
+| `type`        | string  | Data type: `text`, `number`, `url`, `email`, `date` |
+| `selector`    | string  | CSS selector (optional)                             |
+| `required`    | boolean | Whether field is required                           |
+| `multiple`    | boolean | Extract multiple values                             |
 
 #### Options Object
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `engine` | string | `ai` | Extraction engine: `ai`, `rules`, `hybrid` |
-| `confidence` | number | `0.8` | Minimum confidence threshold (0-1) |
-| `javascript` | boolean | `false` | Enable JavaScript rendering |
-| `waitTime` | number | `0` | Time to wait before extraction (0-30 seconds) |
-| `mobile` | boolean | `false` | Use mobile user agent |
-| `timeout` | number | `30` | Request timeout in seconds |
-| `retries` | number | `3` | Number of retry attempts |
-| `webhook` | string | - | Webhook URL for completion notification |
+| Parameter    | Type    | Default | Description                                   |
+| ------------ | ------- | ------- | --------------------------------------------- |
+| `engine`     | string  | `ai`    | Extraction engine: `ai`, `rules`, `hybrid`    |
+| `confidence` | number  | `0.8`   | Minimum confidence threshold (0-1)            |
+| `javascript` | boolean | `false` | Enable JavaScript rendering                   |
+| `waitTime`   | number  | `0`     | Time to wait before extraction (0-30 seconds) |
+| `mobile`     | boolean | `false` | Use mobile user agent                         |
+| `timeout`    | number  | `30`    | Request timeout in seconds                    |
+| `retries`    | number  | `3`     | Number of retry attempts                      |
+| `webhook`    | string  | -       | Webhook URL for completion notification       |
 
 #### Response
 
@@ -111,12 +113,12 @@ Extract data from multiple URLs simultaneously using the same schema.
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `urls` | array | Yes | Array of URLs to extract from (max 50) |
-| `schema` | object | Yes | Extraction schema |
-| `options` | object | No | Global extraction options |
-| `webhook` | string | No | Webhook URL for batch completion |
+| Parameter | Type   | Required | Description                            |
+| --------- | ------ | -------- | -------------------------------------- |
+| `urls`    | array  | Yes      | Array of URLs to extract from (max 50) |
+| `schema`  | object | Yes      | Extraction schema                      |
+| `options` | object | No       | Global extraction options              |
+| `webhook` | string | No       | Webhook URL for batch completion       |
 
 #### Response
 
@@ -141,22 +143,22 @@ Extract data using predefined schemas for common data types.
 
 #### Available Schemas
 
-| Schema | Description |
-|--------|-------------|
-| `contact` | Names, emails, phones, addresses |
-| `product` | Product names, prices, descriptions, images |
-| `article` | Titles, authors, dates, content |
-| `business` | Company names, addresses, contacts |
-| `event` | Event names, dates, locations, descriptions |
-| `job` | Job titles, companies, locations, requirements |
+| Schema     | Description                                    |
+| ---------- | ---------------------------------------------- |
+| `contact`  | Names, emails, phones, addresses               |
+| `product`  | Product names, prices, descriptions, images    |
+| `article`  | Titles, authors, dates, content                |
+| `business` | Company names, addresses, contacts             |
+| `event`    | Event names, dates, locations, descriptions    |
+| `job`      | Job titles, companies, locations, requirements |
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `url` | string | Yes | The URL to extract data from |
-| `schemaType` | string | Yes | Predefined schema type |
-| `options` | object | No | Extraction options |
+| Parameter    | Type   | Required | Description                  |
+| ------------ | ------ | -------- | ---------------------------- |
+| `url`        | string | Yes      | The URL to extract data from |
+| `schemaType` | string | Yes      | Predefined schema type       |
+| `options`    | object | No       | Extraction options           |
 
 #### Response
 
@@ -235,44 +237,44 @@ Retrieve results from a batch extraction job.
 
 ```javascript Node.js
 // Extract contact information using AI
-const extractResponse = await fetch('https://api.whizoai.com/v1/extract', {
-  method: 'POST',
+const extractResponse = await fetch("https://api.whizo.ai/v1/extract", {
+  method: "POST",
   headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
+    Authorization: "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    url: 'https://example.com/team',
+    url: "https://example.com/team",
     schema: {
       fields: [
         {
-          name: 'name',
-          description: 'Person full name',
-          type: 'text',
-          required: true
+          name: "name",
+          description: "Person full name",
+          type: "text",
+          required: true,
         },
         {
-          name: 'email',
-          description: 'Email address',
-          type: 'email',
-          required: true
+          name: "email",
+          description: "Email address",
+          type: "email",
+          required: true,
         },
         {
-          name: 'title',
-          description: 'Job title or position',
-          type: 'text',
-          required: false
-        }
+          name: "title",
+          description: "Job title or position",
+          type: "text",
+          required: false,
+        },
       ],
-      mode: 'ai',
-      output: 'json'
+      mode: "ai",
+      output: "json",
     },
     options: {
       confidence: 0.8,
       javascript: true,
-      multiple: true
-    }
-  })
+      multiple: true,
+    },
+  }),
 });
 
 const data = await extractResponse.json();
@@ -284,7 +286,7 @@ import requests
 
 # Extract product information
 response = requests.post(
-    'https://api.whizoai.com/v1/extract',
+    'https://api.whizo.ai/v1/extract',
     headers={
         'Authorization': 'Bearer YOUR_API_KEY',
         'Content-Type': 'application/json'
@@ -331,7 +333,7 @@ print(f"Found {len(data['data']['results'])} products")
 // Extract job listings
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_URL, 'https://api.whizoai.com/v1/extract');
+curl_setopt($ch, CURLOPT_URL, 'https://api.whizo.ai/v1/extract');
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'url' => 'https://jobboard.com/listings',
@@ -386,7 +388,7 @@ curl_close($ch);
 
 ```bash cURL
 # Extract using predefined schema
-curl -X POST "https://api.whizoai.com/v1/extract/schema" \
+curl -X POST "https://api.whizo.ai/v1/extract/schema" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -399,7 +401,7 @@ curl -X POST "https://api.whizoai.com/v1/extract/schema" \
   }'
 
 # Batch extraction
-curl -X POST "https://api.whizoai.com/v1/extract/batch" \
+curl -X POST "https://api.whizo.ai/v1/extract/batch" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -512,14 +514,14 @@ Extract mentions, reviews, and social media content for brand monitoring.
 
 ### HTTP Status Codes
 
-| Code | Description |
-|------|-------------|
-| `200` | Success |
+| Code  | Description                                |
+| ----- | ------------------------------------------ |
+| `200` | Success                                    |
 | `400` | Bad Request - Invalid schema or parameters |
-| `401` | Unauthorized - Invalid API key |
-| `402` | Payment Required - Insufficient credits |
-| `429` | Too Many Requests - Rate limit exceeded |
-| `500` | Internal Server Error |
+| `401` | Unauthorized - Invalid API key             |
+| `402` | Payment Required - Insufficient credits    |
+| `429` | Too Many Requests - Rate limit exceeded    |
+| `500` | Internal Server Error                      |
 
 ### Error Response Format
 
@@ -541,23 +543,23 @@ Extract mentions, reviews, and social media content for brand monitoring.
 
 ## Credit Costs
 
-| Feature | Credits |
-|---------|---------|
-| Basic AI extraction | 3 credits per page |
-| CSS selector extraction | 1 credit per page |
-| Schema-based extraction | 2 credits per page |
-| High confidence mode | +1 credit per page |
-| JavaScript rendering | +1 credit per page |
+| Feature                   | Credits                           |
+| ------------------------- | --------------------------------- |
+| Basic AI extraction       | 3 credits per page                |
+| CSS selector extraction   | 1 credit per page                 |
+| Schema-based extraction   | 2 credits per page                |
+| High confidence mode      | +1 credit per page                |
+| JavaScript rendering      | +1 credit per page                |
 | Multiple field extraction | +0.5 credits per additional field |
 
 ## Rate Limits
 
-| Plan | Extractions/Hour | Batch Size | Concurrent Jobs |
-|------|------------------|------------|-----------------|
-| Free | 5 | 5 | 1 |
-| Starter | 25 | 10 | 2 |
-| Pro | 100 | 25 | 5 |
-| Enterprise | 500 | 50 | 15 |
+| Plan       | Extractions/Hour | Batch Size | Concurrent Jobs |
+| ---------- | ---------------- | ---------- | --------------- |
+| Free       | 5                | 5          | 1               |
+| Starter    | 25               | 10         | 2               |
+| Pro        | 100              | 25         | 5               |
+| Enterprise | 500              | 50         | 15              |
 
 ## Webhooks
 

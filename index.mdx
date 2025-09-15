@@ -1,7 +1,9 @@
 ---
 title: WhizoAI API Documentation
-description: 'Powerful web scraping, data extraction, and website monitoring APIs'
+description: "Powerful web scraping, data extraction, and website monitoring APIs"
 ---
+
+<!-- @format -->
 
 <img
   className="block dark:hidden"
@@ -19,32 +21,16 @@ description: 'Powerful web scraping, data extraction, and website monitoring API
 Transform any website into structured data with our powerful, reliable, and easy-to-use APIs. Whether you're scraping content, extracting specific data, or monitoring websites for changes, WhizoAI provides the tools you need.
 
 <CardGroup cols={2}>
-  <Card
-    title="Quick Start"
-    icon="rocket"
-    href="/quickstart"
-  >
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
     Get up and running with WhizoAI APIs in minutes
   </Card>
-  <Card
-    title="API Reference"
-    icon="code"
-    href="/api/scrape"
-  >
+  <Card title="API Reference" icon="code" href="/api/scrape">
     Complete reference for all WhizoAI API endpoints
   </Card>
-  <Card
-    title="Use Cases"
-    icon="lightbulb"
-    href="/use-cases/web-scraping"
-  >
+  <Card title="Use Cases" icon="lightbulb" href="/use-cases/web-scraping">
     Real-world examples and implementation guides
   </Card>
-  <Card
-    title="SDKs & Libraries"
-    icon="package"
-    href="/sdks/javascript"
-  >
+  <Card title="SDKs & Libraries" icon="package" href="/sdks/javascript">
     Official SDKs for JavaScript, Python, PHP, and more
   </Card>
 </CardGroup>
@@ -54,10 +40,11 @@ Transform any website into structured data with our powerful, reliable, and easy
 WhizoAI offers four powerful APIs that work together to provide comprehensive web data solutions:
 
 ### 🔧 Scrape API
+
 Extract clean, structured content from any webpage in multiple formats including markdown, HTML, and JSON.
 
 ```bash
-curl -X POST "https://api.whizoai.com/v1/scrape" \
+curl -X POST "https://api.whizo.ai/v1/scrape" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -70,10 +57,11 @@ curl -X POST "https://api.whizoai.com/v1/scrape" \
 ```
 
 ### 🗺️ Map API
+
 Discover and map all pages, links, and resources on a website for comprehensive site analysis.
 
 ```bash
-curl -X POST "https://api.whizoai.com/v1/map" \
+curl -X POST "https://api.whizo.ai/v1/map" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -86,10 +74,11 @@ curl -X POST "https://api.whizoai.com/v1/map" \
 ```
 
 ### 🎯 Extract API
+
 Use AI-powered extraction to pull specific data points from web pages using custom schemas.
 
 ```bash
-curl -X POST "https://api.whizoai.com/v1/extract" \
+curl -X POST "https://api.whizo.ai/v1/extract" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -106,10 +95,11 @@ curl -X POST "https://api.whizoai.com/v1/extract" \
 ```
 
 ### 👁️ Monitor API
+
 Track websites for changes and get notified when content updates, prices change, or new content appears.
 
 ```bash
-curl -X POST "https://api.whizoai.com/v1/monitor" \
+curl -X POST "https://api.whizo.ai/v1/monitor" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -125,16 +115,19 @@ curl -X POST "https://api.whizoai.com/v1/monitor" \
 
 <Steps>
   <Step title="Get Your API Key">
-    Sign up at [app.whizoai.com](https://app.whizoai.com) and generate your API key from the dashboard.
+    Sign up at [app.whizo.ai](https://app.whizo.ai) and generate your API key
+    from the dashboard.
   </Step>
   <Step title="Make Your First Request">
     Try our Scrape API to extract content from any webpage.
   </Step>
   <Step title="Explore Advanced Features">
-    Use our Extract API for AI-powered data extraction or Monitor API for change detection.
+    Use our Extract API for AI-powered data extraction or Monitor API for change
+    detection.
   </Step>
   <Step title="Scale Your Integration">
-    Implement batch processing, webhooks, and advanced configurations for production use.
+    Implement batch processing, webhooks, and advanced configurations for
+    production use.
   </Step>
 </Steps>
 
@@ -145,21 +138,28 @@ curl -X POST "https://api.whizoai.com/v1/monitor" \
     Get data in markdown, HTML, JSON, or structured formats depending on your needs.
   </Accordion>
 
-  <Accordion title="AI-Powered Extraction">
-    Use custom schemas to extract specific data points with high accuracy using advanced AI models.
-  </Accordion>
+{" "}
+<Accordion title="AI-Powered Extraction">
+  Use custom schemas to extract specific data points with high accuracy using
+  advanced AI models.
+</Accordion>
 
-  <Accordion title="Real-time Monitoring">
-    Track websites for changes with configurable frequency and change detection sensitivity.
-  </Accordion>
+{" "}
+<Accordion title="Real-time Monitoring">
+  Track websites for changes with configurable frequency and change detection
+  sensitivity.
+</Accordion>
 
-  <Accordion title="Batch Processing">
-    Process multiple URLs simultaneously for efficient large-scale operations.
-  </Accordion>
+{" "}
+<Accordion title="Batch Processing">
+  Process multiple URLs simultaneously for efficient large-scale operations.
+</Accordion>
 
-  <Accordion title="Enterprise Features">
-    Advanced rate limiting, priority processing, dedicated support, and custom integrations.
-  </Accordion>
+{" "}
+<Accordion title="Enterprise Features">
+  Advanced rate limiting, priority processing, dedicated support, and custom
+  integrations.
+</Accordion>
 
   <Accordion title="Developer-Friendly">
     Comprehensive SDKs, detailed documentation, interactive examples, and webhook support.
@@ -175,34 +175,23 @@ WhizoAI uses a credit-based system that scales with your usage:
 - **Extract API**: 5 credits per page (includes AI processing)
 - **Monitor API**: 1 credit per check
 
-Additional features like screenshots, PDFs, and stealth mode may require extra credits. See our [pricing page](https://whizoai.com/pricing) for detailed plan information.
+Additional features like screenshots, PDFs, and stealth mode may require extra credits. See our [pricing page](https://whizo.ai/pricing) for detailed plan information.
 
 <Warning>
-**API Key Required**: All API endpoints require authentication using your API key. Generate one from your [dashboard](https://app.whizoai.com/api-keys).
+  **API Key Required**: All API endpoints require authentication using your API
+  key. Generate one from your [dashboard](https://app.whizo.ai/api-keys).
 </Warning>
 
 ## Support & Resources
 
 <CardGroup cols={3}>
-  <Card
-    title="Support Center"
-    icon="life-ring"
-    href="mailto:support@whizoai.com"
-  >
+  <Card title="Support Center" icon="life-ring" href="mailto:support@whizo.ai">
     Get help from our support team
   </Card>
-  <Card
-    title="API Status"
-    icon="signal"
-    href="https://status.whizoai.com"
-  >
+  <Card title="API Status" icon="signal" href="https://status.whizo.ai">
     Check real-time API status and uptime
   </Card>
-  <Card
-    title="GitHub"
-    icon="github"
-    href="https://github.com/whizoai"
-  >
+  <Card title="GitHub" icon="github" href="https://github.com/whizoai">
     Open source SDKs and examples
   </Card>
 </CardGroup>

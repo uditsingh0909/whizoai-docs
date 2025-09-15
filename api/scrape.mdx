@@ -3,6 +3,8 @@ title: "Scrape API"
 description: "Extract clean, structured content from any webpage in multiple formats"
 ---
 
+<!-- @format -->
+
 # Scrape API
 
 The Scrape API allows you to extract clean, structured content from any webpage in multiple formats including markdown, HTML, and JSON. It's perfect for content extraction, data mining, and web automation tasks.
@@ -10,7 +12,7 @@ The Scrape API allows you to extract clean, structured content from any webpage 
 ## Base URL
 
 ```
-https://api.whizoai.com/v1
+https://api.whizo.ai/v1
 ```
 
 ## Authentication
@@ -29,28 +31,28 @@ Extract content from a single webpage with customizable options.
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `url` | string | Yes | The URL to scrape |
-| `options` | object | No | Scraping configuration options |
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `url`     | string | Yes      | The URL to scrape              |
+| `options` | object | No       | Scraping configuration options |
 
 #### Options Object
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `format` | string | `markdown` | Output format: `markdown`, `html`, `text`, `json`, `structured` |
-| `engine` | string | `lightweight` | Scraping engine: `lightweight`, `playwright`, `puppeteer` |
-| `includeScreenshot` | boolean | `false` | Capture a screenshot of the page |
-| `includePdf` | boolean | `false` | Generate a PDF of the page |
-| `mobile` | boolean | `false` | Use mobile user agent |
-| `waitTime` | number | `0` | Time to wait before scraping (0-30 seconds) |
-| `javascript` | boolean | `false` | Enable JavaScript rendering |
-| `cookies` | object | `{}` | Custom cookies to send with request |
-| `headers` | object | `{}` | Custom headers to send with request |
-| `timeout` | number | `30` | Request timeout in seconds (5-120) |
-| `useCache` | boolean | `false` | Use cached results if available |
-| `cacheTtl` | number | `300` | Cache time-to-live in seconds |
-| `webhook` | string | - | Webhook URL for completion notification |
+| Parameter           | Type    | Default       | Description                                                     |
+| ------------------- | ------- | ------------- | --------------------------------------------------------------- |
+| `format`            | string  | `markdown`    | Output format: `markdown`, `html`, `text`, `json`, `structured` |
+| `engine`            | string  | `lightweight` | Scraping engine: `lightweight`, `playwright`, `puppeteer`       |
+| `includeScreenshot` | boolean | `false`       | Capture a screenshot of the page                                |
+| `includePdf`        | boolean | `false`       | Generate a PDF of the page                                      |
+| `mobile`            | boolean | `false`       | Use mobile user agent                                           |
+| `waitTime`          | number  | `0`           | Time to wait before scraping (0-30 seconds)                     |
+| `javascript`        | boolean | `false`       | Enable JavaScript rendering                                     |
+| `cookies`           | object  | `{}`          | Custom cookies to send with request                             |
+| `headers`           | object  | `{}`          | Custom headers to send with request                             |
+| `timeout`           | number  | `30`          | Request timeout in seconds (5-120)                              |
+| `useCache`          | boolean | `false`       | Use cached results if available                                 |
+| `cacheTtl`          | number  | `300`         | Cache time-to-live in seconds                                   |
+| `webhook`           | string  | -             | Webhook URL for completion notification                         |
 
 #### Response
 
@@ -69,10 +71,8 @@ Extract content from a single webpage with customizable options.
       "processingTime": 1250,
       "creditsUsed": 1
     },
-    "screenshots": [
-      "https://storage.whizoai.com/screenshots/abc123.png"
-    ],
-    "pdf": "https://storage.whizoai.com/pdfs/abc123.pdf",
+    "screenshots": ["https://storage.whizo.ai/screenshots/abc123.png"],
+    "pdf": "https://storage.whizo.ai/pdfs/abc123.pdf",
     "files": []
   }
 }
@@ -83,21 +83,21 @@ Extract content from a single webpage with customizable options.
 <CodeGroup>
 
 ```javascript Node.js
-const response = await fetch('https://api.whizoai.com/v1/scrape', {
-  method: 'POST',
+const response = await fetch("https://api.whizo.ai/v1/scrape", {
+  method: "POST",
   headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
+    Authorization: "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    url: 'https://example.com',
+    url: "https://example.com",
     options: {
-      format: 'markdown',
+      format: "markdown",
       includeScreenshot: true,
       javascript: true,
-      waitTime: 5
-    }
-  })
+      waitTime: 5,
+    },
+  }),
 });
 
 const data = await response.json();
@@ -108,7 +108,7 @@ console.log(data.data.content);
 import requests
 
 response = requests.post(
-    'https://api.whizoai.com/v1/scrape',
+    'https://api.whizo.ai/v1/scrape',
     headers={
         'Authorization': 'Bearer YOUR_API_KEY',
         'Content-Type': 'application/json'
@@ -132,7 +132,7 @@ print(data['data']['content'])
 <?php
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_URL, 'https://api.whizoai.com/v1/scrape');
+curl_setopt($ch, CURLOPT_URL, 'https://api.whizo.ai/v1/scrape');
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
     'url' => 'https://example.com',
@@ -158,7 +158,7 @@ curl_close($ch);
 ```
 
 ```bash cURL
-curl -X POST "https://api.whizoai.com/v1/scrape" \
+curl -X POST "https://api.whizo.ai/v1/scrape" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -182,11 +182,11 @@ Scrape multiple URLs simultaneously for efficient bulk operations.
 
 #### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `urls` | array | Yes | Array of URLs to scrape (max 100) |
-| `options` | object | No | Global scraping options |
-| `webhook` | string | No | Webhook URL for batch completion |
+| Parameter | Type   | Required | Description                       |
+| --------- | ------ | -------- | --------------------------------- |
+| `urls`    | array  | Yes      | Array of URLs to scrape (max 100) |
+| `options` | object | No       | Global scraping options           |
+| `webhook` | string | No       | Webhook URL for batch completion  |
 
 #### Response
 
@@ -207,14 +207,14 @@ Scrape multiple URLs simultaneously for efficient bulk operations.
 
 ### HTTP Status Codes
 
-| Code | Description |
-|------|-------------|
-| `200` | Success |
-| `400` | Bad Request - Invalid parameters |
-| `401` | Unauthorized - Invalid API key |
+| Code  | Description                             |
+| ----- | --------------------------------------- |
+| `200` | Success                                 |
+| `400` | Bad Request - Invalid parameters        |
+| `401` | Unauthorized - Invalid API key          |
 | `402` | Payment Required - Insufficient credits |
 | `429` | Too Many Requests - Rate limit exceeded |
-| `500` | Internal Server Error |
+| `500` | Internal Server Error                   |
 
 ### Error Response Format
 
@@ -236,22 +236,22 @@ Scrape multiple URLs simultaneously for efficient bulk operations.
 
 Rate limits vary by plan:
 
-| Plan | Requests/Hour | Requests/Day | Concurrent Jobs |
-|------|---------------|--------------|-----------------|
-| Free | 10 | 100 | 1 |
-| Starter | 50 | 500 | 3 |
-| Pro | 200 | 2000 | 10 |
-| Enterprise | 1000 | 10000 | 50 |
+| Plan       | Requests/Hour | Requests/Day | Concurrent Jobs |
+| ---------- | ------------- | ------------ | --------------- |
+| Free       | 10            | 100          | 1               |
+| Starter    | 50            | 500          | 3               |
+| Pro        | 200           | 2000         | 10              |
+| Enterprise | 1000          | 10000        | 50              |
 
 ## Credit Costs
 
-| Feature | Credits |
-|---------|---------|
-| Basic scraping | 1 credit per page |
-| JavaScript rendering | +1 credit |
-| Screenshot capture | +1 credit |
-| PDF generation | +1 credit |
-| AI extraction | +2 credits |
+| Feature              | Credits           |
+| -------------------- | ----------------- |
+| Basic scraping       | 1 credit per page |
+| JavaScript rendering | +1 credit         |
+| Screenshot capture   | +1 credit         |
+| PDF generation       | +1 credit         |
+| AI extraction        | +2 credits        |
 
 ## Use Cases
 
