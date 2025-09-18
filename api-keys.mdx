@@ -1,0 +1,44 @@
+# API Keys
+
+API keys provide secure access to the WhizoAI scraping platform. Each key grants programmatic access to all endpoints with configurable rate limits and permissions.
+
+## Creating an API Key
+
+1. Navigate to the [API Keys dashboard](https://whizo.ai/app/api-keys)
+2. Click "Create New API Key"
+3. Set a descriptive name for identification
+4. Configure rate limits and permissions
+5. Copy the generated key immediately (it won't be shown again)
+
+## Authentication
+
+Include your API key in requests using the `Authorization` header:
+
+```bash
+curl -H "Authorization: Bearer whizo_sk_..." \
+  https://api.whizo.ai/v1/scrape
+```
+
+## Best Practices
+
+- **Never expose API keys** in client-side code or public repositories
+- **Use environment variables** to store keys securely
+- **Set appropriate rate limits** based on your usage patterns
+- **Rotate keys regularly** for enhanced security
+- **Use different keys** for development and production environments
+
+## Rate Limits
+
+| Plan | Requests/Hour | Requests/Day |
+|------|---------------|--------------|
+| Free | 10 | 100 |
+| Starter | 50 | 500 |
+| Pro | 200 | 2,000 |
+| Enterprise | 1,000 | 10,000 |
+
+## Managing API Keys
+
+- **View Usage**: Monitor API key usage and analytics
+- **Update Limits**: Modify rate limits and permissions
+- **Revoke Access**: Immediately disable compromised keys
+- **Track Activity**: View detailed request logs and history

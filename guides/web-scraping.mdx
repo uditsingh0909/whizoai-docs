@@ -1,0 +1,71 @@
+# Web Scraping Guide
+
+Learn how to effectively scrape web content using WhizoAI's powerful scraping platform.
+
+## Basic Scraping
+
+Start with simple web scraping using our REST API:
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "format": "markdown"
+    }
+  }'
+```
+
+## Advanced Options
+
+### JavaScript Rendering
+
+For dynamic content that requires JavaScript:
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://spa-example.com",
+    "options": {
+      "format": "markdown",
+      "javascript": true,
+      "waitTime": 3
+    }
+  }'
+```
+
+### Screenshots
+
+Capture visual content alongside text:
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "format": "markdown",
+      "includeScreenshot": true
+    }
+  }'
+```
+
+## Best Practices
+
+1. **Respect robots.txt** - Always check site scraping policies
+2. **Use rate limiting** - Don't overwhelm target servers
+3. **Handle errors gracefully** - Implement retry logic
+4. **Monitor your usage** - Track API quotas and limits
+5. **Cache results** - Store frequently accessed data
+
+## Common Use Cases
+
+- **Content monitoring** - Track changes on websites
+- **Data collection** - Gather information for analysis
+- **SEO research** - Analyze competitor content
+- **Market intelligence** - Monitor pricing and products

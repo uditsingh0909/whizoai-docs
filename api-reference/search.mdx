@@ -1,0 +1,60 @@
+# Search API
+
+Search the web and scrape results with WhizoAI's integrated search functionality.
+
+## Search and Scrape
+
+Perform web searches and automatically scrape the resulting pages:
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/search" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "web scraping tools",
+    "options": {
+      "maxResults": 10,
+      "format": "markdown",
+      "includeSnippets": true
+    }
+  }'
+```
+
+## Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | Yes | Search query string |
+| `maxResults` | number | No | Maximum results (1-50, default: 10) |
+| `format` | string | No | Output format: markdown, html, text |
+| `includeSnippets` | boolean | No | Include search result snippets |
+| `scrapeResults` | boolean | No | Scrape full content from results |
+
+## Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "query": "web scraping tools",
+    "results": [
+      {
+        "title": "Best Web Scraping Tools",
+        "url": "https://example.com/article",
+        "snippet": "Comprehensive guide to web scraping...",
+        "content": "Full scraped content (if scrapeResults=true)",
+        "rank": 1
+      }
+    ],
+    "creditsUsed": 5,
+    "processingTime": 2.3
+  }
+}
+```
+
+## Use Cases
+
+- **Market research** - Find competitors and analyze their content
+- **Content discovery** - Locate relevant articles and resources
+- **SEO analysis** - Research search result rankings
+- **Lead generation** - Find potential customers and contact information

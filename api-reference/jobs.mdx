@@ -1,0 +1,79 @@
+# Jobs API
+
+Monitor and manage your scraping jobs with real-time status updates.
+
+## List Jobs
+
+Retrieve all your scraping jobs with filtering and pagination:
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/jobs?status=completed&limit=50" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Get Job Details
+
+Fetch detailed information about a specific job:
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/jobs/{jobId}" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Cancel Job
+
+Stop a running job before completion:
+
+```bash
+curl -X DELETE "https://api.whizo.ai/v1/jobs/{jobId}" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Job Status
+
+Jobs progress through these states:
+
+| Status | Description |
+|--------|-------------|
+| `pending` | Job queued for processing |
+| `running` | Actively scraping content |
+| `completed` | Successfully finished |
+| `failed` | Encountered an error |
+| `cancelled` | Manually stopped |
+
+## Response Format
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "job_abc123",
+    "url": "https://example.com",
+    "status": "completed",
+    "progress": 100,
+    "creditsUsed": 3,
+    "processingTime": 1205,
+    "result": {
+      "content": "Scraped content...",
+      "metadata": {
+        "title": "Example Page",
+        "description": "Page description"
+      }
+    },
+    "createdAt": "2025-01-18T10:00:00Z",
+    "completedAt": "2025-01-18T10:00:05Z"
+  }
+}
+```
+
+## Real-time Updates
+
+Use WebSocket connection for live job progress:
+
+```javascript
+const ws = new WebSocket('wss://api.whizo.ai/v1/jobs/job_abc123/stream');
+ws.onmessage = (event) => {
+  const update = JSON.parse(event.data);
+  console.log('Job progress:', update.progress);
+};
+```
