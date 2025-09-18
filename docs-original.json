@@ -1,0 +1,142 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "WhizoAI API Documentation",
+  "colors": {
+    "primary": "#6366F1",
+    "light": "#8B5CF6",
+    "dark": "#4F46E5"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "authentication",
+        "api-keys"
+      ]
+    },
+    {
+      "group": "Core APIs",
+      "pages": [
+        "api-reference/scrape",
+        "api-reference/crawl",
+        "api-reference/extract",
+        "api-reference/search",
+        "api-reference/map"
+      ]
+    },
+    {
+      "group": "Job Management",
+      "pages": [
+        "api-reference/jobs",
+        "api-reference/results",
+        "api-reference/monitoring"
+      ]
+    },
+    {
+      "group": "User Management",
+      "pages": [
+        "api-reference/auth",
+        "api-reference/users",
+        "api-reference/billing",
+        "api-reference/analytics"
+      ]
+    },
+    {
+      "group": "Advanced Features",
+      "pages": [
+        "api-reference/webhooks",
+        "api-reference/queues",
+        "api-reference/admin"
+      ]
+    },
+    {
+      "group": "SDKs & Libraries",
+      "pages": [
+        "sdks/javascript",
+        "sdks/python",
+        "sdks/curl"
+      ]
+    },
+    {
+      "group": "Guides & Examples",
+      "pages": [
+        "guides/web-scraping",
+        "guides/data-extraction",
+        "guides/batch-processing",
+        "guides/error-handling"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Dashboard",
+      "url": "https://whizo.ai/app",
+      "icon": "chart-line"
+    },
+    {
+      "name": "Support",
+      "url": "mailto:support@whizo.ai",
+      "icon": "life-ring"
+    },
+    {
+      "name": "GitHub",
+      "url": "https://github.com/whizoai",
+      "icon": "github"
+    },
+    {
+      "name": "Status",
+      "url": "https://status.whizo.ai",
+      "icon": "signal"
+    }
+  ],
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Pricing",
+        "href": "https://whizo.ai/pricing"
+      },
+      {
+        "label": "Blog",
+        "href": "https://whizo.ai/blog"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get API Key",
+      "href": "https://whizo.ai/app/api-keys"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "footer": {
+    "text": "© 2025 WhizoAI. All rights reserved.",
+    "socials": {
+      "x": "https://x.com/whizoai",
+      "github": "https://github.com/whizoai",
+      "linkedin": "https://linkedin.com/company/whizoai"
+    }
+  },
+  "api": {
+    "baseUrl": "https://api.whizo.ai/v1",
+    "auth": {
+      "method": "bearer"
+    }
+  },
+  "openapi": "/openapi.json"
+}

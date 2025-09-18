@@ -1,80 +1,109 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "$schema": "https://mintlify.com/schema.json",
   "name": "WhizoAI API Documentation",
+  "theme": "mint",
   "colors": {
     "primary": "#6366F1",
     "light": "#8B5CF6",
-    "dark": "#4F46E5",
-    "background": {
-      "light": "#FEFEFE",
-      "dark": "#0A0A0A"
-    }
+    "dark": "#4F46E5"
   },
   "favicon": "/favicon.svg",
-  "navigation": [
+  "topbarLinks": [
     {
-      "group": "Getting Started",
-      "pages": [
-        "introduction",
-        "quickstart",
-        "authentication",
-        "api-keys"
-      ]
-    },
-    {
-      "group": "Core APIs",
-      "pages": [
-        "api-reference/scrape",
-        "api-reference/crawl",
-        "api-reference/extract",
-        "api-reference/search",
-        "api-reference/map"
-      ]
-    },
-    {
-      "group": "Job Management",
-      "pages": [
-        "api-reference/jobs",
-        "api-reference/results",
-        "api-reference/monitoring"
-      ]
-    },
-    {
-      "group": "User Management",
-      "pages": [
-        "api-reference/auth",
-        "api-reference/users",
-        "api-reference/billing",
-        "api-reference/analytics"
-      ]
-    },
-    {
-      "group": "Advanced Features",
-      "pages": [
-        "api-reference/webhooks",
-        "api-reference/queues",
-        "api-reference/admin"
-      ]
-    },
-    {
-      "group": "SDKs & Libraries",
-      "pages": [
-        "sdks/javascript",
-        "sdks/python",
-        "sdks/curl"
-      ]
-    },
-    {
-      "group": "Guides & Examples",
-      "pages": [
-        "guides/web-scraping",
-        "guides/data-extraction",
-        "guides/batch-processing",
-        "guides/error-handling"
-      ]
+      "name": "Support",
+      "url": "mailto:support@whizo.ai"
     }
   ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://whizo.ai/app"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    }
+  ],
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication",
+              "api-keys"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/web-scraping",
+              "guides/data-extraction",
+              "guides/batch-processing",
+              "guides/error-handling"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core APIs",
+            "pages": [
+              "api-reference/scrape",
+              "api-reference/crawl",
+              "api-reference/extract",
+              "api-reference/search",
+              "api-reference/map"
+            ]
+          },
+          {
+            "group": "Job Management",
+            "pages": [
+              "api-reference/jobs",
+              "api-reference/results",
+              "api-reference/monitoring"
+            ]
+          },
+          {
+            "group": "User Management",
+            "pages": [
+              "api-reference/auth",
+              "api-reference/users",
+              "api-reference/billing",
+              "api-reference/analytics"
+            ]
+          },
+          {
+            "group": "Advanced Features",
+            "pages": [
+              "api-reference/webhooks",
+              "api-reference/queues",
+              "api-reference/admin"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "SDKs",
+        "groups": [
+          {
+            "group": "Client Libraries",
+            "pages": [
+              "sdks/javascript",
+              "sdks/python",
+              "sdks/curl"
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "anchors": [
     {
       "name": "Dashboard",
