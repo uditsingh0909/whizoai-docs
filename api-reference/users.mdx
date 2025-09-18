@@ -1,0 +1,70 @@
+# Users API
+
+Manage user accounts, profiles, and settings.
+
+## Get User Profile
+
+### `GET /v1/users/profile`
+
+Get current user's profile information.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/users/profile" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "user_123",
+    "email": "user@example.com",
+    "fullName": "John Doe",
+    "plan": "pro",
+    "credits": {
+      "monthly": 10000,
+      "used": 2500,
+      "remaining": 7500
+    },
+    "usage": {
+      "thisMonth": {
+        "requests": 245,
+        "pagesScraped": 1200
+      }
+    },
+    "createdAt": "2025-01-01T00:00:00Z"
+  }
+}
+```
+
+## Update Profile
+
+### `PUT /v1/users/profile`
+
+Update user profile information.
+
+```bash
+curl -X PUT "https://api.whizo.ai/v1/users/profile" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fullName": "John Smith",
+    "preferences": {
+      "notifications": true,
+      "theme": "dark"
+    }
+  }'
+```
+
+## Get Usage Statistics
+
+### `GET /v1/users/usage`
+
+Get detailed usage statistics.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/users/usage?period=30d" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```

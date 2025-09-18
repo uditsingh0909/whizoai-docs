@@ -1,0 +1,37 @@
+# cURL Examples
+
+Collection of cURL commands for common WhizoAI operations.
+
+## Basic Scraping
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/scrape"   -H "Authorization: Bearer YOUR_API_KEY"   -H "Content-Type: application/json"   -d '{
+    "url": "https://example.com",
+    "options": {
+      "format": "markdown"
+    }
+  }'
+```
+
+## Data Extraction
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/extract"   -H "Authorization: Bearer YOUR_API_KEY"   -H "Content-Type: application/json"   -d '{
+    "url": "https://example.com",
+    "schema": {
+      "fields": [
+        {
+          "name": "title",
+          "description": "Page title",
+          "type": "text"
+        }
+      ]
+    }
+  }'
+```
+
+## Check Job Status
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/jobs/job_123"   -H "Authorization: Bearer YOUR_API_KEY"
+```

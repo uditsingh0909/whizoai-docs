@@ -1,0 +1,50 @@
+# Admin API
+
+Administrative endpoints for managing users and system settings.
+
+## Get System Stats
+
+### `GET /v1/admin/stats`
+
+Get system-wide statistics (admin only).
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/admin/stats"   -H "Authorization: Bearer YOUR_ADMIN_API_KEY"
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalUsers": 1250,
+    "activeUsers": 890,
+    "totalJobs": 15600,
+    "totalCreditsUsed": 125000,
+    "systemHealth": "optimal"
+  }
+}
+```
+
+## Manage Users
+
+### `GET /v1/admin/users`
+
+List all users with admin privileges.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/admin/users?limit=50&search=john"   -H "Authorization: Bearer YOUR_ADMIN_API_KEY"
+```
+
+### `PUT /v1/admin/users/{userId}`
+
+Update user settings (admin only).
+
+```bash
+curl -X PUT "https://api.whizo.ai/v1/admin/users/user_123"   -H "Authorization: Bearer YOUR_ADMIN_API_KEY"   -H "Content-Type: application/json"   -d '{
+    "plan": "pro",
+    "monthlyCredits": 15000,
+    "status": "active"
+  }'
+```

@@ -1,0 +1,349 @@
+# Error Handling Guide
+
+Learn how to handle errors gracefully and implement robust retry logic in your WhizoAI integrations.
+
+## Overview
+
+Proper error handling is crucial for building reliable applications with WhizoAI. This guide covers common error scenarios, response formats, and best practices for handling failures.
+
+## Error Response Format
+
+All API errors follow a consistent format:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error description",
+    "details": {
+      "field": "Additional error context",
+      "suggestion": "Recommended action"
+    }
+  }
+}
+```
+
+## Common Error Codes
+
+### Authentication Errors
+
+| Code | HTTP Status | Description | Solution |
+|------|-------------|-------------|----------|
+| `INVALID_API_KEY` | 401 | API key is invalid or missing | Check API key format and permissions |
+| `API_KEY_EXPIRED` | 401 | API key has expired | Generate a new API key |
+| `ACCOUNT_SUSPENDED` | 403 | Account has been suspended | Contact support |
+
+### Rate Limiting Errors
+
+| Code | HTTP Status | Description | Solution |
+|------|-------------|-------------|----------|
+| `RATE_LIMIT_EXCEEDED` | 429 | Too many requests | Implement exponential backoff |
+| `DAILY_LIMIT_EXCEEDED` | 429 | Daily quota exceeded | Upgrade plan or wait for reset |
+| `CONCURRENT_LIMIT_EXCEEDED` | 429 | Too many concurrent jobs | Wait for jobs to complete |
+
+### Credit Errors
+
+| Code | HTTP Status | Description | Solution |
+|------|-------------|-------------|----------|
+| `INSUFFICIENT_CREDITS` | 402 | Not enough credits | Purchase more credits or upgrade plan |
+| `CREDIT_CALCULATION_ERROR` | 500 | Error calculating credit cost | Retry request |
+
+### Scraping Errors
+
+| Code | HTTP Status | Description | Solution |
+|------|-------------|-------------|----------|
+| `URL_NOT_ACCESSIBLE` | 400 | Cannot access the target URL | Check URL validity and accessibility |
+| `TIMEOUT` | 408 | Request timed out | Increase timeout or retry |
+| `BLOCKED_BY_ROBOT_TXT` | 403 | URL blocked by robots.txt | Respect robots.txt or use different URL |
+| `JAVASCRIPT_ERROR` | 500 | JavaScript execution failed | Disable JavaScript or use different engine |
+
+## Retry Strategies
+
+### Exponential Backoff
+
+Implement exponential backoff for transient errors:
+
+```javascript
+async function scrapeWithRetry(url, options, maxRetries = 3) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch("https://api.whizo.ai/v1/scrape", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer YOUR_API_KEY",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ url, options })
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      const error = await response.json();
+
+      // Don't retry for client errors
+      if (response.status >= 400 && response.status < 500) {
+        throw new Error(`Client error: ${error.error.message}`);
+      }
+
+      // Retry for server errors
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+
+      throw new Error(`Server error after ${maxRetries} retries: ${error.error.message}`);
+    } catch (err) {
+      if (attempt === maxRetries) {
+        throw err;
+      }
+    }
+  }
+}
+```
+
+### Rate Limit Handling
+
+Handle rate limits gracefully:
+
+```python
+import time
+import requests
+from datetime import datetime, timedelta
+
+def scrape_with_rate_limit_handling(url, options):
+    while True:
+        response = requests.post(
+            'https://api.whizo.ai/v1/scrape',
+            headers={'Authorization': 'Bearer YOUR_API_KEY'},
+            json={'url': url, 'options': options}
+        )
+
+        if response.status_code == 200:
+            return response.json()
+
+        elif response.status_code == 429:
+            # Rate limited - check retry-after header
+            retry_after = response.headers.get('Retry-After')
+            if retry_after:
+                time.sleep(int(retry_after))
+            else:
+                time.sleep(60)  # Default 1-minute wait
+            continue
+
+        else:
+            # Other error
+            response.raise_for_status()
+```
+
+## Circuit Breaker Pattern
+
+Implement circuit breaker to prevent cascading failures:
+
+```javascript
+class CircuitBreaker {
+  constructor(threshold = 5, timeout = 60000) {
+    this.threshold = threshold;
+    this.timeout = timeout;
+    this.failureCount = 0;
+    this.lastFailureTime = null;
+    this.state = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
+  }
+
+  async call(operation) {
+    if (this.state === 'OPEN') {
+      if (Date.now() - this.lastFailureTime > this.timeout) {
+        this.state = 'HALF_OPEN';
+      } else {
+        throw new Error('Circuit breaker is OPEN');
+      }
+    }
+
+    try {
+      const result = await operation();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  onSuccess() {
+    this.failureCount = 0;
+    this.state = 'CLOSED';
+  }
+
+  onFailure() {
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+
+    if (this.failureCount >= this.threshold) {
+      this.state = 'OPEN';
+    }
+  }
+}
+
+// Usage
+const breaker = new CircuitBreaker();
+
+try {
+  const result = await breaker.call(() =>
+    scrapeWithRetry(url, options)
+  );
+} catch (error) {
+  console.error('Operation failed:', error.message);
+}
+```
+
+## Error Recovery Strategies
+
+### Graceful Degradation
+
+Implement fallback mechanisms:
+
+```javascript
+async function robustScraping(url) {
+  const strategies = [
+    { engine: 'playwright', javascript: true },
+    { engine: 'puppeteer', javascript: true },
+    { engine: 'lightweight', javascript: false }
+  ];
+
+  for (const strategy of strategies) {
+    try {
+      const result = await scrapeWithRetry(url, strategy);
+      return result;
+    } catch (error) {
+      console.warn(`Strategy failed: ${strategy.engine}`, error.message);
+    }
+  }
+
+  throw new Error('All scraping strategies failed');
+}
+```
+
+### Partial Success Handling
+
+Handle batch operations with partial failures:
+
+```javascript
+async function processBatchWithPartialSuccess(urls) {
+  const results = [];
+  const errors = [];
+
+  for (const url of urls) {
+    try {
+      const result = await scrapeWithRetry(url, options);
+      results.push({ url, status: 'success', data: result });
+    } catch (error) {
+      errors.push({ url, status: 'error', error: error.message });
+    }
+  }
+
+  return {
+    successful: results,
+    failed: errors,
+    successRate: results.length / urls.length
+  };
+}
+```
+
+## Monitoring and Alerting
+
+### Error Tracking
+
+Implement comprehensive error logging:
+
+```javascript
+class ErrorTracker {
+  constructor() {
+    this.errors = new Map();
+  }
+
+  logError(error, context) {
+    const key = `${error.code}_${context.url}`;
+    const existing = this.errors.get(key) || { count: 0, firstSeen: Date.now() };
+
+    existing.count++;
+    existing.lastSeen = Date.now();
+
+    this.errors.set(key, existing);
+
+    // Alert if error frequency is high
+    if (existing.count > 10) {
+      this.sendAlert(error, existing);
+    }
+  }
+
+  sendAlert(error, stats) {
+    console.error(`High error frequency detected: ${error.code}`, stats);
+    // Send to monitoring service
+  }
+}
+```
+
+### Health Checks
+
+Monitor API health:
+
+```javascript
+async function healthCheck() {
+  try {
+    const response = await fetch("https://api.whizo.ai/health", {
+      timeout: 5000
+    });
+
+    return response.ok;
+  } catch (error) {
+    return false;
+  }
+}
+
+// Check health every 30 seconds
+setInterval(async () => {
+  const isHealthy = await healthCheck();
+  if (!isHealthy) {
+    console.error('WhizoAI API is not responding');
+    // Implement fallback logic
+  }
+}, 30000);
+```
+
+## Best Practices
+
+1. **Always Handle Errors** - Never ignore API errors
+2. **Implement Retry Logic** - Use exponential backoff for transient errors
+3. **Respect Rate Limits** - Monitor and handle 429 responses properly
+4. **Log Everything** - Maintain comprehensive error logs
+5. **Monitor Error Rates** - Set up alerts for high error frequencies
+6. **Graceful Degradation** - Implement fallback strategies
+7. **Circuit Breaker** - Prevent cascading failures
+8. **Validate Inputs** - Check parameters before API calls
+
+## Testing Error Scenarios
+
+Test your error handling:
+
+```javascript
+// Simulate different error conditions
+const testScenarios = [
+  { url: 'https://httpstat.us/404' }, // 404 error
+  { url: 'https://httpstat.us/500' }, // Server error
+  { url: 'https://httpstat.us/429' }, // Rate limit
+  { url: 'invalid-url' },             // Invalid URL
+];
+
+for (const scenario of testScenarios) {
+  try {
+    await scrapeWithRetry(scenario.url, {});
+  } catch (error) {
+    console.log(`Expected error for ${scenario.url}: ${error.message}`);
+  }
+}
+```
+
+Robust error handling ensures your application remains reliable and provides a good user experience even when things go wrong.

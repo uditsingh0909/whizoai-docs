@@ -1,0 +1,40 @@
+# Queues API
+
+Monitor and manage background job queues.
+
+## Get Queue Status
+
+### `GET /v1/queues/status`
+
+Get current queue statistics and health.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/queues/status"   -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalJobs": 150,
+    "pendingJobs": 5,
+    "activeJobs": 3,
+    "completedJobs": 142,
+    "failedJobs": 0,
+    "averageProcessingTime": 2.5,
+    "queueHealth": "healthy"
+  }
+}
+```
+
+## Get Queue Jobs
+
+### `GET /v1/queues/jobs`
+
+List jobs in the queue with filtering.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/queues/jobs?status=pending&limit=20"   -H "Authorization: Bearer YOUR_API_KEY"
+```

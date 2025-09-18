@@ -1,0 +1,99 @@
+# Data Extraction Guide
+
+Learn how to extract structured data from web pages using WhizoAI's advanced extraction capabilities.
+
+## Overview
+
+WhizoAI's data extraction features allow you to transform unstructured web content into structured data using AI-powered extraction, CSS selectors, or predefined schemas.
+
+## Basic Data Extraction
+
+Extract specific data points from web pages:
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/extract" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/products",
+    "schema": {
+      "fields": [
+        {
+          "name": "product_name",
+          "description": "Product title",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "price",
+          "description": "Product price",
+          "type": "text",
+          "required": true
+        }
+      ],
+      "mode": "ai",
+      "output": "json"
+    }
+  }'
+```
+
+## Advanced Techniques
+
+### Using Custom Selectors
+
+Combine AI extraction with CSS selectors for precision:
+
+```json
+{
+  "schema": {
+    "fields": [
+      {
+        "name": "title",
+        "description": "Article title",
+        "selector": "h1.title",
+        "type": "text"
+      }
+    ],
+    "mode": "mixed"
+  }
+}
+```
+
+### Batch Extraction
+
+Extract data from multiple pages simultaneously:
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/extract/batch" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://example1.com",
+      "https://example2.com",
+      "https://example3.com"
+    ],
+    "schema": {
+      "fields": [
+        {"name": "title", "description": "Page title", "type": "text"},
+        {"name": "price", "description": "Product price", "type": "text"}
+      ]
+    }
+  }'
+```
+
+## Best Practices
+
+1. **Start Simple** - Begin with basic fields and expand gradually
+2. **Use Appropriate Confidence Levels** - Higher confidence means better quality
+3. **Validate Results** - Always verify extracted data for accuracy
+4. **Handle Errors Gracefully** - Implement retry logic for failed extractions
+5. **Cache Results** - Store extracted data to avoid repeated API calls
+
+## Common Use Cases
+
+- **E-commerce Data** - Product prices, descriptions, reviews
+- **Lead Generation** - Contact information from directories
+- **Content Aggregation** - Article titles, authors, publication dates
+- **Real Estate** - Property listings, prices, locations
+- **Job Market Analysis** - Job titles, salaries, requirements

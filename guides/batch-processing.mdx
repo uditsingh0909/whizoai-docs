@@ -1,0 +1,180 @@
+# Batch Processing Guide
+
+Learn how to efficiently process multiple URLs at once with WhizoAI's batch processing capabilities.
+
+## Overview
+
+Batch processing allows you to scrape, extract data from, or monitor multiple URLs simultaneously, providing significant time and cost savings for large-scale operations.
+
+## Batch Scraping
+
+Process multiple URLs with a single API call:
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/batch" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://example1.com",
+      "https://example2.com",
+      "https://example3.com"
+    ],
+    "options": {
+      "format": "markdown",
+      "includeScreenshots": false,
+      "javascript": true
+    }
+  }'
+```
+
+## Batch Data Extraction
+
+Extract structured data from multiple pages:
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/extract/batch" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://store1.com/product",
+      "https://store2.com/item",
+      "https://store3.com/goods"
+    ],
+    "schema": {
+      "fields": [
+        {"name": "title", "description": "Product name", "type": "text"},
+        {"name": "price", "description": "Product price", "type": "text"},
+        {"name": "rating", "description": "Customer rating", "type": "number"}
+      ],
+      "mode": "ai"
+    }
+  }'
+```
+
+## Job Management
+
+Monitor batch job progress:
+
+```bash
+# Check job status
+curl -X GET "https://api.whizo.ai/v1/jobs/batch_job_123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+# Download results when complete
+curl -X GET "https://api.whizo.ai/v1/jobs/batch_job_123/download?format=json" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Batch Optimization
+
+### Chunking Large Lists
+
+Break large URL lists into manageable chunks:
+
+```javascript
+const urls = [...]; // Your large URL list
+const chunkSize = 50; // Maximum batch size
+const chunks = [];
+
+for (let i = 0; i < urls.length; i += chunkSize) {
+  chunks.push(urls.slice(i, i + chunkSize));
+}
+
+// Process each chunk
+for (const chunk of chunks) {
+  const response = await fetch("https://api.whizo.ai/v1/batch", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer YOUR_API_KEY",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      urls: chunk,
+      options: { format: "markdown" }
+    })
+  });
+}
+```
+
+### Parallel Processing
+
+Use concurrent batch jobs for maximum throughput:
+
+```python
+import asyncio
+import aiohttp
+
+async def process_batch(session, urls):
+    async with session.post(
+        'https://api.whizo.ai/v1/batch',
+        headers={'Authorization': 'Bearer YOUR_API_KEY'},
+        json={'urls': urls, 'options': {'format': 'markdown'}}
+    ) as response:
+        return await response.json()
+
+async def main():
+    url_chunks = [chunk1, chunk2, chunk3]  # Your URL chunks
+
+    async with aiohttp.ClientSession() as session:
+        tasks = [process_batch(session, chunk) for chunk in url_chunks]
+        results = await asyncio.gather(*tasks)
+
+    return results
+```
+
+## Error Handling
+
+Handle partial failures in batch operations:
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "batch_abc123",
+    "summary": {
+      "totalUrls": 100,
+      "successful": 95,
+      "failed": 5,
+      "creditsUsed": 95
+    },
+    "failures": [
+      {
+        "url": "https://example.com/page1",
+        "error": "timeout",
+        "statusCode": 504
+      },
+      {
+        "url": "https://example.com/page2",
+        "error": "not_found",
+        "statusCode": 404
+      }
+    ]
+  }
+}
+```
+
+## Best Practices
+
+1. **Optimal Batch Size** - Use 25-50 URLs per batch for best performance
+2. **Error Recovery** - Implement retry logic for failed URLs
+3. **Rate Limiting** - Respect your plan's concurrent job limits
+4. **Progress Monitoring** - Use webhooks for real-time job updates
+5. **Resource Management** - Clean up completed jobs to save storage
+
+## Performance Tips
+
+- **Parallel Batches** - Run multiple batch jobs simultaneously
+- **Efficient Schemas** - Use focused extraction schemas to reduce processing time
+- **Caching** - Cache results to avoid reprocessing identical URLs
+- **Prioritization** - Process high-value URLs first
+- **Monitoring** - Track job performance and optimize accordingly
+
+## Use Cases
+
+- **Competitive Analysis** - Monitor competitor websites at scale
+- **Content Aggregation** - Collect articles from multiple news sources
+- **Price Monitoring** - Track prices across e-commerce platforms
+- **Lead Generation** - Extract contacts from business directories
+- **SEO Auditing** - Analyze multiple pages for optimization opportunities

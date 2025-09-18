@@ -1,0 +1,26 @@
+# Billing API
+
+Manage subscriptions, payments, and billing information.
+
+## Get Subscription
+
+### `GET /v1/billing/subscription`
+
+Get current subscription details.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/billing/subscription"   -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Create Checkout Session
+
+### `POST /v1/billing/checkout`
+
+Create Stripe checkout session for plan upgrade.
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/billing/checkout"   -H "Authorization: Bearer YOUR_API_KEY"   -H "Content-Type: application/json"   -d '{
+    "plan": "pro",
+    "billingPeriod": "monthly"
+  }'
+```

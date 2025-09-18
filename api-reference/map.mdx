@@ -1,0 +1,255 @@
+# Map API
+
+Discover and map all pages, links, and resources on a website for comprehensive site analysis.
+
+## Base URL
+
+```
+https://api.whizo.ai/v1
+```
+
+## Authentication
+
+All requests require authentication using your API key:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+## Website Mapping
+
+### `POST /v1/map`
+
+Map an entire website structure including all discoverable pages and resources.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | The root URL to map |
+| `options` | object | No | Mapping configuration options |
+
+#### Options Object
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `maxDepth` | number | `3` | Maximum crawling depth (1-5) |
+| `maxPages` | number | `100` | Maximum pages to discover |
+| `followExternalLinks` | boolean | `false` | Follow links to external domains |
+| `includeAssets` | boolean | `true` | Include CSS, JS, image resources |
+| `respectRobots` | boolean | `true` | Respect robots.txt rules |
+| `delay` | number | `1` | Delay between requests (seconds) |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "domain": "example.com",
+    "rootUrl": "https://example.com",
+    "totalPages": 45,
+    "totalAssets": 127,
+    "crawlDepth": 3,
+    "pages": [
+      {
+        "url": "https://example.com",
+        "title": "Home Page",
+        "depth": 0,
+        "statusCode": 200,
+        "lastModified": "2025-01-15T10:00:00Z",
+        "size": 15420,
+        "links": {
+          "internal": 12,
+          "external": 3
+        }
+      }
+    ],
+    "assets": [
+      {
+        "url": "https://example.com/style.css",
+        "type": "stylesheet",
+        "size": 8500,
+        "statusCode": 200
+      }
+    ],
+    "summary": {
+      "crawlTime": 45.2,
+      "creditsUsed": 15,
+      "errorPages": 2,
+      "redirectPages": 3
+    }
+  }
+}
+```
+
+## Sitemap Generation
+
+### `POST /v1/map/sitemap`
+
+Generate XML sitemap from website mapping results.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | Website root URL |
+| `format` | string | No | Output format: `xml`, `txt` |
+| `priority` | object | No | Page priority settings |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "sitemapUrl": "https://storage.whizo.ai/sitemaps/abc123.xml",
+    "format": "xml",
+    "totalUrls": 45,
+    "lastModified": "2025-01-15T10:30:00Z",
+    "size": 12000
+  }
+}
+```
+
+## Link Analysis
+
+### `GET /v1/map/{jobId}/links`
+
+Analyze link structure and relationships within the mapped website.
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalLinks": 234,
+    "internalLinks": 198,
+    "externalLinks": 36,
+    "brokenLinks": 5,
+    "linkTypes": {
+      "navigation": 45,
+      "content": 120,
+      "footer": 28,
+      "sidebar": 41
+    },
+    "topLinkedPages": [
+      {
+        "url": "https://example.com/popular-page",
+        "inboundLinks": 15,
+        "title": "Popular Content Page"
+      }
+    ],
+    "externalDomains": [
+      {
+        "domain": "google.com",
+        "linkCount": 12
+      }
+    ]
+  }
+}
+```
+
+## Code Examples
+
+<CodeGroup>
+
+```javascript Node.js
+// Map entire website structure
+const mapResponse = await fetch("https://api.whizo.ai/v1/map", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    url: "https://example.com",
+    options: {
+      maxDepth: 3,
+      maxPages: 100,
+      includeAssets: true,
+      respectRobots: true,
+      delay: 1
+    }
+  }),
+});
+
+const mapData = await mapResponse.json();
+console.log(`Discovered ${mapData.data.totalPages} pages`);
+```
+
+```python Python
+import requests
+
+# Map website structure
+response = requests.post(
+    'https://api.whizo.ai/v1/map',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://example.com',
+        'options': {
+            'maxDepth': 2,
+            'maxPages': 50,
+            'includeAssets': False
+        }
+    }
+)
+
+data = response.json()
+print(f"Found {data['data']['totalPages']} pages")
+```
+
+```bash cURL
+# Map website with custom options
+curl -X POST "https://api.whizo.ai/v1/map" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "maxDepth": 2,
+      "maxPages": 50,
+      "followExternalLinks": false,
+      "respectRobots": true
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Use Cases
+
+- **SEO Audits** - Discover all pages for comprehensive analysis
+- **Content Inventory** - Map existing content structure
+- **Competitive Analysis** - Understand competitor site architecture
+- **Migration Planning** - Plan website migrations and redirects
+- **Security Audits** - Identify all accessible pages and resources
+
+## Error Handling
+
+| Code | Description | Solution |
+|------|-------------|----------|
+| `MAPPING_FAILED` | Unable to map website | Check URL accessibility |
+| `DEPTH_LIMIT_EXCEEDED` | Crawl depth too deep | Reduce maxDepth parameter |
+| `ROBOTS_BLOCKED` | Blocked by robots.txt | Set respectRobots to false |
+
+## Credit Costs
+
+| Feature | Credits |
+|---------|---------|
+| Basic mapping | 1 credit per page discovered |
+| Asset discovery | +0.5 credits per 10 assets |
+| External link analysis | +1 credit per 100 external links |
+
+## Rate Limits
+
+| Plan | Maps/Hour | Max Pages/Map |
+|------|-----------|---------------|
+| Free | 2 | 25 |
+| Starter | 10 | 100 |
+| Pro | 50 | 500 |
+| Enterprise | 200 | 2000 |

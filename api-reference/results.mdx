@@ -1,0 +1,75 @@
+# Results API
+
+Retrieve, download, and manage results from completed scraping jobs.
+
+## Get Job Results
+
+### `GET /v1/results/{jobId}`
+
+Retrieve results from a completed job.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/results/job_abc123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "jobId": "job_abc123",
+    "status": "completed",
+    "results": {
+      "content": "Extracted content...",
+      "metadata": {
+        "title": "Page Title",
+        "url": "https://example.com"
+      }
+    },
+    "files": [
+      {
+        "type": "screenshot",
+        "url": "https://storage.whizo.ai/screenshots/abc123.png"
+      }
+    ]
+  }
+}
+```
+
+## Download Results
+
+### `GET /v1/results/{jobId}/download`
+
+Download results in various formats.
+
+#### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `format` | string | Output format: `json`, `csv`, `xml` |
+| `compressed` | boolean | Compress download as ZIP |
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/results/job_abc123/download?format=json&compressed=true" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  --output results.zip
+```
+
+## Bulk Export
+
+### `POST /v1/results/export`
+
+Export multiple job results at once.
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/results/export" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jobIds": ["job_123", "job_456", "job_789"],
+    "format": "csv",
+    "includeMetadata": true
+  }'
+```

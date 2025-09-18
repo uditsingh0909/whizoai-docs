@@ -1,0 +1,64 @@
+# Monitoring API
+
+Monitor website changes, track performance, and receive notifications.
+
+## Create Monitor
+
+### `POST /v1/monitors`
+
+Set up continuous monitoring for a website.
+
+```bash
+curl -X POST "https://api.whizo.ai/v1/monitors" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "name": "Homepage Monitor",
+    "schedule": "0 */6 * * *",
+    "options": {
+      "detectChanges": true,
+      "threshold": 0.1,
+      "notifications": {
+        "email": "user@example.com",
+        "webhook": "https://myapp.com/webhook"
+      }
+    }
+  }'
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "monitorId": "monitor_abc123",
+    "status": "active",
+    "nextRun": "2025-01-15T18:00:00Z",
+    "creditsPerRun": 2
+  }
+}
+```
+
+## List Monitors
+
+### `GET /v1/monitors`
+
+Get all your active monitors.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/monitors" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Monitor History
+
+### `GET /v1/monitors/{monitorId}/history`
+
+View monitoring history and detected changes.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/monitors/monitor_abc123/history" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```

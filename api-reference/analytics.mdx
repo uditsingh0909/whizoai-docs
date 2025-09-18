@@ -1,0 +1,39 @@
+# Analytics API
+
+Get usage analytics and performance metrics.
+
+## Get Analytics Overview
+
+### `GET /v1/analytics/overview`
+
+Get overview of usage statistics.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/analytics/overview?period=30d"   -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+#### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "period": "30d",
+    "totalRequests": 1250,
+    "pagesScraped": 5600,
+    "creditsUsed": 3400,
+    "averageResponseTime": 1.2,
+    "successRate": 0.98
+  }
+}
+```
+
+## Get Usage Trends
+
+### `GET /v1/analytics/trends`
+
+Get usage trends over time.
+
+```bash
+curl -X GET "https://api.whizo.ai/v1/analytics/trends?period=7d&granularity=daily"   -H "Authorization: Bearer YOUR_API_KEY"
+```
