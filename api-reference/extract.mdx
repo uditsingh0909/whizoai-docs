@@ -1,0 +1,645 @@
+---
+title: "Extract API"
+api: "POST https://api.whizo.ai/v1/extract"
+description: "AI-powered structured data extraction from single or multiple web pages with custom schemas"
+---
+
+The Extract API uses advanced AI models to extract structured data from web pages based on your custom schema definitions. Perfect for automated data collection, lead generation, and content analysis.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token using your API key: `Bearer YOUR_API_KEY`
+</ParamField>
+
+## Request Body
+
+<ParamField body="urls" type="array" required>
+  Array of URLs to extract data from. Minimum 1, maximum 100 URLs.
+</ParamField>
+
+<ParamField body="schema" type="object" required>
+  JSON schema defining the structure of data to extract
+  <Expandable title="schema properties">
+    <ParamField body="schema.type" type="string" required>
+      Must be "object" for structured extraction
+    </ParamField>
+    <ParamField body="schema.properties" type="object" required>
+      Definition of fields to extract with their data types
+    </ParamField>
+    <ParamField body="schema.required" type="array">
+      Array of required field names
+    </ParamField>
+    <ParamField body="schema.description" type="string">
+      Description of what the schema represents
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="options" type="object">
+  Configuration options for extraction behavior
+  <Expandable title="options properties">
+    <ParamField body="options.maxPages" type="number" default="50">
+      Maximum number of pages to process (1-1000)
+    </ParamField>
+    <ParamField body="options.includePatterns" type="array">
+      URL patterns to include (supports wildcards)
+    </ParamField>
+    <ParamField body="options.excludePatterns" type="array">
+      URL patterns to exclude (supports wildcards)
+    </ParamField>
+    <ParamField body="options.prompt" type="string">
+      Custom prompt to guide the AI extraction (max 2000 chars)
+    </ParamField>
+    <ParamField body="options.model" type="string" default="gpt-4-turbo">
+      AI model to use for extraction
+      - `gpt-4` - Most accurate, highest cost (2x credits)
+      - `gpt-4-turbo` - Balanced accuracy and speed (1.5x credits)
+      - `gpt-3.5-turbo` - Fastest, lowest cost (1x credits)
+    </ParamField>
+    <ParamField body="options.temperature" type="number" default="0.1">
+      AI creativity level (0.0-1.0). Lower = more consistent results
+    </ParamField>
+    <ParamField body="options.timeout" type="number" default="30000">
+      Maximum processing time per page in milliseconds (5000-120000)
+    </ParamField>
+    <ParamField body="options.processingOptions" type="object">
+      Content processing configuration
+      <Expandable title="processingOptions properties">
+        <ParamField body="options.processingOptions.removeNoise" type="boolean" default="true">
+          Remove ads, navigation, and other non-content elements
+        </ParamField>
+        <ParamField body="options.processingOptions.optimizeForLLM" type="boolean" default="true">
+          Optimize content format for AI processing
+        </ParamField>
+        <ParamField body="options.processingOptions.preserveStructure" type="boolean" default="true">
+          Maintain original content structure and formatting
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if extraction was successful
+</ResponseField>
+
+<ResponseField name="jobId" type="string">
+  Unique job identifier for tracking
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Complete extraction results
+  <Expandable title="data properties">
+    <ResponseField name="success" type="boolean">
+      Whether extraction completed successfully
+    </ResponseField>
+    <ResponseField name="extractedData" type="array">
+      Array of extracted data objects matching your schema
+    </ResponseField>
+    <ResponseField name="sourceUrls" type="array">
+      URLs that were successfully processed
+    </ResponseField>
+    <ResponseField name="totalPages" type="number">
+      Number of pages processed
+    </ResponseField>
+    <ResponseField name="creditsUsed" type="number">
+      Total credits consumed for extraction
+    </ResponseField>
+    <ResponseField name="processingTime" type="number">
+      Total processing time in milliseconds
+    </ResponseField>
+    <ResponseField name="model" type="string">
+      AI model used for extraction
+    </ResponseField>
+    <ResponseField name="errors" type="array">
+      Any errors encountered during processing
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+### Basic Product Data Extraction
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/extract" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://store.example.com/product-1",
+      "https://store.example.com/product-2"
+    ],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "price": {"type": "string"},
+        "description": {"type": "string"},
+        "inStock": {"type": "boolean"},
+        "category": {"type": "string"},
+        "rating": {"type": "number"}
+      },
+      "required": ["name", "price"],
+      "description": "E-commerce product information"
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/extract', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    urls: [
+      'https://store.example.com/product-1',
+      'https://store.example.com/product-2'
+    ],
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        price: { type: 'string' },
+        description: { type: 'string' },
+        inStock: { type: 'boolean' },
+        category: { type: 'string' },
+        rating: { type: 'number' }
+      },
+      required: ['name', 'price'],
+      description: 'E-commerce product information'
+    }
+  })
+});
+
+const data = await response.json();
+console.log('Extracted products:', data.extractedData);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizo.ai/v1/extract',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'urls': [
+            'https://store.example.com/product-1',
+            'https://store.example.com/product-2'
+        ],
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'name': {'type': 'string'},
+                'price': {'type': 'string'},
+                'description': {'type': 'string'},
+                'inStock': {'type': 'boolean'},
+                'category': {'type': 'string'},
+                'rating': {'type': 'number'}
+            },
+            'required': ['name', 'price'],
+            'description': 'E-commerce product information'
+        }
+    }
+)
+
+data = response.json()
+print(f"Extracted {len(data['extractedData'])} products")
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "jobId": "extract_550e8400-e29b-41d4-a716-446655440000",
+  "data": {
+    "success": true,
+    "extractedData": [
+      {
+        "name": "Wireless Bluetooth Headphones",
+        "price": "$89.99",
+        "description": "Premium noise-canceling wireless headphones with 30-hour battery life",
+        "inStock": true,
+        "category": "Electronics",
+        "rating": 4.5
+      },
+      {
+        "name": "Smart Fitness Tracker",
+        "price": "$129.99",
+        "description": "Advanced fitness tracking with heart rate monitoring and GPS",
+        "inStock": false,
+        "category": "Health & Fitness",
+        "rating": 4.2
+      }
+    ],
+    "sourceUrls": [
+      "https://store.example.com/product-1",
+      "https://store.example.com/product-2"
+    ],
+    "totalPages": 2,
+    "creditsUsed": 9,
+    "processingTime": 5200,
+    "model": "gpt-4-turbo"
+  }
+}
+```
+</ResponseExample>
+
+### Lead Generation from Business Directory
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/extract" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://directory.example.com/business-1",
+      "https://directory.example.com/business-2"
+    ],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "companyName": {"type": "string"},
+        "contactEmail": {"type": "string"},
+        "phoneNumber": {"type": "string"},
+        "address": {"type": "string"},
+        "website": {"type": "string"},
+        "industry": {"type": "string"},
+        "employees": {"type": "number"},
+        "description": {"type": "string"}
+      },
+      "required": ["companyName"],
+      "description": "Business contact information for lead generation"
+    },
+    "options": {
+      "prompt": "Focus on extracting accurate contact information including email addresses and phone numbers. If multiple contacts are available, prioritize the main business contact.",
+      "model": "gpt-4",
+      "temperature": 0.0
+    }
+  }'
+```
+
+```javascript JavaScript
+const leadExtractionSchema = {
+  type: 'object',
+  properties: {
+    companyName: { type: 'string' },
+    contactEmail: { type: 'string' },
+    phoneNumber: { type: 'string' },
+    address: { type: 'string' },
+    website: { type: 'string' },
+    industry: { type: 'string' },
+    employees: { type: 'number' },
+    description: { type: 'string' }
+  },
+  required: ['companyName'],
+  description: 'Business contact information for lead generation'
+};
+
+const response = await fetch('https://api.whizo.ai/v1/extract', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    urls: businessUrls,
+    schema: leadExtractionSchema,
+    options: {
+      prompt: 'Focus on extracting accurate contact information including email addresses and phone numbers.',
+      model: 'gpt-4',
+      temperature: 0.0
+    }
+  })
+});
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "jobId": "extract_750e8400-e29b-41d4-a716-446655440001",
+  "data": {
+    "success": true,
+    "extractedData": [
+      {
+        "companyName": "Tech Solutions Inc.",
+        "contactEmail": "contact@techsolutions.com",
+        "phoneNumber": "+1-555-0123",
+        "address": "123 Innovation Drive, San Francisco, CA 94105",
+        "website": "https://techsolutions.com",
+        "industry": "Software Development",
+        "employees": 150,
+        "description": "Leading provider of cloud-based business solutions"
+      }
+    ],
+    "sourceUrls": ["https://directory.example.com/business-1"],
+    "totalPages": 1,
+    "creditsUsed": 6,
+    "processingTime": 3800,
+    "model": "gpt-4"
+  }
+}
+```
+</ResponseExample>
+
+### News Article Analysis
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/extract" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://news.example.com/article-1",
+      "https://news.example.com/article-2"
+    ],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "headline": {"type": "string"},
+        "author": {"type": "string"},
+        "publishDate": {"type": "string"},
+        "summary": {"type": "string"},
+        "keyPoints": {"type": "array", "items": {"type": "string"}},
+        "sentiment": {"type": "string", "enum": ["positive", "negative", "neutral"]},
+        "category": {"type": "string"},
+        "readingTime": {"type": "number"}
+      },
+      "required": ["headline", "summary"],
+      "description": "News article analysis and key information extraction"
+    },
+    "options": {
+      "prompt": "Extract key information from news articles. For keyPoints, identify 3-5 most important facts or developments mentioned. For sentiment, analyze the overall tone of the article.",
+      "model": "gpt-4-turbo"
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Domain-Based Extraction
+
+Extract data from all pages within a domain using the `/domain` endpoint:
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/extract/domain" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "domain": "jobs.example.com",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "jobTitle": {"type": "string"},
+        "company": {"type": "string"},
+        "location": {"type": "string"},
+        "salary": {"type": "string"},
+        "description": {"type": "string"},
+        "requirements": {"type": "array", "items": {"type": "string"}},
+        "remote": {"type": "boolean"}
+      },
+      "required": ["jobTitle", "company"],
+      "description": "Job posting information"
+    },
+    "options": {
+      "maxPages": 100,
+      "includePatterns": ["/jobs/*"],
+      "excludePatterns": ["/about", "/contact"]
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/extract/domain', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    domain: 'jobs.example.com',
+    schema: {
+      type: 'object',
+      properties: {
+        jobTitle: { type: 'string' },
+        company: { type: 'string' },
+        location: { type: 'string' },
+        salary: { type: 'string' },
+        description: { type: 'string' },
+        requirements: { type: 'array', items: { type: 'string' } },
+        remote: { type: 'boolean' }
+      },
+      required: ['jobTitle', 'company'],
+      description: 'Job posting information'
+    },
+    options: {
+      maxPages: 100,
+      includePatterns: ['/jobs/*'],
+      excludePatterns: ['/about', '/contact']
+    }
+  })
+});
+```
+
+</CodeGroup>
+
+## Schema Design Best Practices
+
+### Simple Product Schema
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "price": {"type": "string"},
+    "availability": {"type": "boolean"}
+  },
+  "required": ["name"],
+  "description": "Basic product information"
+}
+```
+
+### Complex Contact Schema
+```json
+{
+  "type": "object",
+  "properties": {
+    "person": {
+      "type": "object",
+      "properties": {
+        "firstName": {"type": "string"},
+        "lastName": {"type": "string"},
+        "title": {"type": "string"},
+        "email": {"type": "string"},
+        "phone": {"type": "string"}
+      }
+    },
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "industry": {"type": "string"},
+        "size": {"type": "string"}
+      }
+    },
+    "socialMedia": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform": {"type": "string"},
+          "url": {"type": "string"}
+        }
+      }
+    }
+  },
+  "description": "Comprehensive contact information"
+}
+```
+
+## Credit Costs
+
+AI extraction costs vary by model and complexity:
+
+| Model | Base Cost per Page | Features |
+|-------|-------------------|-----------|
+| GPT-3.5-turbo | 3 credits | Fast, good for simple schemas |
+| GPT-4-turbo | 4.5 credits | Balanced accuracy and speed |
+| GPT-4 | 6 credits | Highest accuracy for complex schemas |
+
+**Additional factors**:
+- Complex schemas with nested objects: +1 credit per page
+- Custom prompts over 500 characters: +0.5 credits per page
+- Processing options optimization: Included
+
+## Monitoring Progress
+
+Check extraction status using the jobs endpoint:
+
+<CodeGroup>
+
+```bash cURL
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     https://api.whizo.ai/v1/extract/extract_550e8400-e29b-41d4-a716-446655440000
+```
+
+```javascript JavaScript
+const jobId = 'extract_550e8400-e29b-41d4-a716-446655440000';
+const response = await fetch(`https://api.whizo.ai/v1/extract/${jobId}`, {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+
+const status = await response.json();
+console.log(`Status: ${status.status}, Progress: ${status.progress}%`);
+```
+
+</CodeGroup>
+
+## Error Responses
+
+<ResponseField name="error" type="object">
+  <Expandable title="error properties">
+    <ResponseField name="code" type="string">
+      Error code identifier
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Human-readable error message
+    </ResponseField>
+    <ResponseField name="details" type="object" optional>
+      Additional error context
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Common Errors
+
+| Status Code | Error Code | Description |
+|-------------|------------|-------------|
+| 400 | `invalid_schema` | JSON schema is malformed or invalid |
+| 400 | `invalid_urls` | One or more URLs are invalid |
+| 400 | `schema_too_complex` | Schema exceeds complexity limits |
+| 401 | `unauthorized` | Invalid or missing API key |
+| 402 | `insufficient_credits` | Not enough credits for extraction |
+| 429 | `rate_limited` | Rate limit exceeded |
+| 500 | `extraction_failed` | AI extraction process failed |
+
+<ResponseExample>
+```json Error Response
+{
+  "success": false,
+  "error": {
+    "code": "invalid_schema",
+    "message": "Schema validation failed",
+    "details": {
+      "issues": [
+        "Missing required 'type' field in schema root",
+        "Property 'price' has invalid type definition"
+      ]
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Rate Limits
+
+Extract API rate limits by plan:
+
+- **Free**: 5 extractions per hour, 20 per day
+- **Starter**: 20 extractions per hour, 100 per day
+- **Pro**: 100 extractions per hour, 500 per day
+- **Enterprise**: Custom limits
+
+## Use Cases
+
+<AccordionGroup>
+  <Accordion title="E-commerce Price Monitoring">
+    Monitor competitor prices across multiple product pages with consistent schema extraction for automated price tracking systems.
+  </Accordion>
+
+  <Accordion title="Lead Generation">
+    Extract contact information from business directories, company websites, and professional profiles for sales prospecting.
+  </Accordion>
+
+  <Accordion title="Content Analysis">
+    Analyze news articles, blog posts, and social media content for sentiment, key topics, and structured insights.
+  </Accordion>
+
+  <Accordion title="Real Estate Data">
+    Extract property listings, prices, features, and contact information from real estate websites and portals.
+  </Accordion>
+
+  <Accordion title="Job Market Analysis">
+    Gather job posting data including requirements, salaries, and company information for market research.
+  </Accordion>
+</AccordionGroup>
+
+## Related Endpoints
+
+- [Scrape API](/api-reference/scrape) - Basic content extraction
+- [Crawl API](/api-reference/crawl) - Multi-page website crawling
+- [Search API](/api-reference/search) - Search and extract from results
+- [Jobs API](/api-reference/jobs) - Monitor extraction progress

@@ -1,0 +1,508 @@
+---
+title: "Crawl API"
+api: "POST https://api.whizo.ai/v1/crawl"
+description: "Discover and extract content from websites by crawling through multiple pages systematically"
+---
+
+The Crawl API enables you to automatically discover and scrape content from an entire website or specific sections by following links and extracting data from multiple pages in a structured manner.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token using your API key: `Bearer YOUR_API_KEY`
+</ParamField>
+
+## Request Body
+
+<ParamField body="url" type="string" required>
+  The starting URL to begin crawling. Must be a valid HTTP/HTTPS URL.
+</ParamField>
+
+<ParamField body="maxPages" type="number" default="10">
+  Maximum number of pages to crawl (1-1000)
+</ParamField>
+
+<ParamField body="maxDepth" type="number" default="2">
+  Maximum crawling depth from the starting URL (1-10)
+</ParamField>
+
+<ParamField body="format" type="string" default="markdown">
+  Output format for scraped content
+  - `markdown` - Clean markdown format (default)
+  - `html` - Raw HTML content
+  - `text` - Plain text only
+  - `json` - Structured JSON format
+</ParamField>
+
+<ParamField body="sameDomain" type="boolean" default="true">
+  Only crawl pages within the same domain as the starting URL
+</ParamField>
+
+<ParamField body="includeScreenshot" type="boolean" default="false">
+  Capture screenshots of each page (+1 credit per page)
+</ParamField>
+
+<ParamField body="includePdf" type="boolean" default="false">
+  Generate PDFs of each page (+1 credit per page)
+</ParamField>
+
+<ParamField body="includeLinks" type="boolean" default="true">
+  Extract links from each page for further crawling
+</ParamField>
+
+<ParamField body="includeImages" type="boolean" default="false">
+  Extract image URLs and metadata
+</ParamField>
+
+<ParamField body="includeMetadata" type="boolean" default="true">
+  Include page metadata (title, description, etc.)
+</ParamField>
+
+<ParamField body="onlyMainContent" type="boolean" default="false">
+  Extract only main content, excluding navigation and sidebars
+</ParamField>
+
+<ParamField body="mobile" type="boolean" default="false">
+  Use mobile viewport for rendering pages
+</ParamField>
+
+<ParamField body="waitTime" type="number" default="1000">
+  Time to wait after page load in milliseconds (0-30000)
+</ParamField>
+
+<ParamField body="timeout" type="number" default="30000">
+  Maximum time to wait for each page load in milliseconds (5000-120000)
+</ParamField>
+
+<ParamField body="priority" type="string" default="low">
+  Job processing priority
+  - `low` - Standard processing
+  - `normal` - Higher priority
+  - `high` - Highest priority (Pro+ plans)
+</ParamField>
+
+<ParamField body="headers" type="object">
+  Custom HTTP headers to send with each request
+</ParamField>
+
+<ParamField body="authentication" type="object">
+  Authentication credentials for protected pages
+  <Expandable title="authentication properties">
+    <ParamField body="authentication.username" type="string">
+      Basic auth username
+    </ParamField>
+    <ParamField body="authentication.password" type="string">
+      Basic auth password
+    </ParamField>
+    <ParamField body="authentication.token" type="string">
+      Bearer token for API authentication
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="extract" type="object">
+  AI-powered data extraction configuration
+  <Expandable title="extract properties">
+    <ParamField body="extract.schema" type="object">
+      JSON schema for structured data extraction
+    </ParamField>
+    <ParamField body="extract.prompt" type="string">
+      Custom prompt for AI extraction
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the crawl was initiated successfully
+</ResponseField>
+
+<ResponseField name="jobId" type="string">
+  Unique identifier for tracking the crawl job
+</ResponseField>
+
+<ResponseField name="queueJobId" type="string">
+  Queue system job ID for monitoring (if using async processing)
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current job status: `queued` or `running`
+</ResponseField>
+
+<ResponseField name="startUrl" type="string">
+  The initial URL that crawling started from
+</ResponseField>
+
+<ResponseField name="maxPages" type="number">
+  Maximum pages configured to crawl
+</ResponseField>
+
+<ResponseField name="maxDepth" type="number">
+  Maximum crawling depth configured
+</ResponseField>
+
+<ResponseField name="estimatedTime" type="string">
+  Estimated completion time (for queued jobs)
+</ResponseField>
+
+<ResponseField name="statusUrl" type="string">
+  URL to check job status and progress
+</ResponseField>
+
+<ResponseField name="creditsUsed" type="number">
+  Estimated credits that will be consumed
+</ResponseField>
+
+<ResponseField name="processingMode" type="string">
+  Processing method: `async` (queued) or `direct` (immediate)
+</ResponseField>
+
+<ResponseField name="results" type="array" optional>
+  Crawl results (only for direct processing mode)
+  <Expandable title="results properties">
+    <ResponseField name="url" type="string">
+      URL of the crawled page
+    </ResponseField>
+    <ResponseField name="content" type="string">
+      Extracted content in specified format
+    </ResponseField>
+    <ResponseField name="metadata" type="object">
+      Page metadata including title, description, status code
+    </ResponseField>
+    <ResponseField name="links" type="array">
+      Links discovered on this page
+    </ResponseField>
+    <ResponseField name="images" type="array">
+      Images found on this page (if enabled)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+### Basic Website Crawl
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/crawl" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "maxPages": 5,
+    "maxDepth": 2,
+    "format": "markdown"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/crawl', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com',
+    maxPages: 5,
+    maxDepth: 2,
+    format: 'markdown'
+  })
+});
+
+const data = await response.json();
+console.log('Job ID:', data.jobId);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizo.ai/v1/crawl',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://example.com',
+        'maxPages': 5,
+        'maxDepth': 2,
+        'format': 'markdown'
+    }
+)
+
+data = response.json()
+print(f"Job ID: {data['jobId']}")
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "jobId": "550e8400-e29b-41d4-a716-446655440000",
+  "queueJobId": "12345",
+  "status": "queued",
+  "startUrl": "https://example.com",
+  "maxPages": 5,
+  "maxDepth": 2,
+  "estimatedTime": "3 minutes",
+  "statusUrl": "/v1/jobs/550e8400-e29b-41d4-a716-446655440000",
+  "creditsUsed": 5,
+  "processingMode": "async"
+}
+```
+</ResponseExample>
+
+### Advanced Crawl with Screenshots and AI Extraction
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/crawl" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://ecommerce-site.com",
+    "maxPages": 20,
+    "maxDepth": 3,
+    "format": "json",
+    "includeScreenshot": true,
+    "sameDomain": true,
+    "extract": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "productName": {"type": "string"},
+          "price": {"type": "string"},
+          "description": {"type": "string"},
+          "availability": {"type": "string"}
+        }
+      }
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/crawl', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://ecommerce-site.com',
+    maxPages: 20,
+    maxDepth: 3,
+    format: 'json',
+    includeScreenshot: true,
+    sameDomain: true,
+    extract: {
+      schema: {
+        type: 'object',
+        properties: {
+          productName: { type: 'string' },
+          price: { type: 'string' },
+          description: { type: 'string' },
+          availability: { type: 'string' }
+        }
+      }
+    }
+  })
+});
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "jobId": "750e8400-e29b-41d4-a716-446655440001",
+  "status": "queued",
+  "startUrl": "https://ecommerce-site.com",
+  "maxPages": 20,
+  "maxDepth": 3,
+  "estimatedTime": "15 minutes",
+  "statusUrl": "/v1/jobs/750e8400-e29b-41d4-a716-446655440001",
+  "creditsUsed": 60,
+  "processingMode": "async"
+}
+```
+</ResponseExample>
+
+### Monitor Crawl Progress
+
+Once your crawl is initiated, monitor its progress:
+
+<CodeGroup>
+
+```bash cURL
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     https://api.whizo.ai/v1/jobs/550e8400-e29b-41d4-a716-446655440000/status
+```
+
+```javascript JavaScript
+const jobId = '550e8400-e29b-41d4-a716-446655440000';
+const response = await fetch(`https://api.whizo.ai/v1/jobs/${jobId}/status`, {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+
+const status = await response.json();
+console.log(`Progress: ${status.progress}%`);
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Status Response
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "running",
+    "progress": 60,
+    "currentStep": "Crawling page 3 of 5",
+    "currentUrl": "https://example.com/page-3",
+    "pagesCompleted": 3,
+    "pagesTotal": 5,
+    "creditsUsed": 3,
+    "estimatedTimeRemaining": 120000
+  }
+}
+```
+</ResponseExample>
+
+## Crawl Patterns
+
+### Sitemap-based Crawling
+
+For more efficient crawling, the API automatically detects and uses sitemaps when available:
+
+```json
+{
+  "url": "https://example.com",
+  "maxPages": 100,
+  "priority": "high"
+}
+```
+
+### Filtered Crawling
+
+Use patterns to include or exclude specific URL patterns:
+
+```json
+{
+  "url": "https://blog.example.com",
+  "maxPages": 50,
+  "includePatterns": ["/blog/*", "/articles/*"],
+  "excludePatterns": ["/admin/*", "*.pdf"]
+}
+```
+
+## Credit Costs
+
+Crawling costs vary based on features used:
+
+| Feature | Cost per Page |
+|---------|---------------|
+| Basic crawling (markdown/html/text) | 1 credit |
+| JSON format | 1 credit |
+| Screenshot capture | +1 credit |
+| PDF generation | +1 credit |
+| AI extraction | +2 credits |
+
+**Example**: Crawling 10 pages with screenshots = 20 credits (10 × 2)
+
+## Error Responses
+
+<ResponseField name="error" type="object">
+  <Expandable title="error properties">
+    <ResponseField name="code" type="string">
+      Error code identifier
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Human-readable error message
+    </ResponseField>
+    <ResponseField name="details" type="object" optional>
+      Additional error context
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Common Errors
+
+| Status Code | Error Code | Description |
+|-------------|------------|-------------|
+| 400 | `invalid_url` | The starting URL is invalid or unreachable |
+| 400 | `invalid_options` | Crawl parameters are invalid |
+| 401 | `unauthorized` | Invalid or missing API key |
+| 403 | `insufficient_credits` | Not enough credits for the crawl |
+| 429 | `rate_limited` | Rate limit exceeded |
+| 500 | `crawl_failed` | Crawling process failed |
+
+<ResponseExample>
+```json Error Response
+{
+  "success": false,
+  "error": {
+    "code": "invalid_url",
+    "message": "The starting URL is not accessible",
+    "details": {
+      "url": "https://invalid-site.com",
+      "statusCode": 404
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Rate Limits
+
+Crawl rate limits by plan:
+
+- **Free**: 2 crawls per hour, 10 per day
+- **Starter**: 10 crawls per hour, 50 per day
+- **Pro**: 50 crawls per hour, 200 per day
+- **Enterprise**: Custom limits
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Optimize Crawl Depth">
+    - Start with depth 1-2 for initial exploration
+    - Increase depth gradually based on site structure
+    - Use sitemap URLs when available for efficiency
+  </Accordion>
+
+  <Accordion title="Configure Appropriate Timeouts">
+    - Use shorter timeouts (10-15s) for fast sites
+    - Increase timeout (30s+) for slow-loading pages
+    - Consider mobile viewport for mobile-first sites
+  </Accordion>
+
+  <Accordion title="Handle Large Sites">
+    - Use `sameDomain: true` to avoid external links
+    - Set reasonable `maxPages` limits
+    - Monitor progress via status endpoint
+    - Use priority queuing for time-sensitive crawls
+  </Accordion>
+
+  <Accordion title="Extract Structured Data">
+    - Define clear JSON schemas for consistent extraction
+    - Use specific prompts for better AI extraction
+    - Test extraction on a few pages before large crawls
+  </Accordion>
+</AccordionGroup>
+
+## Related Endpoints
+
+- [Scrape API](/api-reference/scrape) - Single page scraping
+- [Jobs API](/api-reference/jobs) - Monitor crawl progress
+- [Search API](/api-reference/search) - Search and scrape results
+- [Extract API](/api-reference/extract) - AI-powered data extraction

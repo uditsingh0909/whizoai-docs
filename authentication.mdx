@@ -1,0 +1,414 @@
+---
+title: "Authentication"
+description: "Learn how to authenticate with the WhizoAI API using API keys"
+---
+
+## Overview
+
+WhizoAI uses API key authentication for all requests. Your API keys are unique to your account and should be kept secure.
+
+## Getting Your API Key
+
+1. **Sign up** for a WhizoAI account at [whizo.ai](https://whizo.ai)
+2. **Navigate** to your [API Keys dashboard](https://whizo.ai/app/api-keys)
+3. **Click** "Create New API Key"
+4. **Name** your key (e.g., "Production App", "Development")
+5. **Copy** the generated key securely
+
+<Warning>
+API keys are only shown once during creation. Store them securely and never expose them in client-side code.
+</Warning>
+
+## Authentication Methods
+
+### Bearer Token Authentication
+
+Include your API key in the `Authorization` header with the `Bearer` prefix:
+
+<CodeGroup>
+
+```bash cURL
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     https://api.whizo.ai/v1/scrape
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/scrape', {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  }
+});
+```
+
+```python Python
+import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+response = requests.post(
+    'https://api.whizo.ai/v1/scrape',
+    headers=headers,
+    json={'url': 'https://example.com'}
+)
+```
+
+</CodeGroup>
+
+### API Key Header (Alternative)
+
+You can also use the `X-API-Key` header:
+
+<CodeGroup>
+
+```bash cURL
+curl -H "X-API-Key: YOUR_API_KEY" \
+     https://api.whizo.ai/v1/scrape
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/scrape', {
+  headers: {
+    'X-API-Key': 'YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  }
+});
+```
+
+</CodeGroup>
+
+## API Key Management
+
+### Creating API Keys
+
+<Steps>
+  <Step title="Navigate to Dashboard">
+    Go to your [API Keys dashboard](https://whizo.ai/app/api-keys)
+  </Step>
+  <Step title="Create New Key">
+    Click "Create New API Key" and provide a descriptive name
+  </Step>
+  <Step title="Set Permissions">
+    Configure permissions and rate limits (Pro/Enterprise plans)
+  </Step>
+  <Step title="Copy and Store">
+    Copy the key immediately and store it securely
+  </Step>
+</Steps>
+
+### API Key Properties
+
+Each API key has the following properties:
+
+<ResponseField name="id" type="string">
+  Unique identifier for the API key
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  User-defined name for the key
+</ResponseField>
+
+<ResponseField name="prefix" type="string">
+  First 8 characters shown for identification (e.g., "whizo_12...")
+</ResponseField>
+
+<ResponseField name="permissions" type="array">
+  List of allowed operations (Enterprise feature)
+</ResponseField>
+
+<ResponseField name="rateLimit" type="object">
+  Rate limiting configuration
+  <Expandable title="rateLimit properties">
+    <ResponseField name="requestsPerHour" type="number">
+      Maximum requests per hour
+    </ResponseField>
+    <ResponseField name="requestsPerDay" type="number">
+      Maximum requests per day
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="lastUsed" type="string">
+  ISO timestamp of last usage
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  ISO timestamp of creation
+</ResponseField>
+
+### Rotating API Keys
+
+For security best practices, regularly rotate your API keys:
+
+1. **Create** a new API key
+2. **Update** your applications to use the new key
+3. **Test** to ensure everything works
+4. **Revoke** the old key
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Keep Keys Secure">
+    - Never commit API keys to version control
+    - Use environment variables in applications
+    - Don't expose keys in client-side code
+    - Store keys in secure credential management systems
+  </Accordion>
+
+  <Accordion title="Use Environment Variables">
+    ```bash
+    # .env file
+    WHIZO_API_KEY=your_api_key_here
+
+    # In your application
+    const apiKey = process.env.WHIZO_API_KEY;
+    ```
+  </Accordion>
+
+  <Accordion title="Restrict Key Permissions">
+    For Enterprise plans, create keys with minimal required permissions:
+    - Read-only keys for monitoring
+    - Limited endpoint access
+    - IP address restrictions
+  </Accordion>
+
+  <Accordion title="Monitor Key Usage">
+    Regularly check your API key usage in the dashboard:
+    - Monitor for unexpected usage patterns
+    - Set up usage alerts
+    - Review access logs
+  </Accordion>
+</AccordionGroup>
+
+## Rate Limiting
+
+API keys are subject to rate limits based on your plan:
+
+### Rate Limits by Plan
+
+<CardGroup cols={2}>
+  <Card title="Free Plan">
+    - 10 requests per hour
+    - 100 requests per day
+    - 1 concurrent request
+  </Card>
+
+  <Card title="Starter Plan">
+    - 50 requests per hour
+    - 500 requests per day
+    - 3 concurrent requests
+  </Card>
+
+  <Card title="Pro Plan">
+    - 200 requests per hour
+    - 2,000 requests per day
+    - 10 concurrent requests
+  </Card>
+
+  <Card title="Enterprise">
+    - Custom limits
+    - Burst allowances
+    - Priority processing
+  </Card>
+</CardGroup>
+
+### Rate Limit Headers
+
+Responses include rate limit information in headers:
+
+```http
+X-RateLimit-Limit: 50
+X-RateLimit-Remaining: 47
+X-RateLimit-Reset: 1705234567
+X-RateLimit-Retry-After: 3600
+```
+
+### Handling Rate Limits
+
+When you exceed rate limits, you'll receive a `429 Too Many Requests` response:
+
+<CodeGroup>
+
+```json Response
+{
+  "success": false,
+  "error": {
+    "code": "rate_limited",
+    "message": "Rate limit exceeded. Try again in 3600 seconds.",
+    "details": {
+      "retryAfter": 3600,
+      "limit": 50,
+      "remaining": 0,
+      "resetTime": "2024-01-15T11:00:00Z"
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+Implement exponential backoff in your applications:
+
+<CodeGroup>
+
+```javascript JavaScript
+async function makeRequestWithRetry(url, options, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fetch(url, options);
+
+    if (response.status === 429) {
+      const retryAfter = parseInt(response.headers.get('X-RateLimit-Retry-After')) || 60;
+      await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+      continue;
+    }
+
+    return response;
+  }
+
+  throw new Error('Max retries exceeded');
+}
+```
+
+```python Python
+import time
+import requests
+
+def make_request_with_retry(url, headers, data, max_retries=3):
+    for attempt in range(max_retries):
+        response = requests.post(url, headers=headers, json=data)
+
+        if response.status_code == 429:
+            retry_after = int(response.headers.get('X-RateLimit-Retry-After', 60))
+            time.sleep(retry_after)
+            continue
+
+        return response
+
+    raise Exception('Max retries exceeded')
+```
+
+</CodeGroup>
+
+## Error Responses
+
+Common authentication errors:
+
+| Status Code | Error Code | Description |
+|-------------|------------|-------------|
+| 401 | `unauthorized` | Missing or invalid API key |
+| 401 | `key_revoked` | API key has been revoked |
+| 401 | `key_expired` | API key has expired |
+| 403 | `insufficient_permissions` | Key lacks required permissions |
+| 429 | `rate_limited` | Rate limit exceeded |
+
+<ResponseExample>
+```json Unauthorized Response
+{
+  "success": false,
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid API key provided",
+    "details": {
+      "hint": "Check your API key in the dashboard"
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Testing Authentication
+
+Test your API key with a simple request:
+
+<CodeGroup>
+
+```bash cURL
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     https://api.whizo.ai/v1/auth/validate
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/auth/validate', {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+});
+
+const data = await response.json();
+console.log(data.valid ? 'Valid' : 'Invalid');
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Valid Key Response
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "keyId": "key_abc123",
+    "plan": "pro",
+    "rateLimit": {
+      "requestsPerHour": 200,
+      "remaining": 198
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Webhooks Authentication
+
+For webhook endpoints, WhizoAI signs requests with your webhook secret:
+
+```javascript JavaScript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return signature === `sha256=${expectedSignature}`;
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Make Your First Request"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Start using the API with our quick start guide
+  </Card>
+
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/scrape"
+  >
+    Explore all available endpoints
+  </Card>
+
+  <Card
+    title="Rate Limits"
+    icon="gauge"
+    href="/guides/rate-limits"
+  >
+    Learn about rate limiting and optimization
+  </Card>
+
+  <Card
+    title="Security Guide"
+    icon="shield"
+    href="/guides/security"
+  >
+    Best practices for API security
+  </Card>
+</CardGroup>

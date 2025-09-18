@@ -1,0 +1,183 @@
+---
+title: 'Welcome to WhizoAI'
+description: 'Powerful web scraping and data extraction API with AI-powered content processing'
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.svg"
+  alt="WhizoAI Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.svg"
+  alt="WhizoAI Hero Dark"
+/>
+
+## What is WhizoAI?
+
+WhizoAI is a comprehensive web scraping and data extraction platform that combines powerful scraping engines with AI-powered content processing. Extract structured data from any website, convert content to multiple formats, and integrate seamlessly with your applications.
+
+### Core Features
+
+<CardGroup cols={2}>
+  <Card
+    title="Intelligent Scraping"
+    icon="spider"
+    href="/api-reference/scrape"
+  >
+    Multi-engine scraping system with automatic fallbacks and optimization
+  </Card>
+  <Card
+    title="AI-Powered Extraction"
+    icon="brain-circuit"
+    href="/api-reference/extract"
+  >
+    Extract structured data using advanced AI models and custom schemas
+  </Card>
+  <Card
+    title="Batch Processing"
+    icon="list-check"
+    href="/api-reference/jobs"
+  >
+    Process thousands of URLs with job management and real-time monitoring
+  </Card>
+  <Card
+    title="Multiple Formats"
+    icon="file-code"
+    href="/guides/web-scraping"
+  >
+    Output in Markdown, HTML, JSON, structured data, or custom formats
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+Get started with WhizoAI in under 5 minutes:
+
+<Steps>
+  <Step title="Get Your API Key">
+    Sign up at [whizo.ai](https://whizo.ai) and generate your API key from the [dashboard](https://whizo.ai/app/api-keys).
+  </Step>
+  <Step title="Make Your First Request">
+    Use our scraping API to extract content from any webpage.
+  </Step>
+  <Step title="Explore Advanced Features">
+    Try AI extraction, batch processing, and real-time monitoring.
+  </Step>
+</Steps>
+
+## API Overview
+
+Our API is organized around REST principles with predictable, resource-oriented URLs. We use built-in HTTP features like authentication, verbs, and response codes.
+
+### Base URL
+```
+https://api.whizo.ai/v1
+```
+
+### Authentication
+All API requests require authentication using your API key in the Authorization header:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     https://api.whizo.ai/v1/scrape
+```
+
+### Core Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `/scrape` | Extract content from individual web pages |
+| `/crawl` | Crawl entire websites with custom rules |
+| `/extract` | AI-powered data extraction with schemas |
+| `/search` | Search and scrape search engine results |
+| `/jobs` | Manage and monitor scraping jobs |
+
+## Pricing & Limits
+
+WhizoAI uses a credit-based pricing system:
+
+<AccordionGroup>
+  <Accordion title="Free Plan">
+    - 500 credits per month
+    - Basic scraping features
+    - 10 requests per hour
+    - Community support
+  </Accordion>
+
+  <Accordion title="Starter Plan">
+    - 3,000 credits per month ($16/month)
+    - All scraping engines
+    - 50 requests per hour
+    - Screenshots and PDFs
+    - Priority support
+  </Accordion>
+
+  <Accordion title="Pro Plan">
+    - 10,000 credits per month ($83/month)
+    - AI-powered extraction
+    - 200 requests per hour
+    - Batch processing
+    - Advanced features
+  </Accordion>
+
+  <Accordion title="Enterprise">
+    - Custom credit packages
+    - Unlimited requests
+    - Dedicated support
+    - Custom integrations
+    - SLA guarantees
+  </Accordion>
+</AccordionGroup>
+
+### Credit Costs
+
+| Feature | Cost |
+|---------|------|
+| Basic scraping | 1 credit per page |
+| JavaScript rendering | +1 credit |
+| Screenshot capture | +1 credit |
+| PDF generation | +1 credit |
+| AI extraction | +2 credits |
+| Structured output | +1 credit |
+
+## Need Help?
+
+<CardGroup cols={2}>
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/scrape"
+  >
+    Complete documentation for all endpoints
+  </Card>
+  <Card
+    title="Guides & Examples"
+    icon="book-open"
+    href="/guides/web-scraping"
+  >
+    Step-by-step guides and code examples
+  </Card>
+  <Card
+    title="Support"
+    icon="life-ring"
+    href="mailto:support@whizo.ai"
+  >
+    Get help from our technical team
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/whizoai"
+  >
+    Join our developer community
+  </Card>
+</CardGroup>
+
+## What's Next?
+
+1. **[Get your API key →](/authentication)**
+2. **[Make your first request →](/quickstart)**
+3. **[Explore the API →](/api-reference/scrape)**
+4. **[See examples →](/guides/web-scraping)**

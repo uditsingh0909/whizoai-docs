@@ -1,0 +1,411 @@
+---
+title: "Scrape API"
+api: "POST https://api.whizo.ai/v1/scrape"
+description: "Extract content from individual web pages with customizable options"
+---
+
+The Scrape API allows you to extract content from any webpage and convert it to your preferred format. It supports multiple scraping engines, JavaScript rendering, and various output formats.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token using your API key: `Bearer YOUR_API_KEY`
+</ParamField>
+
+## Request Body
+
+<ParamField body="url" type="string" required>
+  The URL of the webpage to scrape. Must be a valid HTTP/HTTPS URL.
+</ParamField>
+
+<ParamField body="options" type="object">
+  Configuration options for scraping behavior
+
+  <Expandable title="options properties">
+    <ParamField body="options.format" type="string" default="markdown">
+      Output format for the scraped content
+      - `markdown` - Clean markdown format (default)
+      - `html` - Raw HTML content
+      - `text` - Plain text only
+      - `json` - Structured JSON format
+      - `structured` - AI-enhanced structured data
+    </ParamField>
+
+    <ParamField body="options.engine" type="string" default="lightweight">
+      Scraping engine to use
+      - `lightweight` - Fast HTTP-based scraping (default)
+      - `playwright` - Full browser with JavaScript support
+      - `puppeteer` - Alternative browser engine
+    </ParamField>
+
+    <ParamField body="options.javascript" type="boolean" default="false">
+      Enable JavaScript rendering for dynamic content
+    </ParamField>
+
+    <ParamField body="options.waitTime" type="number" default="0">
+      Time to wait after page load in seconds (0-30)
+    </ParamField>
+
+    <ParamField body="options.includeScreenshot" type="boolean" default="false">
+      Capture a screenshot of the page (+1 credit)
+    </ParamField>
+
+    <ParamField body="options.includePdf" type="boolean" default="false">
+      Generate a PDF of the page (+1 credit)
+    </ParamField>
+
+    <ParamField body="options.mobile" type="boolean" default="false">
+      Use mobile viewport for rendering
+    </ParamField>
+
+    <ParamField body="options.timeout" type="number" default="30">
+      Maximum time to wait for page load in seconds (5-120)
+    </ParamField>
+
+    <ParamField body="options.headers" type="object">
+      Custom HTTP headers to send with the request
+    </ParamField>
+
+    <ParamField body="options.cookies" type="object">
+      Custom cookies to include in the request
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="data properties">
+    <ResponseField name="content" type="string">
+      The extracted content in the requested format
+    </ResponseField>
+
+    <ResponseField name="metadata" type="object">
+      <Expandable title="metadata properties">
+        <ResponseField name="title" type="string">
+          Page title
+        </ResponseField>
+        <ResponseField name="description" type="string">
+          Page meta description
+        </ResponseField>
+        <ResponseField name="url" type="string">
+          Final URL after redirects
+        </ResponseField>
+        <ResponseField name="statusCode" type="number">
+          HTTP response status code
+        </ResponseField>
+        <ResponseField name="contentType" type="string">
+          Content-Type header value
+        </ResponseField>
+        <ResponseField name="extractedAt" type="string">
+          ISO timestamp of extraction
+        </ResponseField>
+        <ResponseField name="processingTime" type="number">
+          Processing time in milliseconds
+        </ResponseField>
+        <ResponseField name="creditsUsed" type="number">
+          Number of credits consumed
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+
+    <ResponseField name="screenshots" type="array" optional>
+      Array of screenshot URLs (if requested)
+    </ResponseField>
+
+    <ResponseField name="pdf" type="string" optional>
+      PDF download URL (if requested)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+### Basic Scraping
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com'
+  })
+});
+
+const data = await response.json();
+console.log(data.data.content);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizo.ai/v1/scrape',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://example.com'
+    }
+)
+
+data = response.json()
+print(data['data']['content'])
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "data": {
+    "content": "# Example Domain\n\nThis domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\n\n[More information...](https://www.iana.org/domains/example)",
+    "metadata": {
+      "title": "Example Domain",
+      "description": "Example domain for documentation",
+      "url": "https://example.com",
+      "statusCode": 200,
+      "contentType": "text/html",
+      "extractedAt": "2024-01-15T10:30:00Z",
+      "processingTime": 1200,
+      "creditsUsed": 1
+    }
+  }
+}
+```
+</ResponseExample>
+
+### JavaScript Rendering with Screenshot
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://spa-example.com",
+    "options": {
+      "format": "markdown",
+      "javascript": true,
+      "waitTime": 3,
+      "includeScreenshot": true
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://spa-example.com',
+    options: {
+      format: 'markdown',
+      javascript: true,
+      waitTime: 3,
+      includeScreenshot: true
+    }
+  })
+});
+
+const data = await response.json();
+console.log('Content:', data.data.content);
+console.log('Screenshot:', data.data.screenshots[0]);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizo.ai/v1/scrape',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://spa-example.com',
+        'options': {
+            'format': 'markdown',
+            'javascript': True,
+            'waitTime': 3,
+            'includeScreenshot': True
+        }
+    }
+)
+
+data = response.json()
+print('Content:', data['data']['content'])
+print('Screenshot:', data['data']['screenshots'][0])
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "data": {
+    "content": "# Dynamic Content\n\nThis content was loaded via JavaScript...",
+    "metadata": {
+      "title": "SPA Example",
+      "url": "https://spa-example.com",
+      "statusCode": 200,
+      "extractedAt": "2024-01-15T10:35:00Z",
+      "processingTime": 4500,
+      "creditsUsed": 3
+    },
+    "screenshots": [
+      "https://storage.whizo.ai/screenshots/abc123.png"
+    ]
+  }
+}
+```
+</ResponseExample>
+
+### Structured Data Extraction
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://ecommerce-example.com/product",
+    "options": {
+      "format": "structured"
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://ecommerce-example.com/product',
+    options: {
+      format: 'structured'
+    }
+  })
+});
+
+const data = await response.json();
+console.log(JSON.parse(data.data.content));
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "data": {
+    "content": "{\"product\":{\"name\":\"Example Product\",\"price\":\"$29.99\",\"description\":\"Product description\",\"availability\":\"In Stock\",\"rating\":4.5}}",
+    "metadata": {
+      "title": "Example Product - Store",
+      "url": "https://ecommerce-example.com/product",
+      "statusCode": 200,
+      "extractedAt": "2024-01-15T10:40:00Z",
+      "processingTime": 2800,
+      "creditsUsed": 2
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="error" type="object">
+  <Expandable title="error properties">
+    <ResponseField name="code" type="string">
+      Error code identifier
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Human-readable error message
+    </ResponseField>
+    <ResponseField name="details" type="object" optional>
+      Additional error context
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Common Errors
+
+| Status Code | Error Code | Description |
+|-------------|------------|-------------|
+| 400 | `invalid_url` | The provided URL is invalid or malformed |
+| 400 | `invalid_options` | One or more options are invalid |
+| 401 | `unauthorized` | Invalid or missing API key |
+| 403 | `insufficient_credits` | Not enough credits to complete the request |
+| 429 | `rate_limited` | Rate limit exceeded |
+| 500 | `scraping_failed` | Failed to scrape the webpage |
+| 500 | `timeout` | Request timed out |
+
+<ResponseExample>
+```json Error Response
+{
+  "success": false,
+  "error": {
+    "code": "invalid_url",
+    "message": "The provided URL is not valid",
+    "details": {
+      "url": "invalid-url"
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Credit Costs
+
+| Feature | Cost |
+|---------|------|
+| Basic scraping | 1 credit |
+| JavaScript rendering | +1 credit |
+| Screenshot | +1 credit |
+| PDF generation | +1 credit |
+| Structured format | +1 credit |
+
+## Rate Limits
+
+Rate limits vary by plan:
+
+- **Free**: 10 requests per hour, 100 per day
+- **Starter**: 50 requests per hour, 500 per day
+- **Pro**: 200 requests per hour, 2000 per day
+- **Enterprise**: Custom limits
+
+## Related Endpoints
+
+- [Batch Scraping](/api-reference/batch) - Scrape multiple URLs
+- [Crawl API](/api-reference/crawl) - Crawl entire websites
+- [Extract API](/api-reference/extract) - AI-powered data extraction

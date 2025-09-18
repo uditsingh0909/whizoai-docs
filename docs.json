@@ -1,107 +1,102 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "venus",
   "name": "WhizoAI API Documentation",
   "colors": {
-    "primary": "#2563EB",
-    "light": "#3B82F6",
-    "dark": "#1D4ED8"
-  },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Get Started",
-        "groups": [
-          {
-            "group": "Introduction",
-            "pages": ["index", "quickstart", "authentication"]
-          },
-          {
-            "group": "API Fundamentals",
-            "pages": [
-              "fundamentals/api-keys",
-              "fundamentals/rate-limits",
-              "fundamentals/pricing",
-              "fundamentals/errors"
-            ]
-          },
-          {
-            "group": "SDKs & Libraries",
-            "pages": ["sdks/javascript", "sdks/python", "sdks/php", "sdks/curl"]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Core APIs",
-            "pages": ["api/scrape", "api/map", "api/extract", "api/monitor"]
-          },
-          {
-            "group": "Batch Operations",
-            "pages": ["api/batch-scrape", "api/batch-extract"]
-          },
-          {
-            "group": "Job Management",
-            "pages": ["api/jobs", "api/job-status", "api/job-results"]
-          },
-          {
-            "group": "Webhooks",
-            "pages": ["api/webhooks", "api/webhook-events"]
-          }
-        ]
-      },
-      {
-        "tab": "Use Cases",
-        "groups": [
-          {
-            "group": "Common Scenarios",
-            "pages": [
-              "use-cases/web-scraping",
-              "use-cases/data-extraction",
-              "use-cases/website-monitoring",
-              "use-cases/content-analysis"
-            ]
-          },
-          {
-            "group": "Advanced Examples",
-            "pages": [
-              "use-cases/ecommerce-scraping",
-              "use-cases/news-monitoring",
-              "use-cases/research-automation",
-              "use-cases/competitor-analysis"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Dashboard",
-          "href": "https://app.whizo.ai",
-          "icon": "chart-line"
-        },
-        {
-          "anchor": "Support",
-          "href": "mailto:support@whizo.ai",
-          "icon": "life-ring"
-        },
-        {
-          "anchor": "GitHub",
-          "href": "https://github.com/whizoai",
-          "icon": "github"
-        },
-        {
-          "anchor": "Status",
-          "href": "https://status.whizo.ai",
-          "icon": "signal"
-        }
-      ]
+    "primary": "#6366F1",
+    "light": "#8B5CF6",
+    "dark": "#4F46E5",
+    "background": {
+      "light": "#FEFEFE",
+      "dark": "#0A0A0A"
     }
   },
+  "favicon": "/favicon.svg",
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        "introduction",
+        "quickstart",
+        "authentication",
+        "api-keys"
+      ]
+    },
+    {
+      "group": "Core APIs",
+      "pages": [
+        "api-reference/scrape",
+        "api-reference/crawl",
+        "api-reference/extract",
+        "api-reference/search",
+        "api-reference/map"
+      ]
+    },
+    {
+      "group": "Job Management",
+      "pages": [
+        "api-reference/jobs",
+        "api-reference/results",
+        "api-reference/monitoring"
+      ]
+    },
+    {
+      "group": "User Management",
+      "pages": [
+        "api-reference/auth",
+        "api-reference/users",
+        "api-reference/billing",
+        "api-reference/analytics"
+      ]
+    },
+    {
+      "group": "Advanced Features",
+      "pages": [
+        "api-reference/webhooks",
+        "api-reference/queues",
+        "api-reference/admin"
+      ]
+    },
+    {
+      "group": "SDKs & Libraries",
+      "pages": [
+        "sdks/javascript",
+        "sdks/python",
+        "sdks/curl"
+      ]
+    },
+    {
+      "group": "Guides & Examples",
+      "pages": [
+        "guides/web-scraping",
+        "guides/data-extraction",
+        "guides/batch-processing",
+        "guides/error-handling"
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Dashboard",
+      "url": "https://whizo.ai/app",
+      "icon": "chart-line"
+    },
+    {
+      "name": "Support",
+      "url": "mailto:support@whizo.ai",
+      "icon": "life-ring"
+    },
+    {
+      "name": "GitHub",
+      "url": "https://github.com/whizoai",
+      "icon": "github"
+    },
+    {
+      "name": "Status",
+      "url": "https://status.whizo.ai",
+      "icon": "signal"
+    }
+  ],
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -120,7 +115,7 @@
     "primary": {
       "type": "button",
       "label": "Get API Key",
-      "href": "https://app.whizo.ai/api-keys"
+      "href": "https://whizo.ai/app/api-keys"
     }
   },
   "contextual": {
