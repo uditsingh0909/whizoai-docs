@@ -82,6 +82,8 @@
           {
             "group": "Advanced Features",
             "pages": [
+              "api-reference/whizo-agent",
+              "api-reference/archive",
               "api-reference/webhooks",
               "api-reference/queues",
               "api-reference/admin"

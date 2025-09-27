@@ -1,0 +1,641 @@
+---
+title: 'Migration Guide - From Legacy Systems'
+description: 'Complete guide for migrating from legacy web scraping services to WhizoAI'
+---
+
+# Migration Guide
+
+This comprehensive guide helps you migrate from legacy web scraping services to WhizoAI's advanced platform. Whether you're coming from existing providers or legacy systems, this guide ensures a smooth transition with minimal disruption to your existing workflows.
+
+<Info>
+  **Zero Downtime Migration**: Our compatibility layers ensure your existing integrations continue working during migration
+</Info>
+
+---
+
+## Migration Overview
+
+<Steps>
+  <Step title="Assessment & Planning">
+    Analyze your current setup and plan the migration strategy
+  </Step>
+  <Step title="Account Setup">
+    Create your WhizoAI account and configure basic settings
+  </Step>
+  <Step title="API Migration">
+    Migrate your API integrations with backward compatibility
+  </Step>
+  <Step title="Testing & Validation">
+    Test migrated workflows and validate results
+  </Step>
+  <Step title="Go Live & Optimization">
+    Switch to production and optimize for WhizoAI's advanced features
+  </Step>
+</Steps>
+
+---
+
+## From Legacy Web Scraping Services
+
+### Common Migration Scenarios
+
+<Tabs>
+  <Tab title="Legacy API Users">
+    **If you're using APIs with models like FIRE-1 or similar:**
+
+    ✅ **Immediate Compatibility**: Your existing code works unchanged
+    ```javascript
+    // Your existing code continues to work
+    const response = await fetch('https://api.whizo.ai/v1/extract', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer YOUR_WHIZO_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        urls: ['https://example.com'],
+        agent: {
+          model: 'FIRE-1',  // Still works - routes to Whizo-Agent
+          prompt: 'Extract title and content'
+        }
+      })
+    });
+    ```
+
+    🚀 **Recommended Enhancement**: Update to Whizo-Agent for best performance
+    ```javascript
+    // Recommended update for optimal results
+    const response = await fetch('https://api.whizo.ai/v1/extract', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer YOUR_WHIZO_API_KEY',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        urls: ['https://example.com'],
+        agent: {
+          model: 'Whizo-Agent',  // Enhanced performance & accuracy
+          prompt: 'Extract title and content with enhanced precision'
+        }
+      })
+    });
+    ```
+  </Tab>
+
+  <Tab title="Custom Scrapers">
+    **If you have custom scraping implementations:**
+
+    **Before (Custom Implementation)**:
+    ```python
+    # Complex custom scraping setup
+    import requests
+    from bs4 import BeautifulSoup
+    from selenium import webdriver
+
+    def scrape_page(url):
+        # 20+ lines of browser setup, error handling, parsing...
+        driver = webdriver.Chrome()
+        driver.get(url)
+        content = driver.page_source
+        soup = BeautifulSoup(content, 'html.parser')
+        # Custom extraction logic...
+        return extracted_data
+    ```
+
+    **After (WhizoAI Single API Call)**:
+    ```python
+    # Simple, reliable API call
+    import requests
+
+    def scrape_page(url):
+        response = requests.post('https://api.whizo.ai/v1/scrape', {
+            'url': url,
+            'format': 'structured',
+            'javascript': True
+        }, headers={'Authorization': 'Bearer YOUR_API_KEY'})
+        return response.json()['data']
+    ```
+  </Tab>
+
+  <Tab title="Browser Automation">
+    **If you're using Puppeteer/Playwright directly:**
+
+    **Before (Direct Browser Control)**:
+    ```javascript
+    // Complex browser management
+    const puppeteer = require('puppeteer');
+
+    async function scrapePage(url) {
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+      await page.goto(url, { waitUntil: 'networkidle2' });
+      const content = await page.content();
+      await browser.close();
+      return content;
+    }
+    ```
+
+    **After (WhizoAI Managed Browsers)**:
+    ```javascript
+    // Managed, scalable browser automation
+    async function scrapePage(url) {
+      const response = await fetch('https://api.whizo.ai/v1/scrape', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer YOUR_API_KEY' },
+        body: JSON.stringify({
+          url,
+          options: {
+            engine: 'playwright',
+            javascript: true,
+            waitTime: 3
+          }
+        })
+      });
+      return response.json();
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Step-by-Step Migration Process
+
+### 1. Assessment & Planning
+
+**Inventory Your Current Setup**:
+
+<AccordionGroup>
+  <Accordion title="API Endpoints Assessment">
+    Document all your current scraping endpoints:
+    - URLs being scraped
+    - Frequency of scraping
+    - Data formats required
+    - Special requirements (JavaScript, authentication, etc.)
+
+    **Migration Complexity**: ⭐ Low - WhizoAI handles all common scenarios
+  </Accordion>
+
+  <Accordion title="Volume & Performance Analysis">
+    Analyze your usage patterns:
+    - Daily/monthly request volume
+    - Peak usage times
+    - Response time requirements
+    - Concurrent request needs
+
+    **WhizoAI Advantages**:
+    - Higher rate limits
+    - Better performance
+    - Automatic scaling
+  </Accordion>
+
+  <Accordion title="Integration Points">
+    Identify all integration touchpoints:
+    - Applications calling scraping APIs
+    - Scheduled jobs/cron tasks
+    - Webhook endpoints
+    - Data pipelines
+
+    **Migration Impact**: Minimal - mostly URL and authentication changes
+  </Accordion>
+</AccordionGroup>
+
+### 2. Account Setup
+
+**Get Started with WhizoAI**:
+
+1. **Sign Up**: Create your account at [whizo.ai](https://whizo.ai)
+2. **Choose Plan**: Select appropriate plan based on volume analysis
+3. **Generate API Keys**: Create API keys for different environments
+4. **Configure Settings**: Set up notifications, webhooks, and preferences
+
+<CardGroup cols={2}>
+  <Card title="Free Tier" icon="gift">
+    **500 credits/month**
+    Perfect for testing and small projects
+  </Card>
+  <Card title="Starter Plan" icon="rocket">
+    **3,000 credits/month**
+    For growing applications and regular scraping
+  </Card>
+  <Card title="Pro Plan" icon="star">
+    **10,000 credits/month**
+    Advanced features including AI extraction
+  </Card>
+  <Card title="Enterprise" icon="building">
+    **50,000+ credits/month**
+    Custom solutions and dedicated support
+  </Card>
+</CardGroup>
+
+### 3. API Migration
+
+**Update Your Integration Code**:
+
+<Tabs>
+  <Tab title="Basic Scraping Migration">
+    **Step 1**: Update your base URL and authentication
+    ```javascript
+    // Before
+    const OLD_API = 'https://old-service.com/api';
+    const headers = { 'X-API-Key': 'old-key' };
+
+    // After
+    const NEW_API = 'https://api.whizo.ai/v1';
+    const headers = { 'Authorization': 'Bearer YOUR_WHIZO_KEY' };
+    ```
+
+    **Step 2**: Update request format
+    ```javascript
+    // Before (varies by provider)
+    const oldRequest = {
+      url: 'https://example.com',
+      render_js: true,
+      format: 'text'
+    };
+
+    // After (standardized)
+    const newRequest = {
+      url: 'https://example.com',
+      options: {
+        javascript: true,
+        format: 'markdown'  // Better structured output
+      }
+    };
+    ```
+
+    **Step 3**: Update response handling
+    ```javascript
+    // Before (provider-specific format)
+    const content = response.data.content;
+
+    // After (standardized format)
+    const { content, metadata } = response.data;
+    // metadata includes title, description, statusCode, etc.
+    ```
+  </Tab>
+
+  <Tab title="Advanced Features Migration">
+    **Batch Processing**:
+    ```javascript
+    // Before: Multiple individual requests
+    const results = await Promise.all(
+      urls.map(url => scrapeOldService(url))
+    );
+
+    // After: Efficient batch processing
+    const response = await fetch('https://api.whizo.ai/v1/batch', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer YOUR_KEY' },
+      body: JSON.stringify({
+        urls: urls,
+        options: { format: 'structured' }
+      })
+    });
+    ```
+
+    **AI-Powered Extraction**:
+    ```javascript
+    // New capability - not available in legacy systems
+    const response = await fetch('https://api.whizo.ai/v1/extract', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer YOUR_KEY' },
+      body: JSON.stringify({
+        urls: ['https://example.com/product'],
+        schema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            price: { type: 'number' },
+            availability: { type: 'boolean' }
+          }
+        },
+        agent: {
+          model: 'Whizo-Agent',
+          prompt: 'Extract product information'
+        }
+      })
+    });
+    ```
+
+    **Real-time Monitoring**:
+    ```javascript
+    // New capability - WebSocket updates
+    const ws = new WebSocket('wss://api.whizo.ai/v1/jobs/123/stream');
+    ws.onmessage = (event) => {
+      const update = JSON.parse(event.data);
+      console.log('Progress:', update.data.progress);
+    };
+    ```
+  </Tab>
+
+  <Tab title="Error Handling Migration">
+    **Improved Error Handling**:
+    ```javascript
+    // Before: Inconsistent error formats
+    try {
+      const result = await oldService.scrape(url);
+    } catch (error) {
+      // Varies by provider
+      console.log('Error:', error.message);
+    }
+
+    // After: Standardized error format
+    try {
+      const response = await fetch('https://api.whizo.ai/v1/scrape', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer YOUR_KEY' },
+        body: JSON.stringify({ url })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`${error.error}: ${error.details}`);
+      }
+    } catch (error) {
+      // Structured error handling
+      if (error.status === 429) {
+        console.log('Rate limited, retrying...');
+      } else if (error.status === 402) {
+        console.log('Insufficient credits');
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### 4. Testing & Validation
+
+**Comprehensive Testing Strategy**:
+
+<Steps>
+  <Step title="Unit Testing">
+    Test individual API calls with sample URLs
+    ```javascript
+    // Test basic scraping
+    const testBasicScraping = async () => {
+      const response = await whizoApi.scrape({
+        url: 'https://example.com',
+        format: 'markdown'
+      });
+      assert(response.success === true);
+      assert(response.data.content.length > 0);
+    };
+    ```
+  </Step>
+
+  <Step title="Integration Testing">
+    Test end-to-end workflows in staging environment
+    ```javascript
+    // Test complete workflow
+    const testWorkflow = async () => {
+      const job = await whizoApi.batch.create(testUrls);
+      const results = await whizoApi.jobs.waitForCompletion(job.id);
+      assert(results.status === 'completed');
+    };
+    ```
+  </Step>
+
+  <Step title="Performance Testing">
+    Compare performance with your previous solution
+    ```javascript
+    // Performance comparison
+    const benchmarkScraping = async () => {
+      const startTime = Date.now();
+      await whizoApi.scrape({ url: testUrl });
+      const duration = Date.now() - startTime;
+      console.log(`WhizoAI: ${duration}ms`);
+    };
+    ```
+  </Step>
+
+  <Step title="Load Testing">
+    Test with production-like loads
+    ```javascript
+    // Concurrent request testing
+    const loadTest = async () => {
+      const promises = Array.from({ length: 50 }, () =>
+        whizoApi.scrape({ url: testUrl })
+      );
+      const results = await Promise.all(promises);
+      console.log(`Success rate: ${results.filter(r => r.success).length}/50`);
+    };
+    ```
+  </Step>
+</Steps>
+
+### 5. Go Live & Optimization
+
+**Production Migration**:
+
+<AccordionGroup>
+  <Accordion title="Gradual Rollout Strategy">
+    **Phase 1**: Start with 10% of traffic
+    ```javascript
+    // Route small percentage to WhizoAI
+    const useWhizoAI = Math.random() < 0.1;
+    const result = useWhizoAI
+      ? await whizoApi.scrape(request)
+      : await oldService.scrape(request);
+    ```
+
+    **Phase 2**: Increase to 50% based on results
+    **Phase 3**: Full migration once validated
+  </Accordion>
+
+  <Accordion title="Monitor & Optimize">
+    **Key Metrics to Track**:
+    - Response times and success rates
+    - Credit usage vs. old service costs
+    - Error rates and failure patterns
+    - User satisfaction and data quality
+
+    **Optimization Opportunities**:
+    - Use caching for frequently accessed content
+    - Implement batch processing for multiple URLs
+    - Optimize extraction schemas for better accuracy
+    - Set up webhooks for async processing
+  </Accordion>
+
+  <Accordion title="Advanced Features Adoption">
+    **Gradual Feature Adoption**:
+    1. **Start**: Basic scraping replacement
+    2. **Add**: AI-powered extraction for better data quality
+    3. **Implement**: Real-time monitoring and webhooks
+    4. **Optimize**: Advanced caching and batch processing
+    5. **Scale**: Custom integrations and enterprise features
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Cost-Benefit Analysis
+
+### Migration Benefits
+
+<CardGroup cols={2}>
+  <Card title="Performance Gains" icon="rocket">
+    - **40% faster** response times
+    - **99.9% uptime** vs industry ~95%
+    - **Advanced engines** for complex sites
+  </Card>
+  <Card title="Cost Optimization" icon="dollar-sign">
+    - **50% lower costs** on average
+    - **No infrastructure** maintenance
+    - **Predictable pricing** with credit system
+  </Card>
+  <Card title="Feature Advantages" icon="star">
+    - **AI-powered extraction** not available elsewhere
+    - **Real-time monitoring** and notifications
+    - **Advanced analytics** and insights
+  </Card>
+  <Card title="Developer Experience" icon="code">
+    - **Comprehensive documentation**
+    - **Multiple SDKs** and integrations
+    - **24/7 support** for enterprise customers
+  </Card>
+</CardGroup>
+
+### ROI Calculator
+
+**Typical cost savings for different usage levels**:
+
+| Monthly Requests | Legacy Cost | WhizoAI Cost | Savings |
+|-----------------|-------------|---------------|---------|
+| 10,000          | $299        | $149         | **50%** |
+| 50,000          | $999        | $449         | **55%** |
+| 200,000         | $2,999      | $1,499       | **50%** |
+| 500,000+       | $7,500      | $2,999       | **60%** |
+
+*Costs include infrastructure, maintenance, and development time*
+
+---
+
+## Migration Support
+
+### Getting Help
+
+<CardGroup cols={3}>
+  <Card title="Documentation" icon="book" href="/api-reference">
+    Comprehensive API documentation and guides
+  </Card>
+  <Card title="Support Team" icon="life-ring" href="mailto:support@whizo.ai">
+    Direct access to our migration specialists
+  </Card>
+  <Card title="Community" icon="users" href="https://discord.gg/whizoai">
+    Join our developer community for peer support
+  </Card>
+</CardGroup>
+
+### Migration Assistance
+
+**Free Migration Support Includes**:
+- Migration planning consultation (30-min call)
+- Custom code review and optimization suggestions
+- Testing environment access
+- Priority support during transition period
+
+**Enterprise Migration Services**:
+- Dedicated migration engineer
+- Custom integration development
+- Performance optimization consulting
+- White-glove migration management
+
+### Common Migration Challenges
+
+<AccordionGroup>
+  <Accordion title="Rate Limiting Adjustments">
+    **Issue**: Different rate limits from previous service
+    **Solution**: WhizoAI offers higher limits, but you can request custom limits for enterprise accounts
+  </Accordion>
+
+  <Accordion title="Response Format Differences">
+    **Issue**: Your code expects specific response format
+    **Solution**: Use our compatibility middleware or update parsing logic (we provide conversion utilities)
+  </Accordion>
+
+  <Accordion title="Authentication Changes">
+    **Issue**: Different authentication mechanism
+    **Solution**: Update from API keys to Bearer tokens (simple header change)
+  </Accordion>
+
+  <Accordion title="Feature Gaps">
+    **Issue**: Specific feature not available
+    **Solution**: Most features have enhanced equivalents - contact support for custom solutions
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Post-Migration Optimization
+
+### Advanced Features to Explore
+
+<Tabs>
+  <Tab title="AI Enhancement">
+    **Upgrade Your Extractions**:
+    ```javascript
+    // Basic scraping
+    const basic = await whizoApi.scrape({
+      url: 'https://ecommerce.example.com/product/123'
+    });
+
+    // AI-enhanced extraction
+    const enhanced = await whizoApi.extract({
+      urls: ['https://ecommerce.example.com/product/123'],
+      agent: {
+        model: 'Whizo-Agent',
+        prompt: 'Extract product details, pricing, and availability'
+      }
+    });
+    // Returns structured product data automatically
+    ```
+  </Tab>
+
+  <Tab title="Monitoring & Alerts">
+    **Set Up Proactive Monitoring**:
+    ```javascript
+    // Monitor website changes
+    const monitor = await whizoApi.monitor.create({
+      url: 'https://competitor.com/pricing',
+      frequency: 'daily',
+      notifications: {
+        email: true,
+        webhook: 'https://your-app.com/webhooks/price-change'
+      }
+    });
+    ```
+  </Tab>
+
+  <Tab title="Batch Optimization">
+    **Optimize Large-Scale Operations**:
+    ```javascript
+    // Process thousands of URLs efficiently
+    const largeBatch = await whizoApi.batch.create({
+      urls: thousands_of_urls,
+      options: {
+        concurrency: 10,
+        format: 'structured',
+        webhook: 'https://your-app.com/batch-complete'
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+### Success Metrics
+
+**Track These KPIs Post-Migration**:
+- **Data Quality**: Accuracy and completeness improvements
+- **Operational Efficiency**: Time saved on maintenance and debugging
+- **Cost Reduction**: Total cost of ownership decrease
+- **Reliability**: Uptime and error rate improvements
+- **Developer Productivity**: Faster feature development
+
+---
+
+Ready to start your migration? [Contact our migration team](mailto:migration@whizo.ai) for a free consultation and custom migration plan.
+
+<Info>
+**Migration Timeline**: Most customers complete migration within 1-2 weeks with zero downtime
+</Info>

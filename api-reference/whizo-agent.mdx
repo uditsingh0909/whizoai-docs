@@ -1,0 +1,523 @@
+---
+title: 'Whizo Agent - AI-Powered Extraction'
+description: 'Advanced AI agent for intelligent content extraction and data processing with legacy compatibility'
+---
+
+# Whizo Agent
+
+The Whizo Agent is our premium AI-powered extraction system that provides intelligent content analysis, structured data extraction, and advanced processing capabilities. It offers superior performance compared to legacy systems while maintaining full backward compatibility.
+
+<Info>
+  **Enhanced Capabilities**: Whizo Agent includes NLP, entity recognition, ML schema inference, and intelligent extraction optimization
+</Info>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Advanced NLP" icon="brain">
+    Natural Language Processing with entity recognition and sentiment analysis
+  </Card>
+  <Card title="Schema Inference" icon="robot">
+    Automatic detection and generation of optimal data extraction schemas
+  </Card>
+  <Card title="Intelligent Extraction" icon="wand-magic-sparkles">
+    ML-powered extraction strategies that adapt to content structure
+  </Card>
+  <Card title="Legacy Compatibility" icon="arrows-rotate">
+    Full backward compatibility with existing integrations
+  </Card>
+</CardGroup>
+
+---
+
+## Agent Parameter
+
+The Whizo Agent is activated by including the `agent` parameter in your extraction and scraping requests:
+
+```json
+{
+  "agent": {
+    "model": "Whizo-Agent",
+    "prompt": "Extract the main title and description from this webpage"
+  }
+}
+```
+
+### Agent Models
+
+<Tabs>
+  <Tab title="Whizo-Agent">
+    **Recommended**: Our latest AI model optimized for web content extraction
+
+    - Advanced NLP and entity recognition
+    - Superior accuracy and speed
+    - Optimized for web content structures
+    - Enhanced schema inference capabilities
+  </Tab>
+
+  <Tab title="Legacy Compatibility">
+    **FIRE-1 / fire1**: Maintained for backward compatibility
+
+    - Routes to Whizo-Agent with compatibility layer
+    - Ensures existing integrations continue working
+    - Gradually migrate to "Whizo-Agent" for best performance
+  </Tab>
+</Tabs>
+
+---
+
+## Enhanced Extraction API
+
+<Badge variant="success">3-6 Credits</Badge>
+
+Use Whizo Agent for intelligent data extraction from web pages with custom schemas and prompts.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/extract" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": ["https://example.com"],
+    "schema": {
+      "type": "object",
+      "properties": {
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "price": {"type": "number"},
+        "availability": {"type": "boolean"}
+      }
+    },
+    "agent": {
+      "model": "Whizo-Agent",
+      "prompt": "Extract product information including title, description, price, and availability status"
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/extract', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    urls: ['https://example.com'],
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+        price: { type: 'number' },
+        availability: { type: 'boolean' }
+      }
+    },
+    agent: {
+      model: 'Whizo-Agent',
+      prompt: 'Extract product information including title, description, price, and availability status'
+    }
+  })
+});
+
+const data = await response.json();
+console.log('Extracted data:', data.data);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizo.ai/v1/extract',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'urls': ['https://example.com'],
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'title': {'type': 'string'},
+                'description': {'type': 'string'},
+                'price': {'type': 'number'},
+                'availability': {'type': 'boolean'}
+            }
+        },
+        'agent': {
+            'model': 'Whizo-Agent',
+            'prompt': 'Extract product information including title, description, price, and availability status'
+        }
+    }
+)
+
+data = response.json()
+print('Extracted data:', data['data'])
+```
+
+</CodeGroup>
+
+### Agent Parameters
+
+<ParamField body="agent" type="object">
+  Whizo Agent configuration for intelligent extraction
+
+  <Expandable title="agent properties">
+    <ParamField body="model" type="string" default="Whizo-Agent">
+      AI model to use. Options: `Whizo-Agent`, `FIRE-1` (legacy), `fire1` (legacy)
+    </ParamField>
+
+    <ParamField body="prompt" type="string">
+      Custom extraction prompt to guide the AI (max 3000 characters)
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+---
+
+## Agent-Enhanced Scraping
+
+<Badge variant="success">1+ Credits</Badge>
+
+Combine web scraping with Whizo Agent for intelligent content processing and analysis.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/article",
+    "format": "markdown",
+    "agent": {
+      "model": "Whizo-Agent",
+      "prompt": "Focus on extracting the main article content and remove navigation elements"
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com/article',
+    format: 'markdown',
+    agent: {
+      model: 'Whizo-Agent',
+      prompt: 'Focus on extracting the main article content and remove navigation elements'
+    }
+  })
+});
+
+const data = await response.json();
+console.log('Clean content:', data.data.content);
+```
+
+</CodeGroup>
+
+When the `agent` parameter is included in scraping requests, Whizo Agent:
+
+- **Intelligently filters content** based on the provided prompt
+- **Removes noise and irrelevant elements** automatically
+- **Enhances content structure** for better readability
+- **Applies advanced processing** like entity recognition and content classification
+
+---
+
+## Schema Inference
+
+<Badge variant="primary">Smart Feature</Badge>
+
+Whizo Agent can automatically infer optimal extraction schemas based on content analysis, reducing the need for manual schema design.
+
+<CodeGroup>
+
+```bash Auto Schema Inference
+curl -X POST "https://api.whizo.ai/v1/extract" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": ["https://example.com/product"],
+    "agent": {
+      "model": "Whizo-Agent",
+      "prompt": "Analyze this product page and extract all relevant information"
+    }
+  }'
+```
+
+```javascript JavaScript
+// Whizo Agent will automatically infer the best schema
+const response = await fetch('https://api.whizo.ai/v1/extract', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    urls: ['https://example.com/product'],
+    agent: {
+      model: 'Whizo-Agent',
+      prompt: 'Analyze this product page and extract all relevant information'
+    }
+  })
+});
+```
+
+</CodeGroup>
+
+**Benefits of Schema Inference:**
+- Automatically detects optimal data structures
+- Adapts to different page types and content formats
+- Reduces development time and complexity
+- Improves extraction accuracy through ML optimization
+
+---
+
+## Advanced Capabilities
+
+### Natural Language Processing
+
+Whizo Agent includes advanced NLP capabilities:
+
+<AccordionGroup>
+
+<Accordion title="Entity Recognition">
+Automatically identifies and extracts entities like:
+- **People**: Names, roles, titles
+- **Organizations**: Companies, institutions
+- **Locations**: Addresses, cities, countries
+- **Dates**: Publication dates, events, deadlines
+- **Financial**: Prices, currencies, financial metrics
+</Accordion>
+
+<Accordion title="Sentiment Analysis">
+Analyzes content sentiment and emotional tone:
+- **Positive/Negative/Neutral** classification
+- **Confidence scores** for sentiment predictions
+- **Emotion detection** (joy, anger, fear, etc.)
+- **Intent analysis** for user-generated content
+</Accordion>
+
+<Accordion title="Content Classification">
+Intelligently classifies and categorizes content:
+- **Content type** detection (article, product, review, etc.)
+- **Topic classification** using ML models
+- **Quality scoring** based on content richness
+- **Relevance assessment** for extraction targets
+</Accordion>
+
+</AccordionGroup>
+
+### Intelligent Content Processing
+
+<AccordionGroup>
+
+<Accordion title="Noise Removal">
+- Automatically removes advertisements and promotional content
+- Filters out navigation elements and boilerplate text
+- Eliminates duplicate and redundant information
+- Preserves only relevant, high-quality content
+</Accordion>
+
+<Accordion title="Structure Enhancement">
+- Improves content hierarchy and organization
+- Standardizes formatting across different sources
+- Enhances readability through intelligent formatting
+- Maintains semantic relationships in extracted data
+</Accordion>
+
+<Accordion title="Context Awareness">
+- Understands content context and relationships
+- Maintains semantic meaning during extraction
+- Adapts extraction strategy based on page type
+- Preserves important contextual information
+</Accordion>
+
+</AccordionGroup>
+
+---
+
+## Migration Guide
+
+### From Legacy Systems
+
+If you're currently using legacy extraction systems, migrating to Whizo Agent is simple:
+
+<Tabs>
+  <Tab title="Immediate Compatibility">
+    **Zero Code Changes Required**
+
+    Your existing integrations will automatically work with Whizo Agent:
+
+    ```json
+    // This continues to work unchanged
+    {
+      "agent": {
+        "model": "FIRE-1",  // Routes to Whizo-Agent
+        "prompt": "Extract title and content"
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Recommended Migration">
+    **Optimize for Best Performance**
+
+    Update your model specification for optimal performance:
+
+    ```json
+    // Recommended update
+    {
+      "agent": {
+        "model": "Whizo-Agent",  // Direct access to latest features
+        "prompt": "Extract title and content with enhanced accuracy"
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Performance Improvements
+
+When migrating to Whizo Agent, you'll experience:
+
+<CardGroup cols={2}>
+  <Card title="Speed Improvements" icon="rocket">
+    **40% faster** processing times through optimized ML models
+  </Card>
+  <Card title="Accuracy Gains" icon="bullseye">
+    **25% better** extraction accuracy with advanced NLP
+  </Card>
+  <Card title="Cost Efficiency" icon="dollar-sign">
+    **Better value** through intelligent processing and reduced retries
+  </Card>
+  <Card title="Enhanced Features" icon="star">
+    **New capabilities** like schema inference and sentiment analysis
+  </Card>
+</CardGroup>
+
+---
+
+## Best Practices
+
+### Prompt Optimization
+
+<Tip>
+**Effective Prompts for Whizo Agent:**
+
+- Be specific about the data you want to extract
+- Include context about the expected content format
+- Specify any quality or filtering requirements
+- Use clear, concise language for instructions
+
+**Example Good Prompt:**
+```
+"Extract product information including name, price in USD, description,
+availability status, and customer rating. Focus on main product content
+and ignore promotional banners or related product suggestions."
+```
+</Tip>
+
+### Schema Design
+
+<Tip>
+**Schema Best Practices:**
+
+- Use descriptive property names that match content semantics
+- Specify appropriate data types (string, number, boolean, array)
+- Include optional properties for flexible extraction
+- Consider nested objects for complex structured data
+
+**Example Optimized Schema:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "title": {"type": "string", "description": "Product name"},
+    "pricing": {
+      "type": "object",
+      "properties": {
+        "amount": {"type": "number"},
+        "currency": {"type": "string"},
+        "discount": {"type": "number"}
+      }
+    },
+    "specifications": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}
+```
+</Tip>
+
+### Performance Optimization
+
+<Warning>
+**Optimization Tips:**
+
+- Use specific selectors when possible to reduce processing scope
+- Implement caching for frequently accessed content
+- Batch multiple URLs in single requests when applicable
+- Monitor credit usage and optimize extraction patterns
+- Use availability checks before expensive operations
+</Warning>
+
+---
+
+## Competitive Advantages
+
+### vs Legacy Systems
+
+<CardGroup cols={2}>
+  <Card title="Superior AI Models" icon="brain">
+    Latest transformer models optimized for web content
+  </Card>
+  <Card title="Advanced NLP" icon="language">
+    Entity recognition, sentiment analysis, and content classification
+  </Card>
+  <Card title="Schema Inference" icon="magic">
+    Automatic schema detection reduces development overhead
+  </Card>
+  <Card title="Better Performance" icon="chart-up">
+    Faster processing with higher accuracy rates
+  </Card>
+</CardGroup>
+
+### Technical Excellence
+
+- **ML-Powered**: Continuously improving through machine learning
+- **Context-Aware**: Understands content relationships and semantics
+- **Adaptive**: Adjusts extraction strategies based on content type
+- **Scalable**: Optimized for high-volume processing
+- **Reliable**: Enterprise-grade stability and error handling
+
+---
+
+## Rate Limits & Credits
+
+<AccordionGroup>
+
+<Accordion title="Credit Costs">
+- **Basic extraction**: 3 credits per page
+- **Complex extraction**: 6 credits per page
+- **Agent-enhanced scraping**: +1 credit per page
+- **Schema inference**: Included at no extra cost
+</Accordion>
+
+<Accordion title="Rate Limits">
+- **Extract operations**: 100 requests per minute
+- **Scrape operations**: 200 requests per minute
+- **Batch processing**: 50 requests per minute
+- **Enterprise users**: Custom limits available
+</Accordion>
+
+</AccordionGroup>
+
+Ready to experience the power of Whizo Agent? Start with our [Quick Start Guide](/quickstart) or explore the [Extract API](/api-reference/extract) documentation.
