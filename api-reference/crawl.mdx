@@ -74,6 +74,22 @@ The Crawl API enables you to automatically discover and scrape content from an e
   Maximum time to wait for each page load in milliseconds (5000-120000)
 </ParamField>
 
+<ParamField body="removeAds" type="boolean" default="false">
+  Automatically remove advertisements and tracking scripts
+</ParamField>
+
+<ParamField body="removeScripts" type="boolean" default="false">
+  Remove JavaScript from HTML output
+</ParamField>
+
+<ParamField body="removeStyles" type="boolean" default="false">
+  Remove CSS styling from HTML output
+</ParamField>
+
+<ParamField body="userAgent" type="string">
+  Custom user agent string for requests
+</ParamField>
+
 <ParamField body="priority" type="string" default="low">
   Job processing priority
   - `low` - Standard processing
@@ -83,6 +99,10 @@ The Crawl API enables you to automatically discover and scrape content from an e
 
 <ParamField body="headers" type="object">
   Custom HTTP headers to send with each request
+</ParamField>
+
+<ParamField body="maxAge" type="number" default="30">
+  Cache max age in days (1-365). Set to 0 to bypass cache.
 </ParamField>
 
 <ParamField body="authentication" type="object">

@@ -1,0 +1,571 @@
+---
+title: "Batch Scraping API"
+api: "POST https://api.whizo.ai/v1/batch"
+description: "Scrape multiple URLs simultaneously with optimized parallel processing"
+---
+
+The Batch API allows you to scrape multiple URLs in a single request with automatic parallelization, retry logic, and rate limiting. Perfect for processing large lists of URLs efficiently.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer token using your API key: `Bearer YOUR_API_KEY`
+</ParamField>
+
+## Request Body
+
+<ParamField body="urls" type="array" required>
+  Array of URLs to scrape (1-100 URLs per request)
+  ```json
+  [
+    "https://example.com/page1",
+    "https://example.com/page2",
+    "https://example.com/page3"
+  ]
+  ```
+</ParamField>
+
+### Output Options
+
+<ParamField body="format" type="string" default="json">
+  Output format for scraped content
+  - `markdown` - Clean markdown format
+  - `html` - HTML content
+  - `text` - Plain text only
+  - `json` - Structured JSON format (default)
+</ParamField>
+
+<ParamField body="includeScreenshot" type="boolean" default="false">
+  Capture screenshots for each URL (+1 credit per page)
+</ParamField>
+
+<ParamField body="includePdf" type="boolean" default="false">
+  Generate PDFs for each URL (+1 credit per page)
+</ParamField>
+
+<ParamField body="includeLinks" type="boolean" default="true">
+  Extract hyperlinks from content
+</ParamField>
+
+<ParamField body="includeImages" type="boolean" default="false">
+  Extract image URLs and metadata
+</ParamField>
+
+<ParamField body="includeMetadata" type="boolean" default="true">
+  Include page metadata (title, description, etc.)
+</ParamField>
+
+### Content Processing
+
+<ParamField body="onlyMainContent" type="boolean" default="false">
+  Extract only main content, removing headers/footers/sidebars
+</ParamField>
+
+<ParamField body="removeAds" type="boolean" default="false">
+  Remove advertisements and tracking scripts
+</ParamField>
+
+<ParamField body="removeScripts" type="boolean" default="false">
+  Remove JavaScript from HTML output
+</ParamField>
+
+<ParamField body="removeStyles" type="boolean" default="false">
+  Remove CSS styling from HTML output
+</ParamField>
+
+### Browser Options
+
+<ParamField body="mobile" type="boolean" default="false">
+  Use mobile viewport for rendering
+</ParamField>
+
+<ParamField body="waitTime" type="number" default="1000">
+  Time to wait after page load in milliseconds (0-30000)
+</ParamField>
+
+<ParamField body="timeout" type="number" default="30000">
+  Maximum time to wait for each page load in milliseconds (5000-120000)
+</ParamField>
+
+### Batch Processing Options
+
+<ParamField body="concurrency" type="number" default="3">
+  Number of URLs to process simultaneously (1-10)
+
+  Higher values = faster processing but more resources
+</ParamField>
+
+<ParamField body="retryCount" type="number" default="2">
+  Number of retry attempts for failed URLs (0-5)
+</ParamField>
+
+<ParamField body="delayBetweenRequests" type="number" default="1000">
+  Delay between requests in milliseconds (0-10000)
+
+  Useful for respecting rate limits on target websites
+</ParamField>
+
+<ParamField body="priority" type="string" default="low">
+  Job processing priority
+  - `low` - Standard processing
+  - `normal` - Higher priority
+  - `high` - Highest priority (Pro+ plans)
+</ParamField>
+
+### Request Customization
+
+<ParamField body="userAgent" type="string">
+  Custom user agent string for all requests
+</ParamField>
+
+<ParamField body="headers" type="object">
+  Custom HTTP headers to send with each request
+  ```json
+  {
+    "Accept-Language": "en-US",
+    "Custom-Header": "value"
+  }
+  ```
+</ParamField>
+
+<ParamField body="authentication" type="object">
+  Authentication credentials for protected pages
+  <Expandable title="authentication properties">
+    <ParamField body="authentication.username" type="string">
+      Basic auth username
+    </ParamField>
+    <ParamField body="authentication.password" type="string">
+      Basic auth password
+    </ParamField>
+    <ParamField body="authentication.token" type="string">
+      Bearer token for API authentication
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### AI Extraction
+
+<ParamField body="extract" type="object">
+  AI-powered data extraction configuration (applied to all URLs)
+  <Expandable title="extract properties">
+    <ParamField body="extract.schema" type="object">
+      JSON schema defining the structure of data to extract
+    </ParamField>
+    <ParamField body="extract.prompt" type="string">
+      Custom prompt for AI extraction
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the batch job was initiated successfully
+</ResponseField>
+
+<ResponseField name="jobId" type="string">
+  Unique identifier for tracking the batch job
+</ResponseField>
+
+<ResponseField name="queueJobId" type="string">
+  Queue system job ID (if using async processing)
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current job status: `queued`, `running`, or `completed`
+</ResponseField>
+
+<ResponseField name="urlCount" type="number">
+  Total number of URLs in the batch
+</ResponseField>
+
+<ResponseField name="estimatedCredits" type="number">
+  Estimated total credits that will be consumed
+</ResponseField>
+
+<ResponseField name="estimatedTime" type="string">
+  Estimated completion time
+</ResponseField>
+
+<ResponseField name="results" type="array" optional>
+  Array of scraping results (only for synchronous processing)
+  <Expandable title="result properties">
+    <ResponseField name="url" type="string">
+      The URL that was scraped
+    </ResponseField>
+    <ResponseField name="success" type="boolean">
+      Whether scraping was successful
+    </ResponseField>
+    <ResponseField name="content" type="string">
+      Extracted content (if successful)
+    </ResponseField>
+    <ResponseField name="metadata" type="object">
+      Page metadata
+    </ResponseField>
+    <ResponseField name="error" type="string" optional>
+      Error message (if failed)
+    </ResponseField>
+    <ResponseField name="retries" type="number">
+      Number of retry attempts made
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Examples
+
+### Basic Batch Scraping
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/batch" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://example.com/page1",
+      "https://example.com/page2",
+      "https://example.com/page3",
+      "https://example.com/page4",
+      "https://example.com/page5"
+    ],
+    "format": "markdown"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/batch', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    urls: [
+      'https://example.com/page1',
+      'https://example.com/page2',
+      'https://example.com/page3',
+      'https://example.com/page4',
+      'https://example.com/page5'
+    ],
+    format: 'markdown'
+  })
+});
+
+const data = await response.json();
+console.log('Job ID:', data.jobId);
+console.log('Status:', data.status);
+
+// Poll for results
+const checkStatus = async (jobId) => {
+  const statusRes = await fetch(`https://api.whizo.ai/v1/jobs/${jobId}`, {
+    headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
+  });
+  return await statusRes.json();
+};
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizo.ai/v1/batch',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'urls': [
+            'https://example.com/page1',
+            'https://example.com/page2',
+            'https://example.com/page3',
+            'https://example.com/page4',
+            'https://example.com/page5'
+        ],
+        'format': 'markdown'
+    }
+)
+
+data = response.json()
+print(f"Job ID: {data['jobId']}")
+print(f"Status: {data['status']}")
+
+# Poll for results
+import time
+job_id = data['jobId']
+while True:
+    status_res = requests.get(
+        f'https://api.whizo.ai/v1/jobs/{job_id}',
+        headers={'Authorization': 'Bearer YOUR_API_KEY'}
+    )
+    status_data = status_res.json()
+    if status_data['status'] in ['completed', 'failed']:
+        break
+    time.sleep(2)
+
+print('Results:', status_data['results'])
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "jobId": "batch_abc123xyz",
+  "queueJobId": "queue_456def",
+  "status": "queued",
+  "urlCount": 5,
+  "estimatedCredits": 5,
+  "estimatedTime": "30-60 seconds",
+  "statusUrl": "https://api.whizo.ai/v1/jobs/batch_abc123xyz"
+}
+```
+</ResponseExample>
+
+### Advanced Batch with Concurrency Control
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/batch" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://site1.com",
+      "https://site2.com",
+      "https://site3.com"
+    ],
+    "format": "json",
+    "concurrency": 5,
+    "retryCount": 3,
+    "delayBetweenRequests": 500,
+    "includeMetadata": true,
+    "onlyMainContent": true,
+    "removeAds": true
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/batch', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    urls: [
+      'https://site1.com',
+      'https://site2.com',
+      'https://site3.com'
+    ],
+    format: 'json',
+    concurrency: 5,
+    retryCount: 3,
+    delayBetweenRequests: 500,
+    includeMetadata: true,
+    onlyMainContent: true,
+    removeAds: true
+  })
+});
+```
+
+</CodeGroup>
+
+### Batch Scraping with AI Extraction
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/batch" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://company1.com/about",
+      "https://company2.com/about",
+      "https://company3.com/about"
+    ],
+    "format": "json",
+    "extract": {
+      "schema": {
+        "companyName": "string",
+        "foundedYear": "number",
+        "employees": "string",
+        "revenue": "string",
+        "description": "string"
+      },
+      "prompt": "Extract company information from the about page"
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/batch', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    urls: [
+      'https://company1.com/about',
+      'https://company2.com/about',
+      'https://company3.com/about'
+    ],
+    format: 'json',
+    extract: {
+      schema: {
+        companyName: 'string',
+        foundedYear: 'number',
+        employees: 'string',
+        revenue: 'string',
+        description: 'string'
+      },
+      prompt: 'Extract company information from the about page'
+    }
+  })
+});
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response
+{
+  "success": true,
+  "jobId": "batch_extract_789",
+  "status": "queued",
+  "urlCount": 3,
+  "estimatedCredits": 9,
+  "message": "Batch job queued. Use the statusUrl to track progress.",
+  "statusUrl": "https://api.whizo.ai/v1/jobs/batch_extract_789"
+}
+```
+</ResponseExample>
+
+## Error Responses
+
+<ResponseField name="error" type="object">
+  <Expandable title="error properties">
+    <ResponseField name="code" type="string">
+      Error code identifier
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Human-readable error message
+    </ResponseField>
+    <ResponseField name="details" type="object" optional>
+      Additional error context
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Common Errors
+
+| Status Code | Error Code | Description |
+|-------------|------------|-------------|
+| 400 | `invalid_urls` | One or more URLs are invalid |
+| 400 | `too_many_urls` | Exceeded maximum of 100 URLs per batch |
+| 400 | `invalid_options` | Invalid batch processing options |
+| 401 | `unauthorized` | Invalid or missing API key |
+| 402 | `insufficient_credits` | Not enough credits for batch job |
+| 429 | `rate_limited` | Rate limit exceeded |
+| 500 | `batch_failed` | Batch job failed to initialize |
+
+<ResponseExample>
+```json Error Response
+{
+  "success": false,
+  "error": {
+    "code": "too_many_urls",
+    "message": "Maximum 100 URLs allowed per batch request",
+    "details": {
+      "provided": 150,
+      "maximum": 100
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Credit Costs
+
+Credit costs are calculated **per URL** in the batch:
+
+| Feature | Cost Per URL |
+|---------|--------------|
+| Basic scraping | 1 credit |
+| Screenshot | +1 credit |
+| PDF generation | +1 credit |
+| AI extraction | +2-3 credits |
+
+**Examples**:
+- 10 URLs, markdown format: 10 × 1 = **10 credits**
+- 20 URLs with screenshots: 20 × (1 + 1) = **40 credits**
+- 5 URLs with AI extraction: 5 × (1 + 3) = **20 credits**
+
+## Rate Limits
+
+Rate limits vary by plan:
+
+- **Free**: Max 10 URLs per batch, 2 concurrent batches
+- **Starter**: Max 50 URLs per batch, 5 concurrent batches
+- **Pro**: Max 100 URLs per batch, 10 concurrent batches
+- **Enterprise**: Custom limits
+
+## Best Practices
+
+1. **Group similar URLs** together in a batch for consistent processing
+2. **Use appropriate concurrency** - higher isn't always better
+3. **Set reasonable timeouts** based on target site performance
+4. **Enable retries** for unreliable sites (retryCount: 2-3)
+5. **Add delays** when scraping the same domain to respect rate limits
+6. **Monitor job progress** using the statusUrl or /v1/jobs/:id endpoint
+7. **Handle partial failures** - some URLs may succeed while others fail
+8. **Use authentication** when scraping protected pages
+9. **Start small** - test with 5-10 URLs before scaling up
+10. **Cache results** - reuse batch results when possible
+
+## Monitoring Batch Jobs
+
+After submitting a batch, use the [Jobs API](/api-reference/jobs) to monitor progress:
+
+```bash
+# Check job status
+curl -X GET "https://api.whizo.ai/v1/jobs/{jobId}" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+# Get job results
+curl -X GET "https://api.whizo.ai/v1/jobs/{jobId}/results" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Performance Tips
+
+### Optimal Concurrency Settings
+
+| Batch Size | Recommended Concurrency |
+|------------|------------------------|
+| 1-10 URLs | 3-5 |
+| 11-25 URLs | 5-7 |
+| 26-50 URLs | 7-10 |
+| 51-100 URLs | 10 (max) |
+
+### Processing Time Estimates
+
+- **Lightweight scraping**: ~1-2 seconds per URL
+- **JavaScript rendering**: ~3-5 seconds per URL
+- **With screenshots**: ~4-6 seconds per URL
+- **With AI extraction**: ~5-10 seconds per URL
+
+**Example**: Batch of 50 URLs with markdown format and concurrency=5
+- Sequential time: 50 × 2s = 100 seconds
+- Parallel time: (50 / 5) × 2s = 20 seconds
+
+## Related Endpoints
+
+- [Scrape API](/api-reference/scrape) - Single URL scraping
+- [Crawl API](/api-reference/crawl) - Website crawling
+- [Jobs API](/api-reference/jobs) - Job monitoring
+- [Results API](/api-reference/results) - Download results
