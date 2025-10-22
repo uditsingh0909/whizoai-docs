@@ -110,23 +110,93 @@ The Search API combines web search functionality with content scraping capabilit
         </ResponseField>
 
         <ResponseField name="content" type="string" optional>
-          Full scraped content (only if scrapeResults=true)
+          Full scraped content in markdown format (only if scrapeResults=true)
+
+          This field contains the complete scraped content. For markdown format, this includes all headings, paragraphs, lists, code blocks, and other structured elements.
+        </ResponseField>
+
+        <ResponseField name="markdown" type="string" optional>
+          Alias for content field (Firecrawl compatibility)
+
+          Contains the same markdown content as the `content` field. Provided for compatibility with Firecrawl API format.
+        </ResponseField>
+
+        <ResponseField name="preview" type="string" optional>
+          Content preview snippet (first 200-250 characters)
+
+          A quick preview of the content for scanning without reading the full text. Automatically generated from the scraped markdown content with formatting removed. Perfect for displaying in search results or dashboards.
+
+          **Example**: "This article discusses best practices for web scraping, including rate limiting, respecting robots.txt, and using appropriate user agents..."
+        </ResponseField>
+
+        <ResponseField name="summary" type="string" optional>
+          Auto-generated content summary (200-300 characters)
+
+          A concise summary extracted from the first few sentences of the content. Provides key information at a glance without reading the full article.
+
+          **Example**: "Web scraping best practices include rate limiting to avoid overloading servers, respecting robots.txt directives, and using descriptive user agents. Implementing proper error handling and retry logic ensures reliability."
         </ResponseField>
 
         <ResponseField name="scrapedAt" type="string" optional>
           ISO timestamp when content was scraped
+
+          **Example**: "2025-01-15T14:32:10.123Z"
         </ResponseField>
 
         <ResponseField name="scrapeStatus" type="string" optional>
           Status of scraping: `success` or `failed`
+
+          Indicates whether content extraction was successful. If `failed`, check `scrapeError` for details.
         </ResponseField>
 
         <ResponseField name="scrapeError" type="string" optional>
           Error message if scraping failed
+
+          Contains the error message if `scrapeStatus` is `failed`. Common errors include timeouts, blocked requests, or invalid URLs.
         </ResponseField>
 
         <ResponseField name="wordCount" type="number" optional>
           Word count of scraped content
+
+          Total number of words in the scraped content. Useful for estimating content length and quality.
+
+          **Example**: 1250 (approximately 1,250 words)
+        </ResponseField>
+
+        <ResponseField name="readingTime" type="number" optional>
+          Estimated reading time in minutes
+
+          Calculated based on average reading speed of 225 words per minute. Rounded up to at least 1 minute.
+
+          **Example**: 6 (approximately 6 minutes to read)
+        </ResponseField>
+
+        <ResponseField name="metadata" type="object" optional>
+          Additional metadata about the scraped content
+          <Expandable title="metadata properties">
+            <ResponseField name="statusCode" type="number">
+              HTTP status code from scraping request
+
+              **Example**: 200 (success), 404 (not found), 0 (scraping failed)
+            </ResponseField>
+
+            <ResponseField name="error" type="string" optional>
+              Error details if scraping failed
+
+              Contains technical error information for debugging purposes.
+            </ResponseField>
+
+            <ResponseField name="contentQuality" type="string" optional>
+              Assessed content quality: `high`, `medium`, or `low`
+
+              Quality assessment based on word count and content structure:
+              - **High**: 500+ words with headings/lists/code blocks, OR 1000+ words
+              - **Medium**: 200-500 words with some structure, OR 500-1000 words
+              - **Low**: Less than 200 words or minimal structure
+
+              Helps filter and prioritize search results based on content depth.
+            </ResponseField>
+          </Expandable>
         </ResponseField>
       </Expandable>
     </ResponseField>
@@ -278,7 +348,9 @@ const response = await fetch('https://api.whizo.ai/v1/search', {
 const data = await response.json();
 data.data.results.forEach(result => {
   console.log(`Title: ${result.title}`);
-  console.log(`Content: ${result.content}`);
+  console.log(`Summary: ${result.summary}`);
+  console.log(`Reading Time: ${result.readingTime} min`);
+  console.log(`Quality: ${result.metadata.contentQuality}`);
   console.log(`Word Count: ${result.wordCount}`);
   console.log('---');
 });
@@ -308,7 +380,9 @@ response = requests.post(
 data = response.json()
 for result in data['data']['results']:
     print(f"Title: {result['title']}")
-    print(f"Content: {result['content']}")
+    print(f"Summary: {result['summary']}")
+    print(f"Reading Time: {result['readingTime']} min")
+    print(f"Quality: {result['metadata']['contentQuality']}")
     print(f"Word Count: {result['wordCount']}")
     print('---')
 ```
@@ -325,24 +399,40 @@ for result in data['data']['results']:
       {
         "position": 1,
         "title": "Web Scraping Best Practices Guide",
-        "link": "https://example.com/best-practices",
-        "snippet": "Learn the essential best practices for ethical and effective web scraping...",
+        "url": "https://example.com/best-practices",
+        "description": "Learn the essential best practices for ethical and effective web scraping...",
         "displayLink": "example.com",
-        "content": "# Web Scraping Best Practices\n\n## Introduction\nWeb scraping is a powerful technique...\n\n## Key Principles\n1. Respect robots.txt\n2. Use rate limiting...",
+        "markdown": "# Web Scraping Best Practices\n\n## Introduction\nWeb scraping is a powerful technique for extracting data from websites. However, it must be done responsibly to respect website resources and legal boundaries.\n\n## Key Principles\n\n1. **Respect robots.txt** - Always check and follow robots.txt directives\n2. **Use rate limiting** - Avoid overwhelming servers with too many requests\n3. **Identify yourself** - Use descriptive user agents\n4. **Handle errors gracefully** - Implement retry logic with exponential backoff\n5. **Cache responses** - Minimize duplicate requests\n\n## Technical Implementation\n\nWhen implementing web scrapers, consider...",
+        "content": "# Web Scraping Best Practices\n\n## Introduction\nWeb scraping is a powerful technique for extracting data from websites. However, it must be done responsibly to respect website resources and legal boundaries.\n\n## Key Principles\n\n1. **Respect robots.txt** - Always check and follow robots.txt directives\n2. **Use rate limiting** - Avoid overwhelming servers with too many requests\n3. **Identify yourself** - Use descriptive user agents\n4. **Handle errors gracefully** - Implement retry logic with exponential backoff\n5. **Cache responses** - Minimize duplicate requests\n\n## Technical Implementation\n\nWhen implementing web scrapers, consider...",
+        "preview": "Web scraping is a powerful technique for extracting data from websites. However, it must be done responsibly to respect website resources and legal boundaries. Key principles include respecting robots.txt directives, using rate...",
+        "summary": "Web scraping is a powerful technique for extracting data from websites. However, it must be done responsibly to respect website resources and legal boundaries. Always check and follow robots.txt directives, use rate limiting to avoid overwhelming servers, and identify yourself with descriptive user agents.",
         "scrapedAt": "2025-01-15T10:30:00Z",
         "scrapeStatus": "success",
-        "wordCount": 1542
+        "wordCount": 1542,
+        "readingTime": 7,
+        "metadata": {
+          "statusCode": 200,
+          "contentQuality": "high"
+        }
       },
       {
         "position": 2,
         "title": "Ethical Web Scraping Guidelines",
-        "link": "https://another.com/ethics",
-        "snippet": "Guidelines for responsible web scraping practices...",
+        "url": "https://another.com/ethics",
+        "description": "Guidelines for responsible web scraping practices...",
         "displayLink": "another.com",
-        "content": "# Ethical Web Scraping\n\nWhen scraping websites...",
+        "markdown": "# Ethical Web Scraping\n\nWhen scraping websites, it's crucial to follow ethical guidelines that protect both the scraper and the website owner. This includes respecting terms of service, avoiding personal data collection without consent, and being transparent about your scraping activities.",
+        "content": "# Ethical Web Scraping\n\nWhen scraping websites, it's crucial to follow ethical guidelines that protect both the scraper and the website owner. This includes respecting terms of service, avoiding personal data collection without consent, and being transparent about your scraping activities.",
+        "preview": "When scraping websites, it's crucial to follow ethical guidelines that protect both the scraper and the website owner. This includes respecting terms of service, avoiding personal data collection without consent, and being...",
+        "summary": "When scraping websites, it's crucial to follow ethical guidelines that protect both the scraper and the website owner. This includes respecting terms of service, avoiding personal data collection without consent, and being transparent about your scraping activities.",
         "scrapedAt": "2025-01-15T10:30:05Z",
         "scrapeStatus": "success",
-        "wordCount": 987
+        "wordCount": 987,
+        "readingTime": 5,
+        "metadata": {
+          "statusCode": 200,
+          "contentQuality": "high"
+        }
       }
     ],
     "totalResults": 12400,

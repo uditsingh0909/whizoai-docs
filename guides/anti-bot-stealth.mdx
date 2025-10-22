@@ -1,0 +1,478 @@
+---
+title: 'Anti-Bot Detection & Stealth Mode'
+description: 'Advanced techniques to bypass bot detection systems like Cloudflare, DataDome, and PerimeterX'
+---
+
+## Overview
+
+WhizoAI includes industry-leading anti-bot detection bypass capabilities with **8 fingerprinting protection techniques**, **7 human behavior simulations**, and **18 advanced JavaScript injections**. Use stealth mode to successfully scrape protected websites.
+
+## Stealth Levels
+
+Choose the appropriate stealth level based on the target website's protection:
+
+<CardGroup cols={3}>
+  <Card title="Basic" icon="shield" color="#0ea5e9">
+    Fast scraping with minimal protection. Use for public websites with light protection.
+
+    - 4 basic JavaScript injections
+    - User agent rotation
+    - Basic fingerprinting
+    - **Overhead**: +20-30ms per page
+  </Card>
+
+  <Card title="Advanced" icon="shield-halved" color="#f59e0b">
+    Recommended for most protected sites. Bypasses Cloudflare, DataDome basic protection.
+
+    - 18 advanced JavaScript injections
+    - 8 fingerprinting techniques
+    - Session-based consistency
+    - **Overhead**: +50-100ms per page
+  </Card>
+
+  <Card title="Maximum" icon="shield-check" color="#10b981">
+    Maximum protection for heavily guarded sites. Includes human behavior simulation.
+
+    - Everything from Advanced
+    - Human behavior simulation
+    - Mouse/keyboard/scroll patterns
+    - **Overhead**: +200-500ms per page
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### Using Stealth in API Requests
+
+Add the `stealth` parameter to any scraping request:
+
+```json
+{
+  "url": "https://protected-site.com",
+  "stealth": {
+    "level": "advanced",
+    "enableBehavior": false
+  }
+}
+```
+
+### Stealth Options
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `level` | `"basic"` \| `"advanced"` \| `"maximum"` | `"basic"` | Stealth intensity level |
+| `enableBehavior` | `boolean` | `false` | Enable human behavior simulation (auto-enabled for maximum) |
+| `sessionId` | `string` | `auto-generated` | Reuse for consistent fingerprinting across requests |
+
+## Examples
+
+### Basic Stealth (Public Sites)
+
+```bash
+curl -X POST https://api.whizo.ai/v1/scrape \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "stealth": {
+      "level": "basic"
+    }
+  }'
+```
+
+### Advanced Stealth (Cloudflare Protected)
+
+```bash
+curl -X POST https://api.whizo.ai/v1/scrape \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://protected-site.com",
+    "stealth": {
+      "level": "advanced",
+      "sessionId": "unique-session-123"
+    }
+  }'
+```
+
+<Note>
+Use the same `sessionId` for multiple requests to maintain consistent fingerprinting. This helps avoid detection when scraping multiple pages from the same site.
+</Note>
+
+### Maximum Stealth (DataDome, PerimeterX)
+
+```bash
+curl -X POST https://api.whizo.ai/v1/scrape \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://heavily-protected-site.com",
+    "stealth": {
+      "level": "maximum",
+      "enableBehavior": true,
+      "sessionId": "consistent-fingerprint-456"
+    },
+    "waitTime": 3000
+  }'
+```
+
+## Protection Techniques
+
+### 1. Fingerprinting Protection (8 Techniques)
+
+<AccordionGroup>
+  <Accordion title="Canvas Fingerprinting">
+    Adds deterministic noise to canvas rendering to prevent tracking.
+
+    **Methods**:
+    - **Noise Injection**: Adds small random variations to pixel data
+    - **Pixel Shift**: Shifts RGB values slightly
+    - **Complete Block**: Blocks canvas fingerprinting entirely
+  </Accordion>
+
+  <Accordion title="WebGL Fingerprinting">
+    Spoofs GPU vendor and renderer information.
+
+    **Platform-Aware**:
+    - Windows → NVIDIA/AMD/Intel GPUs
+    - Mac → Apple M1/M2, AMD GPUs
+    - Linux → Mesa, NVIDIA, AMD
+    - Mobile → Apple A15, Qualcomm, ARM GPUs
+  </Accordion>
+
+  <Accordion title="Audio Context">
+    Injects noise into audio fingerprinting APIs.
+
+    Prevents tracking via:
+    - AudioContext frequency data
+    - Oscillator patterns
+    - Audio processing signatures
+  </Accordion>
+
+  <Accordion title="Font Enumeration">
+    Limits reported fonts to appear realistic.
+
+    **Platform-Specific**:
+    - Windows: 19 common fonts
+    - Mac: 28 system fonts
+    - Linux: 12 common fonts
+  </Accordion>
+
+  <Accordion title="Hardware Spoofing">
+    Randomizes hardware properties.
+
+    - **CPU Cores**: 4-16 for desktop, 6-8 for mobile
+    - **Memory**: 4-32GB for desktop, 4-6GB for mobile
+    - **Touch Points**: 0 for desktop, 5 for mobile
+  </Accordion>
+
+  <Accordion title="Screen Properties">
+    Ensures screen resolution consistency.
+
+    **Desktop Resolutions**:
+    - 1920x1080, 1366x768, 1440x900, etc.
+
+    **Mobile Resolutions**:
+    - iPhone: 390x844, 393x852
+    - Android: 360x800, 412x915
+  </Accordion>
+
+  <Accordion title="Battery Status">
+    Mocks battery API to prevent tracking.
+
+    - **Mobile**: Realistic charge levels (20-80%)
+    - **Desktop**: Always charging, 100% level
+  </Accordion>
+
+  <Accordion title="Media Devices">
+    Spoofs camera and microphone enumeration.
+
+    Returns realistic device lists:
+    - Front/back cameras (mobile)
+    - Webcam, microphones (desktop)
+    - Speakers, headphones
+  </Accordion>
+</AccordionGroup>
+
+### 2. Human Behavior Simulation (7 Patterns)
+
+Available with **Maximum** stealth level or `enableBehavior: true`:
+
+<CardGroup cols={2}>
+  <Card title="Mouse Movements" icon="computer-mouse">
+    - Bezier curve paths
+    - Random variance
+    - Natural easing
+    - Micro-adjustments at destination
+  </Card>
+
+  <Card title="Keyboard Typing" icon="keyboard">
+    - Variable delays (50-200ms)
+    - Realistic typos (5% chance)
+    - Backspace corrections
+    - Pauses after punctuation
+  </Card>
+
+  <Card title="Scrolling Patterns" icon="arrows-up-down">
+    - Non-uniform scroll amounts
+    - Reading pauses (20% chance)
+    - Occasional scroll-back
+    - Smooth acceleration
+  </Card>
+
+  <Card title="Page Load Behavior" icon="browser">
+    - Initial scroll to view header
+    - Reading pause (500-1000ms)
+    - Secondary exploration
+    - Random mouse movements
+  </Card>
+
+  <Card title="Reading Simulation" icon="book-open">
+    - Scroll + pause patterns
+    - 1-3 second reading intervals
+    - Progressive scrolling
+    - Natural eye movement
+  </Card>
+
+  <Card title="Form Filling" icon="pen-to-square">
+    - Click on fields
+    - Thinking pauses
+    - Realistic typing with errors
+    - Delays between fields
+  </Card>
+
+  <Card title="Hover Interactions" icon="hand-pointer">
+    - Natural movement to elements
+    - Micro-adjustments while hovering
+    - Realistic duration
+    - Element exploration
+  </Card>
+</CardGroup>
+
+### 3. JavaScript Injections (18 Advanced)
+
+All stealth levels include protection against:
+
+- ✅ WebDriver property removal
+- ✅ Automation detection blocking
+- ✅ Chrome runtime mocking
+- ✅ Permissions API spoofing
+- ✅ Plugin array mocking
+- ✅ WebRTC leak prevention
+- ✅ Timing attack protection
+- ✅ Iframe sandbox escape
+- ✅ Touch event simulation (mobile)
+- ✅ Navigator enhancements
+
+## Success Rates
+
+Estimated bypass success rates with **Maximum** stealth:
+
+| Protection System | Success Rate | Recommended Settings |
+|-------------------|--------------|---------------------|
+| **Cloudflare** | 90-95% | Advanced or Maximum |
+| **DataDome** | 85-90% | Maximum + Behavior |
+| **PerimeterX (HUMAN)** | 80-85% | Maximum + Behavior + Proxies |
+| **Kasada** | 75-80% | Maximum + Behavior + Proxies |
+| **Akamai Bot Manager** | 70-75% | Maximum + Behavior + Proxies |
+
+<Tip>
+Combine stealth mode with **proxy rotation** for best results on heavily protected sites. See [Proxy Configuration](/guides/proxy-configuration) for details.
+</Tip>
+
+## Performance Impact
+
+| Stealth Level | Setup Time | Per-Page Overhead | Memory Impact |
+|---------------|------------|-------------------|---------------|
+| Basic | <10ms | +20-30ms | +2MB |
+| Advanced | <50ms | +50-100ms | +5MB |
+| Maximum | <100ms | +200-500ms | +10MB |
+
+<Note>
+Setup time is one-time per session. Per-page overhead includes all fingerprinting and behavior simulation.
+</Note>
+
+## Best Practices
+
+### 1. Choose the Right Stealth Level
+
+```javascript
+// Public sites with no protection
+{ "stealth": { "level": "basic" } }
+
+// Cloudflare, simple anti-bot systems
+{ "stealth": { "level": "advanced" } }
+
+// DataDome, PerimeterX, Kasada
+{ "stealth": { "level": "maximum", "enableBehavior": true } }
+```
+
+### 2. Use Consistent Session IDs
+
+```javascript
+// Scraping multiple pages from same site
+const sessionId = "unique-session-" + Date.now();
+
+for (const url of urls) {
+  await scrape({
+    url,
+    stealth: {
+      level: "advanced",
+      sessionId // Same fingerprint across all requests
+    }
+  });
+}
+```
+
+### 3. Add Realistic Delays
+
+```javascript
+{
+  "url": "https://protected-site.com",
+  "stealth": {
+    "level": "maximum",
+    "enableBehavior": true
+  },
+  "waitTime": 3000 // Wait 3 seconds after page load
+}
+```
+
+### 4. Combine with Proxies
+
+```javascript
+{
+  "url": "https://heavily-protected.com",
+  "stealth": {
+    "level": "maximum",
+    "enableBehavior": true,
+    "sessionId": "consistent-fp"
+  },
+  "proxy": {
+    "enabled": true,
+    "type": "residential" // Best for protected sites
+  }
+}
+```
+
+## Troubleshooting
+
+### Still Getting Detected?
+
+<Steps>
+  <Step title="Verify Stealth Level">
+    Make sure you're using `advanced` or `maximum` for protected sites.
+  </Step>
+
+  <Step title="Enable Behavior Simulation">
+    Add `"enableBehavior": true` for heavily protected sites.
+  </Step>
+
+  <Step title="Use Proxies">
+    Enable proxy rotation to avoid IP-based blocking.
+  </Step>
+
+  <Step title="Add Wait Times">
+    Increase `waitTime` to 3-5 seconds for complex pages.
+  </Step>
+
+  <Step title="Maintain Session Consistency">
+    Use the same `sessionId` for multiple requests to the same domain.
+  </Step>
+</Steps>
+
+### Detection Indicators
+
+If you're still being detected, check for:
+
+- **Network-level blocking**: IP reputation, rate limiting
+- **TLS fingerprinting**: Use rotating proxies
+- **Behavioral analysis**: Enable `enableBehavior: true`
+- **JavaScript challenges**: Increase `waitTime`
+
+## API Reference
+
+### Stealth Object Schema
+
+```typescript
+interface StealthOptions {
+  level?: "basic" | "advanced" | "maximum";
+  enableBehavior?: boolean;
+  sessionId?: string;
+}
+```
+
+### Full Request Example
+
+```json
+{
+  "url": "https://protected-site.com/page",
+  "format": "markdown",
+  "stealth": {
+    "level": "maximum",
+    "enableBehavior": true,
+    "sessionId": "session-abc123"
+  },
+  "proxy": {
+    "enabled": true,
+    "type": "residential"
+  },
+  "waitTime": 3000,
+  "includeScreenshot": true
+}
+```
+
+## Cost
+
+Stealth mode does not incur additional credit costs. The overhead is purely performance-based.
+
+<Info>
+**Credit Usage**: Same as regular scraping (1 credit per page). Stealth features are included at no extra cost.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Proxy Configuration"
+    icon="network-wired"
+    href="/guides/proxy-configuration"
+  >
+    Learn how to combine stealth with proxy rotation for maximum success
+  </Card>
+
+  <Card
+    title="Error Handling"
+    icon="triangle-exclamation"
+    href="/guides/error-handling"
+  >
+    Handle bot detection errors and implement retry strategies
+  </Card>
+
+  <Card
+    title="Batch Processing"
+    icon="layer-group"
+    href="/guides/batch-processing"
+  >
+    Scrape multiple protected pages efficiently
+  </Card>
+
+  <Card
+    title="API Reference"
+    icon="code"
+    href="/api-reference/scrape"
+  >
+    View complete scraping API documentation
+  </Card>
+</CardGroup>
+
+## Support
+
+Need help bypassing a specific protection system? Contact our support team:
+
+- **Email**: support@whizo.ai
+- **Discord**: [Join our community](https://discord.gg/whizoai)
+- **GitHub Issues**: [Report detection issues](https://github.com/whizoai/whizoai/issues)
+
+<Warning>
+WhizoAI's stealth features are designed for legitimate web scraping use cases. Always respect robots.txt and website terms of service. Misuse may result in account suspension.
+</Warning>

@@ -78,6 +78,28 @@ The Map API discovers all accessible URLs within a website, creating a comprehen
       - `playwright` - Full browser automation with JavaScript
       - `lightweight` - Fast HTTP-based discovery (no JS)
     </ParamField>
+
+    <ParamField body="options.includeMetadata" type="boolean" default="false">
+      Extract title and description metadata for discovered URLs
+
+      When `true`, performs lightweight HTTP requests to fetch page metadata (title and meta description tags) for each discovered URL. This provides richer information about each page but slightly increases processing time and credit cost.
+
+      **Credit Impact**: No additional credits - metadata extraction is included in base mapping cost
+
+      **Performance**: Adds ~200-500ms per URL with concurrent processing of 3 URLs at a time
+
+      **Best for**: Content inventory, SEO audits, and comprehensive site documentation
+    </ParamField>
+
+    <ParamField body="options.metadataLimit" type="number" default="10">
+      Maximum number of URLs to extract metadata for (1-50)
+
+      When `includeMetadata` is `true`, this limits how many URLs receive full metadata extraction. Useful for large sites where you only need detailed information for the most important pages.
+
+      **Example**: Set to `20` to get metadata only for the first 20 discovered URLs
+
+      **Remaining URLs**: Still included in results but with `title` and `description` as `undefined`
+    </ParamField>
   </Expandable>
 </ParamField>
 
@@ -123,6 +145,14 @@ The Map API discovers all accessible URLs within a website, creating a comprehen
 
         <ResponseField name="title" type="string" optional>
           Page title if available
+
+          Always present when `includeMetadata: true`, otherwise undefined
+        </ResponseField>
+
+        <ResponseField name="description" type="string" optional>
+          Meta description extracted from the page
+
+          Only present when `includeMetadata: true` is specified in options. Provides a brief summary of the page content extracted from meta description tags (including og:description and twitter:description). Truncated to 200 characters for consistency.
         </ResponseField>
 
         <ResponseField name="discoveredAt" type="string">
@@ -443,6 +473,132 @@ console.log('Product pages:', data.data.urls);
 ```
 
 </CodeGroup>
+
+### Mapping with Metadata Extraction
+
+Extract rich metadata (title + description) for discovered URLs:
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/map" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "maxDepth": 2,
+      "maxPages": 50,
+      "includeMetadata": true,
+      "metadataLimit": 20
+    }
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/map', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com',
+    options: {
+      maxDepth: 2,
+      maxPages: 50,
+      includeMetadata: true,
+      metadataLimit: 20
+    }
+  })
+});
+
+const data = await response.json();
+// URLs will include title and description metadata
+console.log('URLs with metadata:', data.data.urls.map(u => ({
+  url: u.url,
+  title: u.title,
+  description: u.description
+})));
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizo.ai/v1/map',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://example.com',
+        'options': {
+            'maxDepth': 2,
+            'maxPages': 50,
+            'includeMetadata': True,
+            'metadataLimit': 20
+        }
+    }
+)
+
+data = response.json()
+for url_obj in data['data']['urls'][:5]:  # Show first 5
+    print(f"{url_obj['title']}: {url_obj['description']}")
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Response with Metadata
+{
+  "success": true,
+  "data": {
+    "domain": "example.com",
+    "rootUrl": "https://example.com",
+    "totalPages": 35,
+    "maxDepthReached": 2,
+    "urls": [
+      {
+        "url": "https://example.com",
+        "depth": 0,
+        "statusCode": 200,
+        "title": "Example Domain - Leading Provider of Web Services",
+        "description": "Example Domain offers comprehensive web hosting, domain registration, and cloud solutions for businesses of all sizes. Get started today!",
+        "discoveredAt": "2025-01-15T10:00:00Z",
+        "parentUrl": null
+      },
+      {
+        "url": "https://example.com/about",
+        "depth": 1,
+        "statusCode": 200,
+        "title": "About Us - Our Story and Mission",
+        "description": "Learn about Example Domain's 10-year journey in providing reliable web hosting services to over 50,000 customers worldwide.",
+        "discoveredAt": "2025-01-15T10:00:05Z",
+        "parentUrl": "https://example.com"
+      },
+      {
+        "url": "https://example.com/services",
+        "depth": 1,
+        "statusCode": 200,
+        "title": "Our Services - Web Hosting & Cloud Solutions",
+        "description": "Explore our range of web hosting plans, cloud storage options, and managed services designed to help your business thrive online.",
+        "discoveredAt": "2025-01-15T10:00:06Z",
+        "parentUrl": "https://example.com"
+      }
+    ],
+    "summary": {
+      "totalUrls": 35,
+      "successfulUrls": 33,
+      "failedUrls": 1,
+      "redirectUrls": 1,
+      "mappingTime": 15.8,
+      "creditsUsed": 4
+    }
+  }
+}
+```
+</ResponseExample>
 
 ## Mapping Strategies
 

@@ -187,26 +187,127 @@ The Batch API allows you to scrape multiple URLs in a single request with automa
   Estimated completion time
 </ResponseField>
 
-<ResponseField name="results" type="array" optional>
-  Array of scraping results (only for synchronous processing)
-  <Expandable title="result properties">
-    <ResponseField name="url" type="string">
-      The URL that was scraped
+<ResponseField name="data" type="object" optional>
+  Batch scraping results (only for synchronous/direct processing)
+  <Expandable title="data properties">
+    <ResponseField name="results" type="array">
+      All results combined (successful first, then failed)
+
+      Array of all scraped URLs with standardized format. Successful results appear first, followed by failed results.
     </ResponseField>
-    <ResponseField name="success" type="boolean">
-      Whether scraping was successful
+
+    <ResponseField name="successful" type="array">
+      Only successful scraping results
+
+      Filtered array containing only URLs that were successfully scraped. Each result includes:
+      <Expandable title="successful result properties">
+        <ResponseField name="url" type="string">
+          The URL that was scraped (standardized field)
+        </ResponseField>
+        <ResponseField name="title" type="string" optional>
+          Page title extracted from metadata
+        </ResponseField>
+        <ResponseField name="description" type="string" optional>
+          Page description from meta tags
+        </ResponseField>
+        <ResponseField name="markdown" type="string">
+          Scraped content in markdown format
+        </ResponseField>
+        <ResponseField name="content" type="string">
+          Scraped content (alias for markdown field)
+        </ResponseField>
+        <ResponseField name="scrapedAt" type="string">
+          ISO timestamp when URL was scraped
+        </ResponseField>
+        <ResponseField name="status" type="string">
+          Always "success" for successful results
+        </ResponseField>
+        <ResponseField name="wordCount" type="number">
+          Total word count of scraped content
+        </ResponseField>
+        <ResponseField name="metadata" type="object">
+          Additional metadata about the scraping result
+          <Expandable title="metadata properties">
+            <ResponseField name="statusCode" type="number">
+              HTTP status code (typically 200)
+            </ResponseField>
+            <ResponseField name="contentType" type="string" optional>
+              MIME type of the response
+            </ResponseField>
+            <ResponseField name="loadTime" type="number" optional>
+              Page load time in milliseconds
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
     </ResponseField>
-    <ResponseField name="content" type="string">
-      Extracted content (if successful)
+
+    <ResponseField name="failed" type="array">
+      Only failed scraping results
+
+      Filtered array containing only URLs that failed to scrape. Each result includes:
+      <Expandable title="failed result properties">
+        <ResponseField name="url" type="string">
+          The URL that failed to scrape (standardized field)
+        </ResponseField>
+        <ResponseField name="status" type="string">
+          Always "failed" for failed results
+        </ResponseField>
+        <ResponseField name="error" type="string">
+          Error message describing why the scraping failed
+        </ResponseField>
+        <ResponseField name="scrapedAt" type="string">
+          ISO timestamp when the scraping was attempted
+        </ResponseField>
+        <ResponseField name="metadata" type="object">
+          Error metadata
+          <Expandable title="metadata properties">
+            <ResponseField name="statusCode" type="number">
+              HTTP status code (0 if request failed completely)
+            </ResponseField>
+            <ResponseField name="error" type="string">
+              Detailed error information
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
     </ResponseField>
-    <ResponseField name="metadata" type="object">
-      Page metadata
-    </ResponseField>
-    <ResponseField name="error" type="string" optional>
-      Error message (if failed)
-    </ResponseField>
-    <ResponseField name="retries" type="number">
-      Number of retry attempts made
+
+    <ResponseField name="summary" type="object">
+      Batch-level summary statistics
+
+      Comprehensive statistics about the entire batch processing job:
+      <Expandable title="summary properties">
+        <ResponseField name="total" type="number">
+          Total number of URLs in the batch
+        </ResponseField>
+        <ResponseField name="successful" type="number">
+          Number of successfully scraped URLs
+        </ResponseField>
+        <ResponseField name="failed" type="number">
+          Number of URLs that failed to scrape
+        </ResponseField>
+        <ResponseField name="successRate" type="number">
+          Success rate as a percentage (0-100)
+
+          **Example**: 80 (meaning 80% success rate)
+        </ResponseField>
+        <ResponseField name="processingTime" type="number">
+          Total processing time in milliseconds
+        </ResponseField>
+        <ResponseField name="averageTimePerUrl" type="number">
+          Average time per URL in milliseconds
+        </ResponseField>
+        <ResponseField name="creditsUsed" type="number">
+          Total credits consumed (only for successful URLs)
+        </ResponseField>
+        <ResponseField name="creditsPerUrl" type="number">
+          Credits charged per URL
+        </ResponseField>
+        <ResponseField name="concurrency" type="number">
+          Number of URLs processed simultaneously
+        </ResponseField>
+      </Expandable>
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -432,7 +533,7 @@ const response = await fetch('https://api.whizo.ai/v1/batch', {
 </CodeGroup>
 
 <ResponseExample>
-```json Response
+```json Async Response (Queued)
 {
   "success": true,
   "jobId": "batch_extract_789",
@@ -441,6 +542,118 @@ const response = await fetch('https://api.whizo.ai/v1/batch', {
   "estimatedCredits": 9,
   "message": "Batch job queued. Use the statusUrl to track progress.",
   "statusUrl": "https://api.whizo.ai/v1/jobs/batch_extract_789"
+}
+```
+</ResponseExample>
+
+### Direct Processing Response (Synchronous)
+
+When queue processing is disabled, the batch API returns results immediately with enhanced formatting:
+
+<ResponseExample>
+```json Direct Processing Response
+{
+  "success": true,
+  "data": {
+    "results": [
+      {
+        "url": "https://example.com/page1",
+        "title": "Page 1 Title",
+        "description": "Description of page 1",
+        "markdown": "# Page 1 Content\n\nThis is the content...",
+        "content": "# Page 1 Content\n\nThis is the content...",
+        "scrapedAt": "2025-01-15T14:30:00Z",
+        "status": "success",
+        "wordCount": 450,
+        "metadata": {
+          "statusCode": 200,
+          "contentType": "text/html",
+          "loadTime": 1234
+        }
+      },
+      {
+        "url": "https://example.com/page2",
+        "title": "Page 2 Title",
+        "description": "Description of page 2",
+        "markdown": "# Page 2 Content\n\nAnother page...",
+        "content": "# Page 2 Content\n\nAnother page...",
+        "scrapedAt": "2025-01-15T14:30:02Z",
+        "status": "success",
+        "wordCount": 320,
+        "metadata": {
+          "statusCode": 200,
+          "contentType": "text/html",
+          "loadTime": 987
+        }
+      },
+      {
+        "url": "https://example.com/page3",
+        "status": "failed",
+        "error": "Request timeout after 30000ms",
+        "scrapedAt": "2025-01-15T14:30:35Z",
+        "metadata": {
+          "statusCode": 0,
+          "error": "Request timeout after 30000ms"
+        }
+      }
+    ],
+    "successful": [
+      {
+        "url": "https://example.com/page1",
+        "title": "Page 1 Title",
+        "description": "Description of page 1",
+        "markdown": "# Page 1 Content\n\nThis is the content...",
+        "content": "# Page 1 Content\n\nThis is the content...",
+        "scrapedAt": "2025-01-15T14:30:00Z",
+        "status": "success",
+        "wordCount": 450,
+        "metadata": {
+          "statusCode": 200,
+          "contentType": "text/html",
+          "loadTime": 1234
+        }
+      },
+      {
+        "url": "https://example.com/page2",
+        "title": "Page 2 Title",
+        "description": "Description of page 2",
+        "markdown": "# Page 2 Content\n\nAnother page...",
+        "content": "# Page 2 Content\n\nAnother page...",
+        "scrapedAt": "2025-01-15T14:30:02Z",
+        "status": "success",
+        "wordCount": 320,
+        "metadata": {
+          "statusCode": 200,
+          "contentType": "text/html",
+          "loadTime": 987
+        }
+      }
+    ],
+    "failed": [
+      {
+        "url": "https://example.com/page3",
+        "status": "failed",
+        "error": "Request timeout after 30000ms",
+        "scrapedAt": "2025-01-15T14:30:35Z",
+        "metadata": {
+          "statusCode": 0,
+          "error": "Request timeout after 30000ms"
+        }
+      }
+    ],
+    "summary": {
+      "total": 3,
+      "successful": 2,
+      "failed": 1,
+      "successRate": 67,
+      "processingTime": 35420,
+      "averageTimePerUrl": 11807,
+      "creditsUsed": 2,
+      "creditsPerUrl": 1,
+      "concurrency": 3
+    }
+  },
+  "warning": "1 of 3 URLs failed to scrape"
 }
 ```
 </ResponseExample>
