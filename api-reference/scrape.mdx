@@ -112,7 +112,7 @@ The Scrape API allows you to extract content from any webpage and convert it to 
 </ParamField>
 
 <ParamField body="stealth" type="boolean" default="false">
-  Use stealth mode to bypass bot detection (+4 credits)
+  Enable stealth mode with automatic escalation on bot detection. Automatically upgrades from basic → advanced → maximum stealth if bot detection is encountered (+5 credits)
 </ParamField>
 
 <ParamField body="mobile" type="boolean" default="false">
@@ -273,7 +273,7 @@ The Scrape API allows you to extract content from any webpage and convert it to 
 ### Advanced Options
 
 <ParamField body="useProxy" type="boolean" default="false">
-  Use premium proxy service for better reliability
+  Enable premium proxy rotation from a pool of 10+ rotating proxies for better reliability and IP diversity (+2 credits)
 </ParamField>
 
 <ParamField body="llmOptimization" type="boolean" default="false">
@@ -719,8 +719,8 @@ console.log('Extracted:', data.data.extracted);
 | PDF generation | +1 credit |
 | Structured format | +1 credit |
 | AI extraction | +2-3 credits |
-| Stealth mode | +4 credits |
-| Premium proxy | +1 credit |
+| Stealth mode with auto-escalation | +5 credits |
+| Premium proxy rotation | +2 credits |
 
 **Note**: Costs are cumulative. For example, scraping with JavaScript + screenshot + PDF = 1 + 1 + 1 + 1 = 4 credits total.
 

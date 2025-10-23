@@ -101,6 +101,14 @@ The Crawl API enables you to automatically discover and scrape content from an e
   Custom HTTP headers to send with each request
 </ParamField>
 
+<ParamField body="stealth" type="boolean" default="false">
+  Enable stealth mode with automatic escalation on bot detection for all crawled pages. Automatically upgrades from basic → advanced → maximum stealth if bot detection is encountered (+5 credits per page)
+</ParamField>
+
+<ParamField body="useProxy" type="boolean" default="false">
+  Enable premium proxy rotation from a pool of 10+ rotating proxies for all crawled pages (+2 credits per page)
+</ParamField>
+
 <ParamField body="maxAge" type="number" default="30">
   Cache max age in days (1-365). Set to 0 to bypass cache.
 </ParamField>
@@ -436,8 +444,12 @@ Crawling costs vary based on features used:
 | Screenshot capture | +1 credit |
 | PDF generation | +1 credit |
 | AI extraction | +2 credits |
+| Stealth mode with auto-escalation | +5 credits |
+| Premium proxy rotation | +2 credits |
 
-**Example**: Crawling 10 pages with screenshots = 20 credits (10 × 2)
+**Examples**:
+- Crawling 10 pages with screenshots = 20 credits (10 × 2)
+- Crawling 10 pages with stealth + proxy = 80 credits (10 × (1 + 5 + 2))
 
 ## Error Responses
 
