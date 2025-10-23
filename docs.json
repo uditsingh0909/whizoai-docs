@@ -46,6 +46,12 @@
               "guides/batch-processing",
               "guides/error-handling"
             ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/mcp"
+            ]
           }
         ]
       },
@@ -101,6 +107,12 @@
               "sdks/javascript",
               "sdks/python",
               "sdks/curl"
+            ]
+          },
+          {
+            "group": "AI Tools Integration",
+            "pages": [
+              "integrations/mcp"
             ]
           }
         ]

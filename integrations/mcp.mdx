@@ -1,0 +1,332 @@
+---
+title: "MCP Integration"
+description: "Use WhizoAI with Claude Desktop and other AI tools via Model Context Protocol (MCP)"
+icon: "plug"
+---
+
+## Overview
+
+WhizoAI provides a Model Context Protocol (MCP) server that enables seamless integration with Claude Desktop and other MCP-compatible AI tools. This allows you to use WhizoAI's web scraping, crawling, and data extraction capabilities directly within your AI assistant conversations.
+
+<Info>
+  **MCP Server Package**: [`whizoai-mcp`](https://www.npmjs.com/package/whizoai-mcp) - Published on npm
+</Info>
+
+## Prerequisites
+
+- Node.js 18 or higher
+- WhizoAI API key ([Get your API key](https://whizo.ai/app/api-keys))
+- Claude Desktop or another MCP-compatible tool
+
+## Quick Setup
+
+### 1. Get Your API Key
+
+1. Log in to your [WhizoAI Dashboard](https://whizo.ai/app)
+2. Navigate to [API Keys](https://whizo.ai/app/api-keys)
+3. Copy your existing API key or create a new one
+
+### 2. Configure Claude Desktop
+
+Add the following configuration to your Claude Desktop config file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "whizoai": {
+      "command": "npx",
+      "args": ["-y", "whizoai-mcp"],
+      "env": {
+        "WHIZOAI_API_KEY": "wai_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+<Warning>
+  Replace `wai_your_api_key_here` with your actual WhizoAI API key from the dashboard.
+</Warning>
+
+### 3. Restart Claude Desktop
+
+After saving the configuration file, restart Claude Desktop to load the MCP server.
+
+### 4. Verify Installation
+
+In Claude Desktop, you should now see the WhizoAI MCP server listed in the available tools. You can verify by asking:
+
+```
+Can you scrape https://example.com for me?
+```
+
+## Available Tools
+
+The WhizoAI MCP server provides 9 powerful tools:
+
+### Core Scraping Tools
+
+<CardGroup cols={2}>
+  <Card title="whizoai_scrape" icon="globe">
+    Scrape a single webpage and extract content in markdown, HTML, or text format
+  </Card>
+  <Card title="whizoai_crawl" icon="spider-web">
+    Crawl multiple pages from a website with depth and page limits
+  </Card>
+  <Card title="whizoai_extract" icon="wand-magic-sparkles">
+    AI-powered data extraction using structured schemas
+  </Card>
+  <Card title="whizoai_search" icon="magnifying-glass">
+    Perform web searches and get scraped content from results
+  </Card>
+</CardGroup>
+
+### Job Management Tools
+
+<CardGroup cols={2}>
+  <Card title="whizoai_job_status" icon="circle-info">
+    Check the status of a running job
+  </Card>
+  <Card title="whizoai_list_jobs" icon="list">
+    List recent jobs with filtering options
+  </Card>
+  <Card title="whizoai_cancel_job" icon="circle-xmark">
+    Cancel a running or pending job
+  </Card>
+</CardGroup>
+
+### Account Tools
+
+<CardGroup cols={2}>
+  <Card title="whizoai_check_credits" icon="coins">
+    Check your remaining credit balance
+  </Card>
+  <Card title="whizoai_map" icon="sitemap">
+    Discover URLs from a website (map structure)
+  </Card>
+</CardGroup>
+
+## Usage Examples
+
+### Example 1: Simple Web Scraping
+
+```
+User: Can you scrape the content from https://news.ycombinator.com and summarize the top stories?
+
+Claude: I'll scrape Hacker News for you and summarize the top stories.
+[Uses whizoai_scrape tool]
+[Provides summary based on scraped content]
+```
+
+### Example 2: Multi-Page Crawling
+
+```
+User: Crawl https://docs.example.com and create a summary of their API documentation
+
+Claude: I'll crawl the documentation site to gather all API-related pages.
+[Uses whizoai_crawl tool]
+[Analyzes crawled pages and creates comprehensive summary]
+```
+
+### Example 3: Structured Data Extraction
+
+```
+User: Extract all product information from https://example.com/products including names, prices, and descriptions
+
+Claude: I'll extract the structured product data from that page.
+[Uses whizoai_extract tool with appropriate schema]
+[Returns formatted product data]
+```
+
+### Example 4: Web Search with Content
+
+```
+User: Search for recent articles about AI in healthcare and summarize the findings
+
+Claude: I'll search for recent AI healthcare articles and analyze their content.
+[Uses whizoai_search tool]
+[Provides synthesized summary from multiple sources]
+```
+
+## Configuration Options
+
+### Custom API URL
+
+If you're using a self-hosted WhizoAI instance or testing locally, you can specify a custom API URL:
+
+```json
+{
+  "mcpServers": {
+    "whizoai": {
+      "command": "npx",
+      "args": ["-y", "whizoai-mcp"],
+      "env": {
+        "WHIZOAI_API_KEY": "wai_your_api_key_here",
+        "WHIZOAI_API_URL": "http://localhost:8080"
+      }
+    }
+  }
+}
+```
+
+### Multiple Environments
+
+You can configure multiple WhizoAI MCP servers for different environments:
+
+```json
+{
+  "mcpServers": {
+    "whizoai-prod": {
+      "command": "npx",
+      "args": ["-y", "whizoai-mcp"],
+      "env": {
+        "WHIZOAI_API_KEY": "wai_production_key"
+      }
+    },
+    "whizoai-dev": {
+      "command": "npx",
+      "args": ["-y", "whizoai-mcp"],
+      "env": {
+        "WHIZOAI_API_KEY": "wai_development_key",
+        "WHIZOAI_API_URL": "http://localhost:8080"
+      }
+    }
+  }
+}
+```
+
+## Features
+
+✅ **9 Powerful Tools** - Comprehensive web scraping and data extraction capabilities
+✅ **Real-time Job Status** - Monitor long-running scraping jobs
+✅ **Credit Management** - Check your credit balance directly from Claude
+✅ **Easy Installation** - One-line setup with npx
+✅ **Automatic Updates** - Always uses the latest version with `-y` flag
+✅ **Secure** - API key-based authentication
+
+## Credit Usage
+
+MCP tool calls consume credits from your WhizoAI account based on the operation:
+
+| Tool | Base Cost | Additional |
+|------|-----------|------------|
+| `whizoai_scrape` | 1 credit | +1 for screenshot, +1 for PDF |
+| `whizoai_crawl` | 1 credit/page | Depends on pages crawled |
+| `whizoai_extract` | 3-6 credits/page | Based on AI model used |
+| `whizoai_search` | 1 credit | Per search query |
+| `whizoai_map` | 1 credit | Per discovery request |
+| Other tools | Free | No credit cost |
+
+<Tip>
+  Monitor your credit usage from the [Dashboard](https://whizo.ai/app) or use the `whizoai_check_credits` tool in Claude.
+</Tip>
+
+## Troubleshooting
+
+### MCP Server Not Loading
+
+1. **Check Configuration Path**: Ensure you're editing the correct config file
+2. **Validate JSON**: Use a JSON validator to check for syntax errors
+3. **Restart Claude**: Completely quit and restart Claude Desktop
+4. **Check Logs**: View MCP server logs in Claude Desktop's developer console
+
+### API Key Issues
+
+1. **Verify API Key**: Ensure your API key is active in the [Dashboard](https://whizo.ai/app/api-keys)
+2. **Check Format**: API keys should start with `wai_`
+3. **Permissions**: Ensure the key has appropriate permissions
+
+### Connection Errors
+
+1. **Network**: Verify you have internet connectivity
+2. **Firewall**: Check if firewall is blocking npx or Node.js
+3. **API Status**: Check [status.whizo.ai](https://status.whizo.ai) for service health
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Optimize Credit Usage">
+    - Use `onlyMainContent: true` for scraping to reduce costs
+    - Limit crawl depth and pages to only what you need
+    - Use `whizoai_map` to discover URLs before crawling
+    - Cache results when possible
+  </Accordion>
+
+  <Accordion title="Handle Rate Limits">
+    - Monitor your plan's rate limits in the dashboard
+    - Use batch operations instead of sequential individual requests
+    - Implement exponential backoff for retries
+    - Upgrade your plan if you consistently hit limits
+  </Accordion>
+
+  <Accordion title="Secure Your API Key">
+    - Never commit API keys to version control
+    - Rotate API keys periodically
+    - Use separate keys for development and production
+    - Revoke unused or compromised keys immediately
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Usage
+
+### Using with Other MCP Clients
+
+While this guide focuses on Claude Desktop, the WhizoAI MCP server works with any MCP-compatible client:
+
+```bash
+# Run directly with node
+npx -y whizoai-mcp
+
+# Or install globally
+npm install -g whizoai-mcp
+whizoai-mcp
+```
+
+### Local Development
+
+For local development and testing:
+
+```json
+{
+  "mcpServers": {
+    "whizoai-local": {
+      "command": "npx",
+      "args": ["-y", "whizoai-mcp"],
+      "env": {
+        "WHIZOAI_API_KEY": "wai_test_key",
+        "WHIZOAI_API_URL": "http://localhost:8080",
+        "DEBUG": "true"
+      }
+    }
+  }
+}
+```
+
+## Support
+
+Need help with the MCP integration?
+
+- **Documentation**: [docs.whizo.ai](https://docs.whizo.ai)
+- **Email Support**: [support@whizo.ai](mailto:support@whizo.ai)
+- **GitHub Issues**: [github.com/whizoai](https://github.com/whizoai)
+- **Status Page**: [status.whizo.ai](https://status.whizo.ai)
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="API Keys" icon="key" href="/api-keys">
+    Learn how to create and manage API keys
+  </Card>
+  <Card title="JavaScript SDK" icon="js" href="/sdks/javascript">
+    Use WhizoAI in your Node.js applications
+  </Card>
+  <Card title="Python SDK" icon="python" href="/sdks/python">
+    Use WhizoAI in your Python projects
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/scrape">
+    Explore all available API endpoints
+  </Card>
+</CardGroup>
