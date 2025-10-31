@@ -1,0 +1,432 @@
+---
+title: "Document Parsing"
+description: "Extract text and data from PDFs, Word documents, and images"
+icon: "file-pdf"
+---
+
+## Overview
+
+WhizoAI can parse and extract content from various document formats including PDFs, Word documents (DOCX), Excel files, and images with OCR capabilities.
+
+## Supported Formats
+
+<CardGroup cols={3}>
+<Card title="PDF Documents" icon="file-pdf">
+Extract text, tables, and images from PDF files
+</Card>
+
+<Card title="Word Documents" icon="file-word">
+Parse DOCX, DOC files and extract formatted content
+</Card>
+
+<Card title="Images (OCR)" icon="image">
+Extract text from PNG, JPG, TIFF using OCR
+</Card>
+</CardGroup>
+
+## PDF Parsing
+
+### Basic PDF Extraction
+
+```python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Parse PDF document
+result = client.parse_document(
+    url="https://example.com/document.pdf",
+    options={
+        "format": "markdown",
+        "extractImages": False
+    }
+)
+
+print(result['content'])
+```
+
+### Extract Text with Layout Preservation
+
+```python
+result = client.parse_document(
+    url="https://example.com/document.pdf",
+    options={
+        "format": "markdown",
+        "preserveLayout": True,  # Maintain original formatting
+        "includePageNumbers": True
+    }
+)
+
+# Output includes page breaks and numbers
+for page in result['pages']:
+    print(f"Page {page['number']}:")
+    print(page['content'])
+```
+
+### Table Extraction from PDFs
+
+```python
+result = client.parse_document(
+    url="https://example.com/report.pdf",
+    options={
+        "extractTables": True,
+        "tableFormat": "markdown"  # or "csv", "json"
+    }
+)
+
+# Access extracted tables
+for table in result['tables']:
+    print(f"Table {table['index']} on page {table['page']}:")
+    print(table['data'])  # Structured table data
+```
+
+### Image Extraction from PDFs
+
+```python
+result = client.parse_document(
+    url="https://example.com/document.pdf",
+    options={
+        "extractImages": True,
+        "imageFormat": "png",
+        "minImageSize": 100  # Skip small images (pixels)
+    }
+)
+
+# Download extracted images
+for image in result['images']:
+    print(f"Image URL: {image['url']}")
+    print(f"Page: {image['page']}, Size: {image['width']}x{image['height']}")
+```
+
+## Word Document Parsing
+
+### DOCX Extraction
+
+```python
+result = client.parse_document(
+    url="https://example.com/document.docx",
+    options={
+        "format": "markdown",
+        "preserveFormatting": True,  # Keep bold, italic, etc.
+        "extractComments": True,  # Include document comments
+        "extractFootnotes": True
+    }
+)
+
+print(result['content'])
+```
+
+### Extract Document Metadata
+
+```python
+result = client.parse_document(
+    url="https://example.com/document.docx",
+    options={
+        "includeMetadata": True
+    }
+)
+
+metadata = result['metadata']
+print(f"Author: {metadata['author']}")
+print(f"Created: {metadata['createdDate']}")
+print(f"Modified: {metadata['modifiedDate']}")
+print(f"Word Count: {metadata['wordCount']}")
+print(f"Page Count: {metadata['pageCount']}")
+```
+
+## OCR (Optical Character Recognition)
+
+### Extract Text from Images
+
+```python
+result = client.parse_document(
+    url="https://example.com/scanned-document.jpg",
+    options={
+        "ocr": True,
+        "ocrLanguage": "eng",  # English
+        "format": "text"
+    }
+)
+
+print(result['content'])
+```
+
+### Multi-Language OCR
+
+```python
+result = client.parse_document(
+    url="https://example.com/multilingual.png",
+    options={
+        "ocr": True,
+        "ocrLanguage": "eng+fra+spa",  # English, French, Spanish
+        "format": "text"
+    }
+)
+```
+
+### Supported OCR Languages
+
+| Language | Code | Language | Code |
+|----------|------|----------|------|
+| English | `eng` | Spanish | `spa` |
+| French | `fra` | German | `deu` |
+| Italian | `ita` | Portuguese | `por` |
+| Chinese (Simplified) | `chi_sim` | Japanese | `jpn` |
+| Korean | `kor` | Arabic | `ara` |
+
+## Excel & Spreadsheet Parsing
+
+### Parse Excel Files
+
+```python
+result = client.parse_document(
+    url="https://example.com/data.xlsx",
+    options={
+        "format": "json",
+        "includeAllSheets": True
+    }
+)
+
+# Access sheet data
+for sheet in result['sheets']:
+    print(f"Sheet: {sheet['name']}")
+    print(f"Rows: {sheet['data']}")
+```
+
+### Convert to CSV
+
+```python
+result = client.parse_document(
+    url="https://example.com/data.xlsx",
+    options={
+        "format": "csv",
+        "sheetName": "Sales Q1"  # Specific sheet
+    }
+)
+
+# Get CSV output
+csv_data = result['content']
+```
+
+## Batch Document Processing
+
+### Process Multiple Documents
+
+```python
+document_urls = [
+    "https://example.com/doc1.pdf",
+    "https://example.com/doc2.docx",
+    "https://example.com/doc3.xlsx"
+]
+
+result = client.batch_parse_documents(
+    urls=document_urls,
+    options={
+        "format": "markdown",
+        "extractTables": True
+    }
+)
+
+for doc in result['documents']:
+    print(f"Processed: {doc['url']}")
+    print(f"Pages: {doc['pageCount']}")
+    print(f"Content length: {len(doc['content'])}")
+```
+
+## Advanced Features
+
+### PDF Page Range Selection
+
+```python
+result = client.parse_document(
+    url="https://example.com/large-document.pdf",
+    options={
+        "pages": "1-5,10,15-20",  # Specific pages only
+        "format": "markdown"
+    }
+)
+```
+
+### Password-Protected Documents
+
+```python
+result = client.parse_document(
+    url="https://example.com/secure.pdf",
+    options={
+        "password": "document_password",
+        "format": "text"
+    }
+)
+```
+
+### Form Field Extraction
+
+Extract data from PDF forms:
+
+```python
+result = client.parse_document(
+    url="https://example.com/form.pdf",
+    options={
+        "extractFormFields": True
+    }
+)
+
+# Access form data
+for field in result['formFields']:
+    print(f"{field['name']}: {field['value']}")
+```
+
+## AI-Powered Document Analysis
+
+### Structured Data Extraction from Documents
+
+```python
+result = client.extract_from_document(
+    url="https://example.com/invoice.pdf",
+    schema={
+        "invoiceNumber": "Invoice number",
+        "date": "Invoice date",
+        "total": "Total amount (number)",
+        "items": "List of line items with description and price"
+    },
+    options={
+        "model": "gpt-4"
+    }
+)
+
+print(result['extractedData'])
+```
+
+### Document Classification
+
+```python
+result = client.classify_document(
+    url="https://example.com/document.pdf",
+    categories=["invoice", "contract", "resume", "report"],
+    options={
+        "model": "gpt-3.5-turbo"
+    }
+)
+
+print(f"Document type: {result['classification']}")
+print(f"Confidence: {result['confidence']}")
+```
+
+## Error Handling
+
+```python
+try:
+    result = client.parse_document(
+        url="https://example.com/document.pdf",
+        options={"format": "markdown"}
+    )
+
+except WhizoAIError as e:
+    if e.code == 'UNSUPPORTED_FORMAT':
+        print("Document format not supported")
+    elif e.code == 'PASSWORD_REQUIRED':
+        print("Document is password protected")
+    elif e.code == 'CORRUPTED_FILE':
+        print("Document file is corrupted or invalid")
+```
+
+## Credit Costs
+
+| Operation | Cost |
+|-----------|------|
+| PDF Parsing (per page) | 1 credit |
+| DOCX Parsing (per page) | 1 credit |
+| OCR (per image) | 2 credits |
+| Table Extraction | +1 credit per table |
+| AI Extraction from Document | +3-6 credits (LLM cost) |
+| Image Extraction from PDF | Included |
+
+## Performance Tips
+
+<Tip>
+**Optimize Large Documents**
+- Extract specific pages instead of full document
+- Disable image extraction if not needed
+- Use lower quality settings for faster processing
+</Tip>
+
+<Warning>
+**File Size Limits**
+- Maximum file size: 100MB
+- For larger files, split into smaller parts
+- Consider using pagination for very long documents
+</Warning>
+
+## Common Use Cases
+
+<AccordionGroup>
+<Accordion title="Invoice Processing">
+Extract invoice numbers, amounts, line items from PDF invoices
+</Accordion>
+
+<Accordion title="Resume Parsing">
+Extract candidate information from resume PDFs/DOCX files
+</Accordion>
+
+<Accordion title="Contract Analysis">
+Extract key terms, dates, parties from legal contracts
+</Accordion>
+
+<Accordion title="Data Migration">
+Convert legacy documents to structured data formats
+</Accordion>
+
+<Accordion title="Receipt OCR">
+Extract amounts, dates, merchant info from receipt images
+</Accordion>
+</AccordionGroup>
+
+## Integration Examples
+
+### With AI Extraction
+
+```python
+# First parse the document
+parsed = client.parse_document(
+    url="https://example.com/invoice.pdf",
+    options={"format": "markdown"}
+)
+
+# Then extract structured data
+extracted = client.extract(
+    content=parsed['content'],  # Use parsed content
+    schema={
+        "invoiceNumber": "Invoice number",
+        "amount": "Total amount",
+        "items": "Line items"
+    }
+)
+```
+
+### With Webhooks
+
+```python
+result = client.parse_document(
+    url="https://example.com/large-report.pdf",
+    options={
+        "webhook": "https://your-server.com/webhook",
+        "format": "markdown"
+    }
+)
+
+# Webhook receives result when processing completes
+```
+
+## Related Resources
+
+<Card title="AI Extraction" icon="brain" href="/features/ai-extraction">
+  Extract structured data from parsed documents
+</Card>
+
+<Card title="Batch Processing" icon="layer-group" href="/features/batch-processing">
+  Process multiple documents efficiently
+</Card>
+
+<Card title="Webhooks" icon="webhook" href="/webhooks/overview">
+  Get notifications when document parsing completes
+</Card>

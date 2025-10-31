@@ -1,0 +1,22 @@
+```javascript Node.js
+import WhizoAI from '@whizoai/sdk';
+
+const client = new WhizoAI({ apiKey: 'whizo_YOUR-API-KEY' });
+
+// Extract structured data using AI
+const result = await client.extract({
+  url: 'https://example.com/product',
+  schema: {
+    name: 'Product name',
+    price: 'Product price',
+    description: 'Product description',
+    inStock: 'Is the product in stock (boolean)'
+  },
+  options: {
+    model: 'gpt-4',
+    format: 'json'
+  }
+});
+
+console.log(result.extractedData);
+```

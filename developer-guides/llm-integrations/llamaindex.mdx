@@ -1,0 +1,597 @@
+---
+title: "LlamaIndex Integration"
+description: "Build powerful data applications with WhizoAI and LlamaIndex"
+icon: "database"
+---
+
+## Overview
+
+Integrate WhizoAI with LlamaIndex (formerly GPT Index) to build advanced RAG applications, question-answering systems, and data agents that can scrape and query web content.
+
+## Installation
+
+```bash
+pip install llama-index whizoai
+```
+
+## Quick Start
+
+### Basic Web Data Loading
+
+```python
+from llama_index import VectorStoreIndex, SimpleWebPageReader
+from whizoai import WhizoAI
+
+# Initialize WhizoAI
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Scrape web pages
+urls = [
+    "https://example.com/page1",
+    "https://example.com/page2"
+]
+
+documents = []
+for url in urls:
+    result = client.scrape(url, options={"format": "markdown"})
+    documents.append({
+        "text": result["content"],
+        "metadata": result["metadata"]
+    })
+
+# Create index
+from llama_index.core import Document
+docs = [Document(text=d["text"], metadata=d["metadata"]) for d in documents]
+index = VectorStoreIndex.from_documents(docs)
+
+# Query the index
+query_engine = index.as_query_engine()
+response = query_engine.query("What are the main topics?")
+print(response)
+```
+
+## Custom Data Loaders
+
+### WhizoAI Document Loader
+
+```python
+from llama_index.core.readers.base import BaseReader
+from llama_index.core import Document
+from typing import List
+from whizoai import WhizoAI
+
+class WhizoAIReader(BaseReader):
+    """WhizoAI document reader for LlamaIndex"""
+
+    def __init__(self, api_key: str):
+        self.client = WhizoAI(api_key=api_key)
+
+    def load_data(
+        self,
+        urls: List[str],
+        mode: str = "scrape",
+        **kwargs
+    ) -> List[Document]:
+        """
+        Load documents from URLs using WhizoAI
+
+        Args:
+            urls: List of URLs to scrape
+            mode: "scrape" or "crawl"
+            **kwargs: Additional WhizoAI options
+        """
+        documents = []
+
+        if mode == "scrape":
+            for url in urls:
+                result = self.client.scrape(url, options=kwargs)
+                doc = Document(
+                    text=result["content"],
+                    metadata={
+                        "url": result["metadata"]["url"],
+                        "title": result["metadata"].get("title", ""),
+                        "description": result["metadata"].get("description", ""),
+                        "credits_used": result["metadata"]["creditsUsed"]
+                    }
+                )
+                documents.append(doc)
+
+        elif mode == "crawl":
+            result = self.client.crawl(urls[0], options=kwargs)
+            job_id = result["jobId"]
+
+            # Wait for completion
+            while True:
+                status = self.client.get_job_status(job_id)
+                if status["status"] == "completed":
+                    break
+                time.sleep(2)
+
+            # Get results
+            results = self.client.get_job_results(job_id)
+            for page in results["pages"]:
+                doc = Document(
+                    text=page["content"],
+                    metadata={
+                        "url": page["url"],
+                        "title": page.get("title", ""),
+                        "page_number": page.get("pageNumber", 0)
+                    }
+                )
+                documents.append(doc)
+
+        return documents
+
+# Usage
+reader = WhizoAIReader(api_key="whizo_YOUR-API-KEY")
+documents = reader.load_data(
+    urls=["https://example.com"],
+    mode="crawl",
+    maxPages=50
+)
+
+# Create index
+index = VectorStoreIndex.from_documents(documents)
+```
+
+## RAG Applications
+
+### Building a Knowledge Base
+
+```python
+from llama_index import VectorStoreIndex, ServiceContext
+from llama_index.llms import OpenAI
+
+# Scrape documentation
+reader = WhizoAIReader(api_key="whizo_YOUR-API-KEY")
+documents = reader.load_data(
+    urls=["https://docs.example.com"],
+    mode="crawl",
+    maxDepth=3,
+    maxPages=100
+)
+
+# Configure service context
+llm = OpenAI(model="gpt-4", temperature=0)
+service_context = ServiceContext.from_defaults(llm=llm)
+
+# Create index
+index = VectorStoreIndex.from_documents(
+    documents,
+    service_context=service_context
+)
+
+# Query with chat mode
+chat_engine = index.as_chat_engine(chat_mode="condense_question")
+
+# Interactive chat
+print("Chat with the documentation (type 'quit' to exit):")
+while True:
+    question = input("You: ")
+    if question.lower() == 'quit':
+        break
+
+    response = chat_engine.chat(question)
+    print(f"Bot: {response}")
+```
+
+### Multi-Document Queries
+
+```python
+from llama_index import VectorStoreIndex
+from llama_index.tools import QueryEngineTool
+from llama_index.query_engine import SubQuestionQueryEngine
+
+# Scrape multiple sources
+reader = WhizoAIReader(api_key="whizo_YOUR-API-KEY")
+
+# Source 1: Company blog
+blog_docs = reader.load_data(
+    urls=["https://company.com/blog"],
+    mode="crawl",
+    maxPages=50
+)
+blog_index = VectorStoreIndex.from_documents(blog_docs)
+
+# Source 2: Product docs
+docs_docs = reader.load_data(
+    urls=["https://company.com/docs"],
+    mode="crawl",
+    maxPages=100
+)
+docs_index = VectorStoreIndex.from_documents(docs_docs)
+
+# Create query tools
+blog_tool = QueryEngineTool.from_defaults(
+    query_engine=blog_index.as_query_engine(),
+    name="company_blog",
+    description="Contains company blog posts and articles"
+)
+
+docs_tool = QueryEngineTool.from_defaults(
+    query_engine=docs_index.as_query_engine(),
+    name="product_docs",
+    description="Contains product documentation and guides"
+)
+
+# Create sub-question engine
+query_engine = SubQuestionQueryEngine.from_defaults(
+    query_engine_tools=[blog_tool, docs_tool]
+)
+
+# Ask complex questions
+response = query_engine.query(
+    "Compare the features mentioned in the blog with those in the documentation"
+)
+print(response)
+```
+
+## Data Agents
+
+### Web Research Agent
+
+```python
+from llama_index.agent import OpenAIAgent
+from llama_index.tools import FunctionTool
+
+def scrape_webpage(url: str) -> str:
+    """Scrape a webpage and return its content"""
+    client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+    result = client.scrape(url, options={"format": "markdown"})
+    return result["content"]
+
+def search_and_scrape(query: str) -> str:
+    """Search and scrape top results"""
+    client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+    result = client.search(
+        query=query,
+        options={"maxResults": 5, "scrapeResults": True}
+    )
+
+    content = []
+    for item in result["results"]:
+        content.append(
+            f"**{item['title']}**\n"
+            f"URL: {item['url']}\n"
+            f"{item.get('content', '')[:500]}\n"
+        )
+
+    return "\n\n".join(content)
+
+# Create tools
+scrape_tool = FunctionTool.from_defaults(fn=scrape_webpage)
+search_tool = FunctionTool.from_defaults(fn=search_and_scrape)
+
+# Initialize agent
+agent = OpenAIAgent.from_tools(
+    [scrape_tool, search_tool],
+    verbose=True
+)
+
+# Use the agent
+response = agent.chat(
+    "Research the top 3 AI web scraping tools and compare their features"
+)
+print(response)
+```
+
+## Custom Extractors
+
+### Structured Data Extraction
+
+```python
+from llama_index.extractors import BaseExtractor
+from typing import List, Dict, Any
+
+class WhizoAIExtractor(BaseExtractor):
+    """Extract structured data using WhizoAI"""
+
+    def __init__(self, api_key: str, schema: Dict[str, str]):
+        self.client = WhizoAI(api_key=api_key)
+        self.schema = schema
+
+    def extract(self, nodes: List) -> List:
+        """Extract structured data from nodes"""
+        for node in nodes:
+            # Extract structured data
+            result = self.client.extract(
+                content=node.text,
+                schema=self.schema
+            )
+
+            # Add to metadata
+            node.metadata.update(result["extractedData"])
+
+        return nodes
+
+# Usage
+schema = {
+    "title": "Document title",
+    "author": "Author name",
+    "date": "Publication date",
+    "topics": "Main topics (array)"
+}
+
+extractor = WhizoAIExtractor(
+    api_key="whizo_YOUR-API-KEY",
+    schema=schema
+)
+
+# Apply to documents
+from llama_index.node_parser import SimpleNodeParser
+
+reader = WhizoAIReader(api_key="whizo_YOUR-API-KEY")
+documents = reader.load_data(urls=["https://example.com/article"])
+
+# Parse into nodes
+parser = SimpleNodeParser.from_defaults()
+nodes = parser.get_nodes_from_documents(documents)
+
+# Extract structured data
+enriched_nodes = extractor.extract(nodes)
+
+# Create index with enriched metadata
+index = VectorStoreIndex(enriched_nodes)
+```
+
+## Retrievers and Postprocessors
+
+### Custom Retriever with WhizoAI
+
+```python
+from llama_index.retrievers import BaseRetriever
+from llama_index.schema import NodeWithScore
+from typing import List
+
+class WebSearchRetriever(BaseRetriever):
+    """Retrieve documents by searching and scraping the web"""
+
+    def __init__(self, api_key: str, max_results: int = 5):
+        self.client = WhizoAI(api_key=api_key)
+        self.max_results = max_results
+
+    def _retrieve(self, query_str: str) -> List[NodeWithScore]:
+        """Retrieve relevant documents from web search"""
+        # Search and scrape
+        result = self.client.search(
+            query=query_str,
+            options={
+                "maxResults": self.max_results,
+                "scrapeResults": True
+            }
+        )
+
+        # Convert to nodes
+        nodes = []
+        for item in result["results"]:
+            node = NodeWithScore(
+                node=Document(
+                    text=item.get("content", ""),
+                    metadata={
+                        "title": item["title"],
+                        "url": item["url"],
+                        "snippet": item["snippet"]
+                    }
+                ),
+                score=item.get("relevance", 0.5)
+            )
+            nodes.append(node)
+
+        return nodes
+
+# Usage
+retriever = WebSearchRetriever(api_key="whizo_YOUR-API-KEY")
+
+from llama_index.query_engine import RetrieverQueryEngine
+
+query_engine = RetrieverQueryEngine.from_args(
+    retriever=retriever,
+    service_context=ServiceContext.from_defaults(llm=OpenAI())
+)
+
+response = query_engine.query("Latest trends in AI web scraping")
+print(response)
+```
+
+## Caching and Performance
+
+### Implement Caching
+
+```python
+from llama_index.storage.docstore import SimpleDocumentStore
+from llama_index.storage.index_store import SimpleIndexStore
+from llama_index.storage.vector_store import SimpleVectorStore
+from llama_index import StorageContext, load_index_from_storage
+import hashlib
+import os
+
+# Cache directory
+CACHE_DIR = ".cache/llama_index"
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+def get_or_create_index(urls: List[str]) -> VectorStoreIndex:
+    """Get cached index or create new one"""
+    # Create cache key
+    cache_key = hashlib.md5(
+        "".join(sorted(urls)).encode()
+    ).hexdigest()
+
+    cache_path = os.path.join(CACHE_DIR, cache_key)
+
+    # Try to load from cache
+    if os.path.exists(cache_path):
+        print("Loading from cache...")
+        storage_context = StorageContext.from_defaults(
+            persist_dir=cache_path
+        )
+        return load_index_from_storage(storage_context)
+
+    # Create new index
+    print("Creating new index...")
+    reader = WhizoAIReader(api_key="whizo_YOUR-API-KEY")
+    documents = reader.load_data(urls=urls, mode="scrape")
+
+    index = VectorStoreIndex.from_documents(documents)
+
+    # Persist to cache
+    index.storage_context.persist(persist_dir=cache_path)
+
+    return index
+
+# Usage
+index = get_or_create_index([
+    "https://example.com/page1",
+    "https://example.com/page2"
+])
+```
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Chunk Size Optimization">
+Choose appropriate chunk sizes based on content type:
+
+```python
+from llama_index.text_splitter import SentenceSplitter
+
+# For technical docs
+splitter = SentenceSplitter(
+    chunk_size=1024,
+    chunk_overlap=200
+)
+
+# For conversational content
+splitter = SentenceSplitter(
+    chunk_size=512,
+    chunk_overlap=128
+)
+
+# Use with documents
+from llama_index import ServiceContext
+
+service_context = ServiceContext.from_defaults(
+    text_splitter=splitter
+)
+
+index = VectorStoreIndex.from_documents(
+    documents,
+    service_context=service_context
+)
+```
+</Accordion>
+
+<Accordion title="Metadata Filtering">
+Use metadata for efficient filtering:
+
+```python
+from llama_index.vector_stores import MetadataFilters, ExactMatchFilter
+
+# Create filters
+filters = MetadataFilters(
+    filters=[
+        ExactMatchFilter(key="source", value="blog"),
+        ExactMatchFilter(key="date", value="2025-01")
+    ]
+)
+
+# Query with filters
+query_engine = index.as_query_engine(filters=filters)
+response = query_engine.query("Latest updates")
+```
+</Accordion>
+
+<Accordion title="Incremental Updates">
+Update index with new content:
+
+```python
+from llama_index import VectorStoreIndex
+
+# Load existing index
+index = load_index_from_storage(...)
+
+# Scrape new content
+reader = WhizoAIReader(api_key="whizo_YOUR-API-KEY")
+new_docs = reader.load_data(urls=["https://example.com/new-page"])
+
+# Insert into existing index
+for doc in new_docs:
+    index.insert(doc)
+
+# Persist changes
+index.storage_context.persist()
+```
+</Accordion>
+</AccordionGroup>
+
+## Example Applications
+
+### Documentation Search Engine
+
+```python
+from llama_index import VectorStoreIndex, ServiceContext
+from llama_index.llms import OpenAI
+from llama_index.embeddings import OpenAIEmbedding
+
+# Scrape entire documentation
+reader = WhizoAIReader(api_key="whizo_YOUR-API-KEY")
+documents = reader.load_data(
+    urls=["https://docs.example.com"],
+    mode="crawl",
+    maxPages=500
+)
+
+# Create high-quality embeddings
+embed_model = OpenAIEmbedding(model="text-embedding-3-large")
+service_context = ServiceContext.from_defaults(
+    llm=OpenAI(model="gpt-4"),
+    embed_model=embed_model
+)
+
+# Build index
+index = VectorStoreIndex.from_documents(
+    documents,
+    service_context=service_context
+)
+
+# Create query engine with custom prompt
+from llama_index.prompts import PromptTemplate
+
+qa_prompt = PromptTemplate(
+    "Context information is below.\n"
+    "---------------------\n"
+    "{context_str}\n"
+    "---------------------\n"
+    "Given the context information and not prior knowledge, "
+    "answer the question: {query_str}\n"
+    "If the answer includes code, format it properly.\n"
+)
+
+query_engine = index.as_query_engine(
+    text_qa_template=qa_prompt,
+    similarity_top_k=5
+)
+
+# Query
+response = query_engine.query("How do I configure authentication?")
+print(response)
+```
+
+## Related Resources
+
+<CardGroup cols={2}>
+<Card title="LangChain Integration" icon="link" href="/developer-guides/llm-integrations/langchain">
+  Use WhizoAI with LangChain
+</Card>
+
+<Card title="AI Extraction" icon="sparkles" href="/features/ai-extraction">
+  Built-in AI extraction features
+</Card>
+
+<Card title="Batch Processing" icon="layer-group" href="/features/batch-processing">
+  Efficiently process multiple pages
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/scrape">
+  Complete API documentation
+</Card>
+</CardGroup>

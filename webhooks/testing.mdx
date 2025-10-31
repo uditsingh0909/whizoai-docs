@@ -1,0 +1,555 @@
+---
+title: "Testing Webhooks"
+description: "Test webhook endpoints locally during development"
+icon: "flask"
+---
+
+## Overview
+
+Testing webhooks during development can be challenging since WhizoAI needs to send HTTP requests to your local server. This guide covers various methods to test webhooks locally.
+
+## Local Development Tools
+
+### 1. ngrok (Recommended)
+
+ngrok creates a secure tunnel to your localhost, making it accessible from the internet.
+
+**Installation:**
+```bash
+# macOS
+brew install ngrok
+
+# Windows (with Chocolatey)
+choco install ngrok
+
+# Linux
+snap install ngrok
+```
+
+**Usage:**
+```bash
+# Start your local server first
+python app.py  # Running on localhost:3000
+
+# In another terminal, start ngrok
+ngrok http 3000
+
+# ngrok will output a public URL:
+# Forwarding: https://abc123.ngrok.io -> localhost:3000
+```
+
+**Register the ngrok URL:**
+```python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+webhook = client.webhooks.create(
+    url="https://abc123.ngrok.io/webhook",  # ngrok URL
+    events=["job.completed", "job.failed"],
+    secret="test_secret_key"
+)
+
+print(f"Webhook created: {webhook.id}")
+```
+
+### 2. localhost.run
+
+No installation required - just use SSH:
+
+```bash
+# Start your local server
+python app.py  # localhost:3000
+
+# Create tunnel with SSH
+ssh -R 80:localhost:3000 localhost.run
+
+# You'll get a URL like: https://random-name.localhost.run
+```
+
+### 3. Cloudflare Tunnel
+
+Free and includes additional features:
+
+```bash
+# Install cloudflared
+brew install cloudflare/cloudflare/cloudflared
+
+# Start tunnel
+cloudflared tunnel --url localhost:3000
+
+# You'll get a URL like: https://random.trycloudflare.com
+```
+
+## Mock Webhook Server
+
+For testing without external services, create a mock webhook server:
+
+```python
+# mock_webhook_server.py
+from flask import Flask, request, jsonify
+import hmac
+import hashlib
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "test_secret"
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    print("\n=== Webhook Received ===")
+
+    # Print headers
+    print("Headers:")
+    for key, value in request.headers:
+        if key.startswith('X-'):
+            print(f"  {key}: {value}")
+
+    # Verify signature
+    signature = request.headers.get('X-WhizoAI-Signature')
+    payload = request.get_data()
+
+    expected = hmac.new(
+        WEBHOOK_SECRET.encode(),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+
+    print(f"\nSignature Valid: {hmac.compare_digest(signature, expected)}")
+
+    # Print event
+    event = request.json
+    print(f"\nEvent Type: {event['event']}")
+    print(f"Event ID: {event['id']}")
+    print(f"Timestamp: {event['timestamp']}")
+    print(f"\nData:")
+    import json
+    print(json.dumps(event['data'], indent=2))
+
+    print("\n========================\n")
+
+    return jsonify({"received": True}), 200
+
+if __name__ == '__main__':
+    print("Mock webhook server running on http://localhost:3000/webhook")
+    app.run(port=3000, debug=True)
+```
+
+## Testing Framework Integration
+
+### Pytest Example
+
+```python
+# test_webhooks.py
+import pytest
+import json
+import hmac
+import hashlib
+from your_app import app
+
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
+
+def create_signature(payload, secret):
+    return hmac.new(
+        secret.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+def test_webhook_job_completed(client):
+    # Mock webhook payload
+    payload = {
+        "id": "evt_test123",
+        "event": "job.completed",
+        "timestamp": "2025-01-15T10:30:00Z",
+        "apiVersion": "v1",
+        "data": {
+            "jobId": "job_test456",
+            "status": "completed",
+            "creditsUsed": 5
+        }
+    }
+
+    payload_str = json.dumps(payload)
+    signature = create_signature(payload_str, "test_secret")
+
+    # Send webhook request
+    response = client.post(
+        '/webhook',
+        data=payload_str,
+        headers={
+            'Content-Type': 'application/json',
+            'X-WhizoAI-Signature': signature
+        }
+    )
+
+    assert response.status_code == 200
+    assert response.json['received'] == True
+
+def test_webhook_invalid_signature(client):
+    payload = {
+        "id": "evt_test123",
+        "event": "job.completed",
+        "timestamp": "2025-01-15T10:30:00Z",
+        "data": {"jobId": "job_test456"}
+    }
+
+    # Send with invalid signature
+    response = client.post(
+        '/webhook',
+        data=json.dumps(payload),
+        headers={
+            'Content-Type': 'application/json',
+            'X-WhizoAI-Signature': 'invalid_signature'
+        }
+    )
+
+    assert response.status_code == 401
+    assert 'Invalid signature' in response.json['error']
+```
+
+### Jest/Node.js Example
+
+```javascript
+// webhook.test.js
+const request = require('supertest');
+const crypto = require('crypto');
+const app = require('./app');
+
+function createSignature(payload, secret) {
+  return crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+}
+
+describe('Webhook Endpoint', () => {
+  it('should accept valid webhook', async () => {
+    const payload = {
+      id: 'evt_test123',
+      event: 'job.completed',
+      timestamp: '2025-01-15T10:30:00Z',
+      data: {
+        jobId: 'job_test456',
+        status: 'completed'
+      }
+    };
+
+    const payloadStr = JSON.stringify(payload);
+    const signature = createSignature(payloadStr, 'test_secret');
+
+    const response = await request(app)
+      .post('/webhook')
+      .set('Content-Type', 'application/json')
+      .set('X-WhizoAI-Signature', signature)
+      .send(payloadStr);
+
+    expect(response.status).toBe(200);
+    expect(response.body.received).toBe(true);
+  });
+
+  it('should reject invalid signature', async () => {
+    const payload = {
+      id: 'evt_test123',
+      event: 'job.completed',
+      data: {}
+    };
+
+    const response = await request(app)
+      .post('/webhook')
+      .set('Content-Type', 'application/json')
+      .set('X-WhizoAI-Signature', 'invalid_signature')
+      .send(JSON.stringify(payload));
+
+    expect(response.status).toBe(401);
+  });
+});
+```
+
+## Manual Testing
+
+### WhizoAI Dashboard
+
+Use the WhizoAI dashboard to send test webhooks:
+
+1. Go to **Settings** → **Webhooks**
+2. Select your webhook
+3. Click **Send Test Event**
+4. Choose event type
+5. Review the response
+
+### CLI Testing
+
+Send test webhooks from command line:
+
+```bash
+# Using cURL
+curl -X POST https://your-webhook-url.com/webhook \
+  -H "Content-Type: application/json" \
+  -H "X-WhizoAI-Signature: $(echo -n '{"event":"job.completed"}' | openssl dgst -sha256 -hmac 'your_secret' | awk '{print $2}')" \
+  -d '{
+    "id": "evt_test123",
+    "event": "job.completed",
+    "timestamp": "2025-01-15T10:30:00Z",
+    "apiVersion": "v1",
+    "data": {
+      "jobId": "job_test456",
+      "status": "completed"
+    }
+  }'
+```
+
+### Using Postman
+
+1. Create a new POST request to your webhook URL
+2. Set **Headers**:
+   - `Content-Type`: `application/json`
+   - `X-WhizoAI-Signature`: Calculate using HMAC-SHA256
+3. Set **Body** (raw JSON):
+```json
+{
+  "id": "evt_test123",
+  "event": "job.completed",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "jobId": "job_test456",
+    "status": "completed"
+  }
+}
+```
+
+To calculate signature in Postman:
+1. Go to **Pre-request Script**
+2. Add:
+```javascript
+const crypto = require('crypto');
+const secret = 'your_secret';
+const body = JSON.stringify(pm.request.body.toJSON().raw);
+
+const signature = crypto
+  .createHmac('sha256', secret)
+  .update(body)
+  .digest('hex');
+
+pm.environment.set('webhook_signature', signature);
+```
+3. In Headers, use: `{{webhook_signature}}`
+
+## Webhook Testing Tools
+
+### webhook.site
+
+Free service to inspect webhooks:
+
+1. Go to https://webhook.site
+2. Copy the unique URL
+3. Register it as your webhook URL
+4. View incoming requests in real-time
+
+**Example:**
+```python
+webhook = client.webhooks.create(
+    url="https://webhook.site/your-unique-id",
+    events=["job.*"]
+)
+
+# Trigger a job
+job = client.scrape(url="https://example.com")
+
+# Check webhook.site to see the incoming webhook
+```
+
+### RequestBin
+
+Similar to webhook.site with request inspection:
+
+```bash
+# Create a bin at https://requestbin.com
+# Use the generated URL for testing
+```
+
+## Debugging Webhooks
+
+### Enable Verbose Logging
+
+```python
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    logging.debug(f"Headers: {dict(request.headers)}")
+    logging.debug(f"Body: {request.get_data()}")
+
+    signature = request.headers.get('X-WhizoAI-Signature')
+    payload = request.get_data()
+
+    logging.debug(f"Signature: {signature}")
+    logging.debug(f"Payload length: {len(payload)}")
+
+    if verify_signature(payload, signature, WEBHOOK_SECRET):
+        logging.info("Signature verified successfully")
+    else:
+        logging.error("Signature verification failed")
+
+    event = request.json
+    logging.info(f"Event type: {event['event']}")
+    logging.debug(f"Event data: {event['data']}")
+
+    return jsonify({"received": True}), 200
+```
+
+### Common Issues
+
+<AccordionGroup>
+<Accordion title="Signature Verification Fails">
+**Checklist:**
+- Using raw request body, not parsed JSON?
+- Secret matches exactly (no extra spaces)?
+- Using correct HMAC algorithm (SHA-256)?
+- Comparing signatures with timing-safe function?
+
+**Debug:**
+```python
+def verify_signature(payload, signature, secret):
+    expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+
+    print(f"Received signature: {signature}")
+    print(f"Expected signature: {expected}")
+    print(f"Match: {hmac.compare_digest(signature, expected)}")
+
+    return hmac.compare_digest(signature, expected)
+```
+</Accordion>
+
+<Accordion title="Webhook Not Receiving Events">
+**Checklist:**
+- Webhook URL is publicly accessible?
+- Events are registered for webhook?
+- Webhook is active: `webhook.active == True`?
+- Job actually completed/failed?
+
+**Debug:**
+```python
+# Check webhook status
+webhook = client.webhooks.get("wh_123abc")
+print(f"Active: {webhook.active}")
+print(f"Events: {webhook.events}")
+
+# Check webhook logs
+logs = client.webhooks.logs(webhook.id, limit=10)
+for log in logs:
+    print(f"Event: {log.event}, Status: {log.status}, Code: {log.response_code}")
+```
+</Accordion>
+
+<Accordion title="Request Timeout">
+**Solutions:**
+- Respond with 200 within 5 seconds
+- Process events asynchronously
+- Use background jobs for heavy processing
+
+```python
+from celery import Celery
+
+celery = Celery('tasks', broker='redis://localhost:6379')
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    if not verify_signature(...):
+        return jsonify({"error": "Invalid"}), 401
+
+    event = request.json
+
+    # Queue for async processing
+    process_webhook.delay(event)
+
+    # Respond immediately
+    return jsonify({"received": True}), 200
+
+@celery.task
+def process_webhook(event):
+    # Long-running processing here
+    handle_event(event)
+```
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Tip>
+**Development Workflow**
+1. Start with mock server for initial testing
+2. Use ngrok for integration testing
+3. Write automated tests before production
+4. Monitor webhook logs in production
+</Tip>
+
+<Warning>
+**Security in Development**
+- Use different webhook secrets for dev/prod
+- Don't commit secrets to version control
+- Use HTTPS even in development (ngrok provides this)
+</Warning>
+
+## CI/CD Integration
+
+### GitHub Actions Example
+
+```yaml
+# .github/workflows/test-webhooks.yml
+name: Test Webhooks
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest
+
+    - name: Run webhook tests
+      env:
+        WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET_TEST }}
+      run: |
+        pytest tests/test_webhooks.py -v
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Webhook Security" icon="shield" href="/webhooks/security">
+  Secure your webhook endpoints
+</Card>
+
+<Card title="Webhook Events" icon="bell" href="/webhooks/events">
+  Complete event reference
+</Card>
+
+<Card title="Overview" icon="webhook" href="/webhooks/overview">
+  Get started with webhooks
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/webhooks">
+  Full webhooks API documentation
+</Card>
+</CardGroup>

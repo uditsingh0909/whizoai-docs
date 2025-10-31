@@ -1,0 +1,315 @@
+---
+title: "AI-Powered Data Extraction"
+description: "Extract structured data from any webpage using LLM models"
+icon: "brain"
+---
+
+## Overview
+
+WhizoAI's AI extraction feature uses advanced Language Learning Models (LLMs) to intelligently extract structured data from web pages. Simply define your schema, and let AI handle the extraction logic.
+
+## Supported Models
+
+<CardGroup cols={3}>
+<Card title="GPT-3.5 Turbo" icon="bolt">
+**3 credits/page**
+Fast and cost-effective for simple extraction
+</Card>
+
+<Card title="GPT-4" icon="star">
+**6 credits/page**
+Advanced reasoning for complex data structures
+</Card>
+
+<Card title="Claude 3" icon="sparkles">
+**5 credits/page**
+Excellent for long-form content and nuanced extraction
+</Card>
+</CardGroup>
+
+## Basic Usage
+
+<CodeGroup>
+import ExtractPython from "/snippets/v1/extract/basic/python.mdx";
+import ExtractJavaScript from "/snippets/v1/extract/basic/javascript.mdx";
+
+<ExtractPython />
+<ExtractJavaScript />
+
+```bash cURL
+curl -X POST https://api.whizo.ai/v1/extract \
+  -H "Authorization: Bearer whizo_YOUR-API-KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/product",
+    "schema": {
+      "name": "Product name",
+      "price": "Product price",
+      "description": "Product description",
+      "inStock": "Is the product in stock (boolean)"
+    },
+    "options": {
+      "model": "gpt-4",
+      "format": "json"
+    }
+  }'
+```
+</CodeGroup>
+
+## Advanced Schema Definitions
+
+### Complex Data Structures
+
+Extract nested objects and arrays:
+
+```python
+schema = {
+    "product": {
+        "name": "Product name",
+        "price": {
+            "amount": "Price amount (number)",
+            "currency": "Currency code (e.g., USD)"
+        },
+        "specs": "List of product specifications (array of objects with name and value)",
+        "reviews": "Array of customer reviews with rating and comment"
+    },
+    "seller": {
+        "name": "Seller name",
+        "rating": "Seller rating (number)",
+        "location": "Seller location"
+    }
+}
+
+result = client.extract(url=product_url, schema=schema)
+```
+
+### Type Hints and Validation
+
+Specify data types for better accuracy:
+
+```python
+schema = {
+    "title": "string - Article title",
+    "publishDate": "datetime - Publication date in ISO 8601 format",
+    "author": "string - Author name",
+    "wordCount": "number - Approximate word count",
+    "tags": "array of strings - Article tags/categories",
+    "isPremium": "boolean - Is this premium content?"
+}
+```
+
+## Extraction Options
+
+### Model Selection
+
+Choose the best model for your use case:
+
+```python
+# Fast and cost-effective
+result = client.extract(
+    url=url,
+    schema=schema,
+    options={"model": "gpt-3.5-turbo"}  # 3 credits
+)
+
+# Best quality for complex data
+result = client.extract(
+    url=url,
+    schema=schema,
+    options={"model": "gpt-4"}  # 6 credits
+)
+
+# Balanced performance
+result = client.extract(
+    url=url,
+    schema=schema,
+    options={"model": "claude-3-sonnet"}  # 5 credits
+)
+```
+
+### Custom Instructions
+
+Add context for better extraction:
+
+```python
+result = client.extract(
+    url=url,
+    schema=schema,
+    options={
+        "model": "gpt-4",
+        "instructions": "Focus on extracting product details from the main content area. Ignore sidebar ads and recommendations.",
+        "language": "en"
+    }
+)
+```
+
+### Output Formatting
+
+```python
+# JSON output (default)
+result = client.extract(url=url, schema=schema, options={"format": "json"})
+
+# Structured markdown
+result = client.extract(url=url, schema=schema, options={"format": "markdown"})
+
+# CSV for tabular data
+result = client.extract(url=url, schema=schema, options={"format": "csv"})
+```
+
+## Handling Large Pages
+
+For content-heavy pages, optimize extraction:
+
+```python
+result = client.extract(
+    url=url,
+    schema=schema,
+    options={
+        "model": "gpt-4",
+        "maxTokens": 4000,  # Limit context size
+        "targetSelector": "#main-content",  # Focus on specific element
+        "removeSelectors": [".ads", ".sidebar", "footer"]  # Exclude noise
+    }
+)
+```
+
+## Batch AI Extraction
+
+Extract from multiple pages efficiently:
+
+```python
+urls = [
+    "https://example.com/product1",
+    "https://example.com/product2",
+    "https://example.com/product3"
+]
+
+result = client.batch_extract(
+    urls=urls,
+    schema=schema,
+    options={
+        "model": "gpt-3.5-turbo",
+        "concurrency": 3
+    }
+)
+
+# Process results
+for page in result['results']:
+    print(f"URL: {page['url']}")
+    print(f"Data: {page['extractedData']}")
+```
+
+## Error Handling
+
+Handle extraction failures gracefully:
+
+```python
+try:
+    result = client.extract(url=url, schema=schema)
+
+    if result['success']:
+        data = result['extractedData']
+        confidence = result['metadata']['confidence']  # 0-1 score
+
+        if confidence < 0.7:
+            print("Low confidence extraction. Manual review recommended.")
+
+except WhizoAIError as e:
+    if e.code == 'EXTRACTION_FAILED':
+        print("AI couldn't extract data. Try simplifying the schema.")
+    elif e.code == 'INSUFFICIENT_CREDITS':
+        print("Not enough credits for AI extraction.")
+```
+
+## Validation and Confidence Scores
+
+WhizoAI provides confidence scores for extractions:
+
+```python
+result = client.extract(url=url, schema=schema)
+
+print(f"Overall Confidence: {result['metadata']['confidence']}")
+print(f"Field Confidences: {result['metadata']['fieldConfidence']}")
+
+# Example output:
+# Overall Confidence: 0.92
+# Field Confidences: {
+#   'name': 0.98,
+#   'price': 0.95,
+#   'inStock': 0.85
+# }
+```
+
+## Common Use Cases
+
+<AccordionGroup>
+<Accordion title="E-commerce Product Data">
+Extract product names, prices, descriptions, specs, and reviews from online stores
+</Accordion>
+
+<Accordion title="Job Listings">
+Parse job titles, salaries, requirements, and company info from career pages
+</Accordion>
+
+<Accordion title="Real Estate Listings">
+Extract property details, prices, locations, and features from listing sites
+</Accordion>
+
+<Accordion title="News Articles">
+Extract headlines, authors, publish dates, and article content from news sites
+</Accordion>
+
+<Accordion title="Business Directories">
+Extract company names, addresses, phone numbers, and services from directories
+</Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<Warning>
+**Cost Optimization**
+- Start with GPT-3.5 for simple schemas
+- Use GPT-4 only for complex or nested data
+- Test your schema on a few pages before batch processing
+</Warning>
+
+<Tip>
+**Schema Design Tips**
+- Be specific in field descriptions
+- Include data type hints (string, number, boolean, array)
+- Provide examples in descriptions when helpful
+- Keep schemas focused—extract only what you need
+</Tip>
+
+## Credit Costs
+
+| Model | Cost per Page | Best For |
+|-------|--------------|----------|
+| GPT-3.5 Turbo | 3 credits | Simple, flat data structures |
+| GPT-4 | 6 credits | Complex nested data, high accuracy needed |
+| Claude 3 Sonnet | 5 credits | Long-form content, nuanced extraction |
+
+## Comparison: AI vs Traditional Scraping
+
+| Feature | Traditional Scraping | AI Extraction |
+|---------|---------------------|---------------|
+| **Setup Time** | High (write custom selectors) | Low (define schema) |
+| **Adaptability** | Breaks when HTML changes | Adapts to layout changes |
+| **Complex Data** | Manual nested parsing needed | Handles nesting automatically |
+| **Cost** | 1 credit/page | 3-6 credits/page |
+| **Speed** | Faster | Slower (LLM processing) |
+| **Best For** | Static, predictable layouts | Dynamic, complex structures |
+
+## Related Resources
+
+<Card title="LLM SDK Integrations" icon="plug" href="/developer-guides/llm-integrations/langchain">
+  Integrate WhizoAI with LangChain, LlamaIndex, and more
+</Card>
+
+<Card title="Batch Processing" icon="layer-group" href="/features/batch-processing">
+  Process thousands of extractions efficiently
+</Card>
+
+<Card title="Extract API Reference" icon="code" href="/api-reference/extract">
+  Full API documentation for extraction endpoints
+</Card>

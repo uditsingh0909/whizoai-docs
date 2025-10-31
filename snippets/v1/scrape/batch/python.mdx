@@ -1,0 +1,25 @@
+```python Python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Batch scrape multiple URLs
+urls = [
+    "https://example.com/page1",
+    "https://example.com/page2",
+    "https://example.com/page3"
+]
+
+result = client.batch_scrape(
+    urls=urls,
+    options={
+        "format": "markdown",
+        "includeScreenshot": False
+    }
+)
+
+# Results will be processed asynchronously
+print(f"Job ID: {result['jobId']}")
+print(f"Status: {result['status']}")
+print(f"Total URLs: {len(urls)}")
+```

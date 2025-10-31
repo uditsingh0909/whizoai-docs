@@ -1,0 +1,39 @@
+```python Webhooks
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Scrape with webhook notification
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "format": "markdown",
+        "webhook": "https://your-server.com/webhook"
+    }
+)
+
+# Your webhook endpoint will receive:
+# {
+#   "event": "scrape.completed",
+#   "jobId": "job_123",
+#   "status": "completed",
+#   "data": {
+#     "content": "...",
+#     "metadata": {...}
+#   },
+#   "timestamp": "2025-01-15T10:30:00Z"
+# }
+
+# Webhook signature verification (recommended)
+import hmac
+import hashlib
+
+def verify_webhook(payload, signature, secret):
+    expected_signature = hmac.new(
+        secret.encode(),
+        payload.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    return hmac.compare_digest(signature, expected_signature)
+```

@@ -4,6 +4,8 @@ api: "POST https://api.whizo.ai/v1/batch"
 description: "Scrape multiple URLs simultaneously with optimized parallel processing"
 ---
 
+import BatchPython from "/snippets/v1/scrape/batch/python.mdx";
+
 The Batch API allows you to scrape multiple URLs in a single request with automatic parallelization, retry logic, and rate limiting. Perfect for processing large lists of URLs efficiently.
 
 ## Authentication
@@ -317,96 +319,7 @@ The Batch API allows you to scrape multiple URLs in a single request with automa
 ### Basic Batch Scraping
 
 <CodeGroup>
-
-```bash cURL
-curl -X POST "https://api.whizo.ai/v1/batch" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "urls": [
-      "https://example.com/page1",
-      "https://example.com/page2",
-      "https://example.com/page3",
-      "https://example.com/page4",
-      "https://example.com/page5"
-    ],
-    "format": "markdown"
-  }'
-```
-
-```javascript JavaScript
-const response = await fetch('https://api.whizo.ai/v1/batch', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    urls: [
-      'https://example.com/page1',
-      'https://example.com/page2',
-      'https://example.com/page3',
-      'https://example.com/page4',
-      'https://example.com/page5'
-    ],
-    format: 'markdown'
-  })
-});
-
-const data = await response.json();
-console.log('Job ID:', data.jobId);
-console.log('Status:', data.status);
-
-// Poll for results
-const checkStatus = async (jobId) => {
-  const statusRes = await fetch(`https://api.whizo.ai/v1/jobs/${jobId}`, {
-    headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
-  });
-  return await statusRes.json();
-};
-```
-
-```python Python
-import requests
-
-response = requests.post(
-    'https://api.whizo.ai/v1/batch',
-    headers={
-        'Authorization': 'Bearer YOUR_API_KEY',
-        'Content-Type': 'application/json'
-    },
-    json={
-        'urls': [
-            'https://example.com/page1',
-            'https://example.com/page2',
-            'https://example.com/page3',
-            'https://example.com/page4',
-            'https://example.com/page5'
-        ],
-        'format': 'markdown'
-    }
-)
-
-data = response.json()
-print(f"Job ID: {data['jobId']}")
-print(f"Status: {data['status']}")
-
-# Poll for results
-import time
-job_id = data['jobId']
-while True:
-    status_res = requests.get(
-        f'https://api.whizo.ai/v1/jobs/{job_id}',
-        headers={'Authorization': 'Bearer YOUR_API_KEY'}
-    )
-    status_data = status_res.json()
-    if status_data['status'] in ['completed', 'failed']:
-        break
-    time.sleep(2)
-
-print('Results:', status_data['results'])
-```
-
+<BatchPython />
 </CodeGroup>
 
 <ResponseExample>

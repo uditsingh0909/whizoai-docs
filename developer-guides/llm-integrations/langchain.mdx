@@ -1,0 +1,552 @@
+---
+title: "LangChain Integration"
+description: "Use WhizoAI with LangChain for powerful web scraping in your AI applications"
+icon: "link"
+---
+
+## Overview
+
+Integrate WhizoAI with LangChain to build AI applications that can scrape and extract data from the web. Perfect for RAG (Retrieval-Augmented Generation) pipelines, research assistants, and data collection workflows.
+
+## Installation
+
+```bash
+pip install langchain langchain-community whizoai
+```
+
+## Quick Start
+
+### Basic Web Scraping with LangChain
+
+```python
+from langchain.document_loaders import WhizoAILoader
+from whizoai import WhizoAI
+
+# Initialize WhizoAI client
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Create a LangChain document loader
+loader = WhizoAILoader(
+    client=client,
+    urls=["https://example.com"],
+    mode="scrape"
+)
+
+# Load documents
+documents = loader.load()
+
+# Access content
+for doc in documents:
+    print(f"URL: {doc.metadata['url']}")
+    print(f"Content: {doc.page_content[:200]}...")
+```
+
+## Document Loaders
+
+### Single Page Scraping
+
+```python
+from langchain.document_loaders import WhizoAILoader
+
+loader = WhizoAILoader(
+    client=client,
+    urls=["https://example.com/article"],
+    mode="scrape",
+    scrape_options={
+        "format": "markdown",
+        "includeScreenshot": False
+    }
+)
+
+docs = loader.load()
+```
+
+### Website Crawling
+
+```python
+loader = WhizoAILoader(
+    client=client,
+    urls=["https://example.com"],
+    mode="crawl",
+    crawl_options={
+        "maxDepth": 2,
+        "maxPages": 50,
+        "excludePaths": ["/admin", "/login"]
+    }
+)
+
+# Load all crawled pages as documents
+docs = loader.load()
+print(f"Loaded {len(docs)} documents")
+```
+
+### Lazy Loading for Large Crawls
+
+```python
+loader = WhizoAILoader(
+    client=client,
+    urls=["https://example.com"],
+    mode="crawl",
+    crawl_options={"maxPages": 1000}
+)
+
+# Lazy load to avoid memory issues
+for doc in loader.lazy_load():
+    print(f"Processing: {doc.metadata['url']}")
+    # Process each document individually
+```
+
+## RAG (Retrieval-Augmented Generation)
+
+### Building a Knowledge Base
+
+```python
+from langchain.document_loaders import WhizoAILoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
+from langchain.chains import RetrievalQA
+from langchain.llms import OpenAI
+
+# Step 1: Scrape documentation
+loader = WhizoAILoader(
+    client=client,
+    urls=["https://docs.example.com"],
+    mode="crawl",
+    crawl_options={"maxPages": 100}
+)
+
+documents = loader.load()
+
+# Step 2: Split into chunks
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1000,
+    chunk_overlap=200
+)
+splits = text_splitter.split_documents(documents)
+
+# Step 3: Create embeddings and store in vector DB
+embeddings = OpenAIEmbeddings()
+vectorstore = Chroma.from_documents(
+    documents=splits,
+    embedding=embeddings
+)
+
+# Step 4: Create QA chain
+qa_chain = RetrievalQA.from_chain_type(
+    llm=OpenAI(),
+    chain_type="stuff",
+    retriever=vectorstore.as_retriever()
+)
+
+# Step 5: Ask questions
+response = qa_chain.run("How do I install the package?")
+print(response)
+```
+
+## AI-Powered Extraction with LangChain
+
+### Structured Data Extraction
+
+```python
+from langchain.chains import create_extraction_chain
+from langchain.llms import OpenAI
+
+# Scrape the page
+loader = WhizoAILoader(
+    client=client,
+    urls=["https://example.com/products/laptop"],
+    mode="scrape"
+)
+docs = loader.load()
+
+# Define extraction schema
+schema = {
+    "properties": {
+        "product_name": {"type": "string"},
+        "price": {"type": "number"},
+        "description": {"type": "string"},
+        "features": {"type": "array", "items": {"type": "string"}},
+        "in_stock": {"type": "boolean"}
+    },
+    "required": ["product_name", "price"]
+}
+
+# Create extraction chain
+llm = OpenAI(temperature=0)
+chain = create_extraction_chain(schema, llm)
+
+# Extract data
+result = chain.run(docs[0].page_content)
+print(result)
+```
+
+### Using WhizoAI's Built-in AI Extraction
+
+```python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Extract directly with WhizoAI (more efficient)
+result = client.extract(
+    url="https://example.com/products/laptop",
+    schema={
+        "product_name": "Product name",
+        "price": "Price as a number",
+        "features": "List of product features",
+        "in_stock": "Is the product in stock (boolean)"
+    },
+    options={"model": "gpt-4"}
+)
+
+print(result["extractedData"])
+```
+
+## Agents with Web Scraping
+
+### Create a Research Agent
+
+```python
+from langchain.agents import initialize_agent, Tool
+from langchain.agents import AgentType
+from langchain.llms import OpenAI
+
+def scrape_webpage(url: str) -> str:
+    """Scrape a webpage and return its content"""
+    loader = WhizoAILoader(
+        client=client,
+        urls=[url],
+        mode="scrape"
+    )
+    docs = loader.load()
+    return docs[0].page_content if docs else "Failed to scrape"
+
+def search_and_scrape(query: str) -> str:
+    """Search for a topic and scrape top results"""
+    result = client.search(
+        query=query,
+        options={
+            "maxResults": 5,
+            "scrapeResults": True
+        }
+    )
+
+    content = []
+    for item in result["results"]:
+        content.append(f"Title: {item['title']}\nURL: {item['url']}\n{item.get('content', '')[:500]}\n")
+
+    return "\n\n".join(content)
+
+# Define tools
+tools = [
+    Tool(
+        name="Scrape Webpage",
+        func=scrape_webpage,
+        description="Useful for scraping specific webpages. Input should be a URL."
+    ),
+    Tool(
+        name="Search and Scrape",
+        func=search_and_scrape,
+        description="Useful for researching topics. Input should be a search query."
+    )
+]
+
+# Initialize agent
+llm = OpenAI(temperature=0)
+agent = initialize_agent(
+    tools,
+    llm,
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True
+)
+
+# Use the agent
+response = agent.run(
+    "Research the latest trends in AI web scraping and summarize the top 3 methods"
+)
+print(response)
+```
+
+## Chains and Workflows
+
+### Sequential Chain for Data Pipeline
+
+```python
+from langchain.chains import SequentialChain, LLMChain
+from langchain.prompts import PromptTemplate
+from langchain.llms import OpenAI
+
+# Chain 1: Scrape data
+def scrape_step(url):
+    loader = WhizoAILoader(client=client, urls=[url], mode="scrape")
+    return loader.load()[0].page_content
+
+# Chain 2: Summarize
+summarize_template = """
+Summarize the following content in 3 bullet points:
+
+{content}
+
+Summary:
+"""
+summarize_prompt = PromptTemplate(
+    input_variables=["content"],
+    template=summarize_template
+)
+summarize_chain = LLMChain(
+    llm=OpenAI(),
+    prompt=summarize_prompt,
+    output_key="summary"
+)
+
+# Chain 3: Extract key insights
+insights_template = """
+From this summary, extract the top 3 key insights:
+
+{summary}
+
+Insights:
+"""
+insights_prompt = PromptTemplate(
+    input_variables=["summary"],
+    template=insights_template
+)
+insights_chain = LLMChain(
+    llm=OpenAI(),
+    prompt=insights_prompt,
+    output_key="insights"
+)
+
+# Combine chains
+overall_chain = SequentialChain(
+    chains=[summarize_chain, insights_chain],
+    input_variables=["content"],
+    output_variables=["summary", "insights"],
+    verbose=True
+)
+
+# Execute pipeline
+url = "https://example.com/article"
+content = scrape_step(url)
+result = overall_chain({"content": content})
+
+print("Summary:", result["summary"])
+print("Insights:", result["insights"])
+```
+
+## Custom Document Transformers
+
+### Metadata Enrichment
+
+```python
+from langchain.schema import Document
+from typing import List
+
+class WhizoAIMetadataEnricher:
+    """Enrich documents with WhizoAI metadata"""
+
+    def __init__(self, client):
+        self.client = client
+
+    def transform_documents(self, documents: List[Document]) -> List[Document]:
+        enriched_docs = []
+
+        for doc in documents:
+            # Extract additional metadata
+            metadata = client.extract(
+                content=doc.page_content[:1000],
+                schema={
+                    "title": "Document title",
+                    "author": "Author name",
+                    "date": "Publication date",
+                    "topics": "Main topics covered (array)"
+                }
+            )
+
+            # Add to document metadata
+            doc.metadata.update(metadata["extractedData"])
+            enriched_docs.append(doc)
+
+        return enriched_docs
+
+# Use the transformer
+loader = WhizoAILoader(client=client, urls=["https://example.com"])
+docs = loader.load()
+
+enricher = WhizoAIMetadataEnricher(client)
+enriched_docs = enricher.transform_documents(docs)
+
+for doc in enriched_docs:
+    print(f"Title: {doc.metadata.get('title')}")
+    print(f"Author: {doc.metadata.get('author')}")
+    print(f"Topics: {doc.metadata.get('topics')}")
+```
+
+## Memory and Caching
+
+### Cache Scraped Content
+
+```python
+from langchain.cache import InMemoryCache
+from langchain.globals import set_llm_cache
+import hashlib
+
+# Enable LangChain caching
+set_llm_cache(InMemoryCache())
+
+# Custom scraping cache
+scrape_cache = {}
+
+def cached_scrape(url: str) -> str:
+    """Scrape with caching to avoid duplicate requests"""
+    cache_key = hashlib.md5(url.encode()).hexdigest()
+
+    if cache_key in scrape_cache:
+        print(f"Cache hit for {url}")
+        return scrape_cache[cache_key]
+
+    print(f"Scraping {url}")
+    loader = WhizoAILoader(client=client, urls=[url], mode="scrape")
+    docs = loader.load()
+    content = docs[0].page_content if docs else ""
+
+    scrape_cache[cache_key] = content
+    return content
+
+# Use cached scraping
+content1 = cached_scrape("https://example.com")  # Scrapes
+content2 = cached_scrape("https://example.com")  # From cache
+```
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Batch Processing">
+Process multiple URLs efficiently:
+
+```python
+# Good: Batch scraping
+urls = [f"https://example.com/page{i}" for i in range(100)]
+result = client.batch_scrape(urls=urls)
+
+# Avoid: Sequential scraping
+for url in urls:
+    loader = WhizoAILoader(client=client, urls=[url])
+    docs = loader.load()  # Slow!
+```
+</Accordion>
+
+<Accordion title="Text Splitting Strategy">
+Choose appropriate chunk sizes:
+
+```python
+# For technical documentation
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1500,
+    chunk_overlap=300
+)
+
+# For conversational content
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,
+    chunk_overlap=150
+)
+```
+</Accordion>
+
+<Accordion title="Error Handling">
+Always handle scraping errors:
+
+```python
+try:
+    loader = WhizoAILoader(client=client, urls=[url])
+    docs = loader.load()
+except Exception as e:
+    print(f"Scraping failed: {e}")
+    # Fallback or retry logic
+```
+</Accordion>
+</AccordionGroup>
+
+## Example Applications
+
+### Documentation QA Bot
+
+```python
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
+
+# Scrape documentation
+loader = WhizoAILoader(
+    client=client,
+    urls=["https://docs.example.com"],
+    mode="crawl"
+)
+docs = loader.load()
+
+# Create vector store
+vectorstore = Chroma.from_documents(docs, OpenAIEmbeddings())
+
+# Create conversational chain with memory
+memory = ConversationBufferMemory(
+    memory_key="chat_history",
+    return_messages=True
+)
+
+qa = ConversationalRetrievalChain.from_llm(
+    OpenAI(),
+    retriever=vectorstore.as_retriever(),
+    memory=memory
+)
+
+# Chat with the docs
+response = qa({"question": "How do I install the package?"})
+print(response["answer"])
+
+response = qa({"question": "What are the main features?"})
+print(response["answer"])
+```
+
+### Competitive Intelligence Tool
+
+```python
+from langchain.chains.summarize import load_summarize_chain
+
+# Scrape competitor websites
+competitor_urls = [
+    "https://competitor1.com/features",
+    "https://competitor2.com/pricing",
+    "https://competitor3.com/about"
+]
+
+loader = WhizoAILoader(client=client, urls=competitor_urls)
+docs = loader.load()
+
+# Summarize each competitor
+summarize_chain = load_summarize_chain(OpenAI(), chain_type="map_reduce")
+summary = summarize_chain.run(docs)
+
+print("Competitive Analysis:")
+print(summary)
+```
+
+## Related Resources
+
+<CardGroup cols={2}>
+<Card title="LlamaIndex Integration" icon="brain" href="/developer-guides/llm-integrations/llamaindex">
+  Use WhizoAI with LlamaIndex
+</Card>
+
+<Card title="AI Extraction Feature" icon="sparkles" href="/features/ai-extraction">
+  Learn about WhizoAI's built-in AI extraction
+</Card>
+
+<Card title="Batch Processing" icon="layer-group" href="/features/batch-processing">
+  Efficiently scrape multiple pages
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/scrape">
+  Complete scraping API documentation
+</Card>
+</CardGroup>

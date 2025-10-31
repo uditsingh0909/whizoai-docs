@@ -1,0 +1,26 @@
+```python Python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Advanced scraping with screenshots, PDF, and custom options
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "format": "markdown",
+        "includeScreenshot": True,
+        "includePdf": True,
+        "javascript": True,
+        "waitTime": 5,
+        "mobile": False,
+        "headers": {
+            "User-Agent": "CustomBot/1.0"
+        }
+    }
+)
+
+print(f"Content: {result['content']}")
+print(f"Screenshot URL: {result['screenshots'][0]}")
+print(f"PDF URL: {result['pdf']}")
+print(f"Credits used: {result['metadata']['creditsUsed']}")
+```

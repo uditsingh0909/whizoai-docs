@@ -1,0 +1,24 @@
+```python Authentication
+from whizoai import WhizoAI
+
+# Initialize with API key
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Or use environment variable
+import os
+client = WhizoAI(api_key=os.getenv("WHIZOAI_API_KEY"))
+
+# For Bearer token authentication
+import requests
+
+headers = {
+    "Authorization": "Bearer whizo_YOUR-API-KEY",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(
+    "https://api.whizo.ai/v1/scrape",
+    headers=headers,
+    json={"url": "https://example.com"}
+)
+```

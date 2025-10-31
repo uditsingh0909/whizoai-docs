@@ -1,0 +1,234 @@
+---
+title: "Batch Processing"
+description: "Process multiple URLs efficiently with WhizoAI's batch scraping feature"
+icon: "layer-group"
+---
+
+## Overview
+
+Batch processing allows you to scrape multiple URLs in a single request, optimizing performance and reducing overhead. WhizoAI's batch scraping system handles concurrent processing, automatic retries, and progress tracking.
+
+## Key Benefits
+
+- **10% credit discount** when processing multiple URLs
+- **Concurrent processing** for faster results
+- **Automatic retry** on failed pages
+- **Progress tracking** in real-time
+- **Bulk export** in multiple formats (JSON, CSV, XML)
+
+## Basic Usage
+
+<CodeGroup>
+import BatchPython from "/snippets/v1/scrape/batch/python.mdx";
+
+<BatchPython />
+
+```javascript Node.js
+import WhizoAI from '@whizoai/sdk';
+
+const client = new WhizoAI({ apiKey: 'whizo_YOUR-API-KEY' });
+
+const urls = [
+  'https://example.com/page1',
+  'https://example.com/page2',
+  'https://example.com/page3'
+];
+
+const result = await client.batchScrape({
+  urls,
+  options: {
+    format: 'markdown',
+    includeScreenshot: false
+  }
+});
+
+console.log(`Job ID: ${result.jobId}`);
+console.log(`Status: ${result.status}`);
+```
+
+```bash cURL
+curl -X POST https://api.whizo.ai/v1/batch \
+  -H "Authorization: Bearer whizo_YOUR-API-KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "urls": [
+      "https://example.com/page1",
+      "https://example.com/page2",
+      "https://example.com/page3"
+    ],
+    "options": {
+      "format": "markdown",
+      "includeScreenshot": false
+    }
+  }'
+```
+</CodeGroup>
+
+## Advanced Configuration
+
+### Concurrent Processing
+
+Control how many URLs are processed simultaneously:
+
+```python
+result = client.batch_scrape(
+    urls=url_list,
+    options={
+        "concurrency": 5,  # Process 5 URLs at once
+        "maxRetries": 3,   # Retry failed pages up to 3 times
+        "timeout": 30000   # 30 second timeout per page
+    }
+)
+```
+
+### Progress Monitoring
+
+Track batch progress in real-time:
+
+```python
+import time
+
+job_id = result['jobId']
+
+while True:
+    status = client.get_job_status(job_id)
+
+    print(f"Progress: {status['pagesCompleted']}/{status['totalPages']}")
+    print(f"Success Rate: {(status['pagesCompleted'] - status['pagesFailed']) / status['pagesCompleted'] * 100:.1f}%")
+
+    if status['status'] == 'completed':
+        break
+
+    time.sleep(5)
+```
+
+### Error Handling
+
+Handle individual page failures gracefully:
+
+```python
+results = client.get_job_results(job_id)
+
+successful_pages = [p for p in results['pages'] if p['status'] == 'completed']
+failed_pages = [p for p in results['pages'] if p['status'] == 'failed']
+
+print(f"Successfully scraped: {len(successful_pages)}")
+print(f"Failed pages: {len(failed_pages)}")
+
+for page in failed_pages:
+    print(f"Failed URL: {page['url']}")
+    print(f"Error: {page['error']}")
+```
+
+## Bulk Export
+
+Export batch results in multiple formats:
+
+```python
+# Export as JSON
+client.export_job(job_id, format='json', file='results.json')
+
+# Export as CSV
+client.export_job(job_id, format='csv', file='results.csv')
+
+# Export as XML
+client.export_job(job_id, format='xml', file='results.xml')
+
+# Compressed export
+client.export_job(job_id, format='json', compressed=True, file='results.json.gz')
+```
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Optimize Batch Size">
+- **Small batches** (10-50 URLs): Best for quick processing
+- **Medium batches** (50-200 URLs): Balanced performance
+- **Large batches** (200+ URLs): Use lower concurrency to avoid rate limits
+</Accordion>
+
+<Accordion title="Handle Rate Limits">
+Batch processing respects your plan's rate limits:
+- **Free Plan**: Max 10 concurrent requests
+- **Starter Plan**: Max 20 concurrent requests
+- **Pro Plan**: Max 50 concurrent requests
+- **Enterprise Plan**: Custom limits
+</Accordion>
+
+<Accordion title="Memory Management">
+For large batches (1000+ URLs):
+- Process in chunks
+- Stream results instead of loading all at once
+- Use webhooks for completion notifications
+</Accordion>
+</AccordionGroup>
+
+## Credit Costs
+
+| Operation | Base Cost | Batch Discount |
+|-----------|-----------|----------------|
+| Single URL | 1 credit | - |
+| 10 URLs | 10 credits | 9 credits (10% off) |
+| 100 URLs | 100 credits | 90 credits (10% off) |
+| Screenshots | +1 credit/page | Included in discount |
+| PDF Generation | +1 credit/page | Included in discount |
+
+## Webhooks Integration
+
+Get notified when batch processing completes:
+
+```python
+result = client.batch_scrape(
+    urls=url_list,
+    options={
+        "webhook": "https://your-server.com/webhook"
+    }
+)
+
+# Webhook receives:
+# {
+#   "event": "batch.completed",
+#   "jobId": "job_123",
+#   "status": "completed",
+#   "summary": {
+#     "totalPages": 100,
+#     "successful": 98,
+#     "failed": 2,
+#     "creditsUsed": 90
+#   }
+# }
+```
+
+## Common Use Cases
+
+<CardGroup cols={2}>
+<Card title="E-commerce Product Scraping" icon="shopping-cart">
+Scrape thousands of product pages efficiently with bulk export
+</Card>
+
+<Card title="Content Migration" icon="arrow-right-arrow-left">
+Migrate entire websites by batch processing all pages
+</Card>
+
+<Card title="Competitive Analysis" icon="chart-line">
+Monitor multiple competitor websites simultaneously
+</Card>
+
+<Card title="Data Aggregation" icon="database">
+Collect data from multiple sources for analysis
+</Card>
+</CardGroup>
+
+## Related Resources
+
+<Card title="Job Management API" icon="list-check" href="/api-reference/jobs">
+  Learn how to monitor and manage batch jobs
+</Card>
+
+<Card title="Webhooks" icon="webhook" href="/webhooks/overview">
+  Set up webhook notifications for batch completion
+</Card>
+
+<Card title="Error Handling" icon="triangle-exclamation" href="/guides/error-handling">
+  Best practices for handling failures in batch processing
+</Card>

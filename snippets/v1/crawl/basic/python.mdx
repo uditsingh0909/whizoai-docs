@@ -1,0 +1,19 @@
+```python Python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Crawl an entire website
+result = client.crawl(
+    url="https://example.com",
+    options={
+        "maxDepth": 2,
+        "maxPages": 10,
+        "format": "markdown",
+        "excludePaths": ["/admin", "/login"]
+    }
+)
+
+print(f"Job ID: {result['jobId']}")
+print(f"Status: {result['status']}")
+```

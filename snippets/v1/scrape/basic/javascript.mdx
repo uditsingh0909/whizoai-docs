@@ -1,0 +1,16 @@
+```javascript Node.js
+import WhizoAI from '@whizoai/sdk';
+
+const client = new WhizoAI({ apiKey: 'whizo_YOUR-API-KEY' });
+
+// Scrape a single webpage
+const result = await client.scrape({
+  url: 'https://example.com',
+  options: {
+    format: 'markdown',
+    includeScreenshot: false
+  }
+});
+
+console.log(result.content);
+```

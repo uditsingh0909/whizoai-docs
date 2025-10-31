@@ -1,0 +1,491 @@
+---
+title: "Browser Automation"
+description: "Render JavaScript, interact with pages, and handle complex web applications"
+icon: "browser"
+---
+
+## Overview
+
+WhizoAI's browser automation features allow you to scrape JavaScript-heavy websites, SPAs (Single Page Applications), and dynamic content that requires user interaction or waiting for elements to load.
+
+## Supported Engines
+
+<CardGroup cols={2}>
+<Card title="Playwright" icon="star">
+**Recommended for most use cases**
+- Fast and reliable
+- Chrome, Firefox, WebKit support
+- Excellent for modern SPAs
+</Card>
+
+<Card title="Puppeteer" icon="chrome">
+**Chrome-specific automation**
+- Stable Chrome automation
+- Good for Chrome-specific features
+- Wide community support
+</Card>
+</CardGroup>
+
+## JavaScript Rendering
+
+### Enable JavaScript Rendering
+
+```python
+result = client.scrape(
+    url="https://spa-example.com",
+    options={
+        "javascript": True,  # Enable JS rendering
+        "engine": "playwright",
+        "waitTime": 5  # Wait 5 seconds for JS to execute
+    }
+)
+```
+
+### Wait for Specific Elements
+
+Wait for dynamic content to load:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "waitFor": {
+            "selector": ".product-price",  # Wait for this element
+            "timeout": 10000  # Max wait time (10 seconds)
+        }
+    }
+)
+```
+
+### Wait for Network Idle
+
+Ensure all AJAX requests complete:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "waitUntil": "networkidle",  # Wait until network is idle
+        "timeout": 30000
+    }
+)
+```
+
+## Page Interactions
+
+### Click Elements
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "actions": [
+            {
+                "type": "click",
+                "selector": "#load-more-button"
+            },
+            {
+                "type": "wait",
+                "duration": 2000  # Wait 2 seconds
+            }
+        ]
+    }
+)
+```
+
+### Fill Forms
+
+```python
+result = client.scrape(
+    url="https://example.com/search",
+    options={
+        "javascript": True,
+        "actions": [
+            {
+                "type": "type",
+                "selector": "#search-input",
+                "text": "AI web scraping"
+            },
+            {
+                "type": "click",
+                "selector": "#search-button"
+            },
+            {
+                "type": "waitForNavigation"
+            }
+        ]
+    }
+)
+```
+
+### Scroll Page
+
+Load infinite scroll content:
+
+```python
+result = client.scrape(
+    url="https://example.com/feed",
+    options={
+        "javascript": True,
+        "actions": [
+            {
+                "type": "scroll",
+                "direction": "down",
+                "distance": 1000  # Pixels
+            },
+            {
+                "type": "wait",
+                "duration": 2000
+            },
+            {
+                "type": "scroll",
+                "direction": "down",
+                "distance": 1000
+            }
+        ]
+    }
+)
+```
+
+## Advanced Browser Options
+
+### Custom Viewport
+
+Simulate different screen sizes:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "viewport": {
+            "width": 1920,
+            "height": 1080
+        },
+        "mobile": False
+    }
+)
+
+# Mobile viewport
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "viewport": {
+            "width": 375,
+            "height": 667,
+            "isMobile": True,
+            "hasTouch": True
+        },
+        "mobile": True
+    }
+)
+```
+
+### Geolocation
+
+Set custom geolocation:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "geolocation": {
+            "latitude": 40.7128,
+            "longitude": -74.0060
+        }
+    }
+)
+```
+
+### Timezone
+
+Set custom timezone:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "timezone": "America/New_York"
+    }
+)
+```
+
+## Screenshot Capture
+
+### Full Page Screenshots
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "includeScreenshot": True,
+        "screenshotOptions": {
+            "fullPage": True,
+            "type": "png"
+        }
+    }
+)
+
+screenshot_url = result['screenshots'][0]
+```
+
+### Element Screenshots
+
+Capture specific elements:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "includeScreenshot": True,
+        "screenshotOptions": {
+            "selector": "#main-content",
+            "type": "jpeg",
+            "quality": 80
+        }
+    }
+)
+```
+
+## PDF Generation
+
+Generate PDFs from rendered pages:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "includePdf": True,
+        "pdfOptions": {
+            "format": "A4",
+            "printBackground": True,
+            "margin": {
+                "top": "20mm",
+                "bottom": "20mm",
+                "left": "15mm",
+                "right": "15mm"
+            }
+        }
+    }
+)
+
+pdf_url = result['pdf']
+```
+
+## Complex Automation Workflows
+
+### Multi-step Interactions
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "actions": [
+            # Accept cookies
+            {
+                "type": "click",
+                "selector": "#accept-cookies"
+            },
+            # Open dropdown
+            {
+                "type": "click",
+                "selector": ".category-dropdown"
+            },
+            # Select option
+            {
+                "type": "click",
+                "selector": "option[value='electronics']"
+            },
+            # Fill search
+            {
+                "type": "type",
+                "selector": "#search",
+                "text": "laptop"
+            },
+            # Submit
+            {
+                "type": "click",
+                "selector": "button[type='submit']"
+            },
+            # Wait for results
+            {
+                "type": "waitFor",
+                "selector": ".search-results"
+            }
+        ]
+    }
+)
+```
+
+## Handling Auth & Session
+
+### Cookie Injection
+
+Scrape authenticated pages:
+
+```python
+result = client.scrape(
+    url="https://example.com/dashboard",
+    options={
+        "javascript": True,
+        "cookies": [
+            {
+                "name": "session_id",
+                "value": "abc123...",
+                "domain": ".example.com"
+            },
+            {
+                "name": "auth_token",
+                "value": "xyz789...",
+                "domain": ".example.com"
+            }
+        ]
+    }
+)
+```
+
+### Local Storage
+
+Set local storage values:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "localStorage": {
+            "user_preferences": "dark_mode",
+            "auth_token": "token_value"
+        }
+    }
+)
+```
+
+## Performance Optimization
+
+### Block Resources
+
+Speed up scraping by blocking unnecessary resources:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "blockResources": ["image", "stylesheet", "font"],  # Block images, CSS, fonts
+        "blockDomains": ["analytics.google.com", "facebook.com"]  # Block tracking
+    }
+)
+```
+
+### Request Interception
+
+Modify requests on the fly:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "javascript": True,
+        "interceptRequests": {
+            "enabled": True,
+            "rules": [
+                {
+                    "pattern": "*/api/data",
+                    "response": {"custom": "data"}
+                }
+            ]
+        }
+    }
+)
+```
+
+## Error Handling
+
+```python
+try:
+    result = client.scrape(
+        url="https://example.com",
+        options={
+            "javascript": True,
+            "waitFor": {"selector": ".content", "timeout": 15000}
+        }
+    )
+except WhizoAIError as e:
+    if e.code == 'TIMEOUT':
+        print("Page took too long to load. Try increasing timeout.")
+    elif e.code == 'SELECTOR_NOT_FOUND':
+        print("Waited element never appeared on the page.")
+```
+
+## Credit Costs
+
+| Feature | Additional Cost |
+|---------|----------------|
+| JavaScript Rendering | +1 credit |
+| Screenshot (full page) | +1 credit |
+| PDF Generation | +1 credit |
+| Each Page Action | No additional cost |
+| Mobile Rendering | No additional cost |
+
+**Example**: Scraping with JavaScript + Screenshot = 1 (base) + 1 (JS) + 1 (screenshot) = **3 credits**
+
+## Best Practices
+
+<Tip>
+**Optimize Wait Times**
+- Use specific selectors instead of fixed wait times
+- Prefer `waitFor` over `waitTime` when possible
+- Use `networkidle` only when necessary (slower)
+</Tip>
+
+<Warning>
+**Timeout Management**
+- Set reasonable timeouts (10-30 seconds)
+- Handle timeout errors gracefully
+- Don't set timeouts too high (costs more, slower)
+</Warning>
+
+## Common Use Cases
+
+<AccordionGroup>
+<Accordion title="Single Page Applications (SPAs)">
+React, Vue, Angular apps that load content dynamically
+</Accordion>
+
+<Accordion title="Infinite Scroll Pages">
+Social media feeds, product listings that load on scroll
+</Accordion>
+
+<Accordion title="Login-Protected Content">
+Scrape content behind authentication using cookies
+</Accordion>
+
+<Accordion title="Interactive Maps">
+Scrape data from Google Maps, Mapbox, and other mapping services
+</Accordion>
+</AccordionGroup>
+
+## Related Resources
+
+<Card title="Anti-Bot Stealth" icon="mask" href="/features/anti-bot-stealth">
+  Combine with stealth mode for better success rates
+</Card>
+
+<Card title="Proxy Rotation" icon="arrows-rotate" href="/features/proxy-rotation">
+  Use proxies with browser automation
+</Card>
+
+<Card title="Scrape API Reference" icon="code" href="/api-reference/scrape">
+  Complete API documentation
+</Card>

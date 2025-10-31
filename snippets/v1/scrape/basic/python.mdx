@@ -1,0 +1,16 @@
+```python Python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Scrape a single webpage
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "format": "markdown",
+        "includeScreenshot": False
+    }
+)
+
+print(result["content"])
+```

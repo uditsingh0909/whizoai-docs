@@ -1,0 +1,29 @@
+```python Search
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Search the web and scrape results
+result = client.search(
+    query="AI web scraping tools",
+    options={
+        "maxResults": 10,
+        "scrapeResults": True,
+        "format": "markdown"
+    }
+)
+
+# Process search results
+for item in result["results"]:
+    print(f"Title: {item['title']}")
+    print(f"URL: {item['url']}")
+    print(f"Snippet: {item['snippet']}")
+
+    if "content" in item:
+        print(f"Scraped Content Length: {len(item['content'])}")
+
+    print("---")
+
+print(f"Total results: {len(result['results'])}")
+print(f"Credits used: {result['metadata']['creditsUsed']}")
+```

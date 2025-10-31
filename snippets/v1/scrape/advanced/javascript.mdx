@@ -1,0 +1,26 @@
+```javascript Node.js
+import WhizoAI from '@whizoai/sdk';
+
+const client = new WhizoAI({ apiKey: 'whizo_YOUR-API-KEY' });
+
+// Advanced scraping with screenshots, PDF, and custom options
+const result = await client.scrape({
+  url: 'https://example.com',
+  options: {
+    format: 'markdown',
+    includeScreenshot: true,
+    includePdf: true,
+    javascript: true,
+    waitTime: 5,
+    mobile: false,
+    headers: {
+      'User-Agent': 'CustomBot/1.0'
+    }
+  }
+});
+
+console.log(`Content: ${result.content}`);
+console.log(`Screenshot URL: ${result.screenshots[0]}`);
+console.log(`PDF URL: ${result.pdf}`);
+console.log(`Credits used: ${result.metadata.creditsUsed}`);
+```

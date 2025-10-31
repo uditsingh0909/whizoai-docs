@@ -1,0 +1,385 @@
+---
+title: "Proxy Rotation"
+description: "Use rotating proxies to avoid blocks and access geo-restricted content"
+icon: "arrows-rotate"
+---
+
+## Overview
+
+Proxy rotation helps you avoid IP blocks, access geo-restricted content, and distribute scraping load across multiple IP addresses. WhizoAI supports both built-in proxy pools and custom proxy configurations.
+
+## Built-in Proxy Pool
+
+WhizoAI provides a managed proxy pool for effortless rotation:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "residential"  # or "datacenter"
+        }
+    }
+)
+```
+
+### Proxy Types
+
+<CardGroup cols={2}>
+<Card title="Residential Proxies" icon="house">
+**Best for:**
+- Anti-bot protection bypass
+- Geo-specific content
+- High success rates
+
+**Cost:** +4 credits per page
+</Card>
+
+<Card title="Datacenter Proxies" icon="server">
+**Best for:**
+- High-speed scraping
+- Cost-effective bulk scraping
+- Non-blocked websites
+
+**Cost:** +1 credit per page
+</Card>
+</CardGroup>
+
+## Geographic Targeting
+
+Access content from specific countries:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "residential",
+            "country": "US"  # United States
+        }
+    }
+)
+```
+
+### Supported Countries
+
+| Region | Countries |
+|--------|-----------|
+| **North America** | US, CA, MX |
+| **Europe** | UK, DE, FR, IT, ES, NL |
+| **Asia** | JP, CN, IN, SG, KR |
+| **Oceania** | AU, NZ |
+| **South America** | BR, AR |
+
+### City-Level Targeting
+
+For precise geolocation (residential proxies only):
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "residential",
+            "country": "US",
+            "city": "New York"  # City-level targeting
+        }
+    }
+)
+```
+
+## Custom Proxy Configuration
+
+### Single Proxy
+
+Use your own proxy:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "proxy": {
+            "enabled": True,
+            "custom": True,
+            "server": "http://proxy.example.com:8080",
+            "username": "your_username",
+            "password": "your_password"
+        }
+    }
+)
+```
+
+### Proxy List Rotation
+
+Provide your own proxy list:
+
+```python
+proxies = [
+    {
+        "server": "http://proxy1.example.com:8080",
+        "username": "user1",
+        "password": "pass1"
+    },
+    {
+        "server": "http://proxy2.example.com:8080",
+        "username": "user2",
+        "password": "pass2"
+    },
+    {
+        "server": "http://proxy3.example.com:8080",
+        "username": "user3",
+        "password": "pass3"
+    }
+]
+
+result = client.batch_scrape(
+    urls=url_list,
+    options={
+        "proxy": {
+            "enabled": True,
+            "custom": True,
+            "rotation": "round-robin",  # or "random"
+            "list": proxies
+        }
+    }
+)
+```
+
+## Sticky Sessions
+
+Maintain same IP across requests:
+
+```python
+# First request - get session ID
+result1 = client.scrape(
+    url="https://example.com/page1",
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "residential",
+            "sticky": True
+        }
+    }
+)
+
+session_id = result1['metadata']['proxySessionId']
+
+# Subsequent requests with same IP
+result2 = client.scrape(
+    url="https://example.com/page2",
+    options={
+        "proxy": {
+            "enabled": True,
+            "sessionId": session_id  # Use same IP
+        }
+    }
+)
+```
+
+## Proxy Health Monitoring
+
+Monitor proxy performance:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "residential",
+            "healthCheck": True  # Include proxy health metrics
+        }
+    }
+)
+
+print(f"Proxy IP: {result['metadata']['proxyInfo']['ip']}")
+print(f"Response Time: {result['metadata']['proxyInfo']['responseTime']}ms")
+print(f"Success Rate: {result['metadata']['proxyInfo']['successRate']}%")
+```
+
+## Failover Configuration
+
+Automatically retry with different proxy on failure:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "residential",
+            "maxRetries": 3,  # Try up to 3 different proxies
+            "rotateOnError": True  # Rotate proxy on each retry
+        }
+    }
+)
+```
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Choose Right Proxy Type">
+**Use Residential when:**
+- Target site has anti-bot protection
+- Need geo-specific content
+- Success rate is more important than cost
+
+**Use Datacenter when:**
+- Target site doesn't block datacenter IPs
+- Cost optimization is priority
+- High-volume scraping
+</Accordion>
+
+<Accordion title="Optimize Rotation Strategy">
+- **Round-robin**: Equal distribution across proxies
+- **Random**: Less predictable, better for anti-bot
+- **Sticky sessions**: For multi-step workflows
+</Accordion>
+
+<Accordion title="Handle Proxy Errors">
+Always implement retry logic and monitor success rates
+</Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+```python
+try:
+    result = client.scrape(
+        url="https://example.com",
+        options={
+            "proxy": {
+                "enabled": True,
+                "type": "residential"
+            }
+        }
+    )
+
+except WhizoAIError as e:
+    if e.code == 'PROXY_CONNECTION_FAILED':
+        print("Proxy couldn't connect. Retrying with different proxy...")
+        # Implement retry logic
+
+    elif e.code == 'PROXY_AUTHENTICATION_FAILED':
+        print("Proxy credentials invalid.")
+
+    elif e.code == 'NO_PROXIES_AVAILABLE':
+        print("No proxies available for requested country/city.")
+```
+
+## Credit Costs
+
+| Proxy Type | Cost Per Page |
+|------------|---------------|
+| No Proxy (Direct) | 0 credits (included in base) |
+| Datacenter Proxy | +1 credit |
+| Residential Proxy | +4 credits |
+| Premium Residential (city-level) | +6 credits |
+
+**Example**: Basic scrape (1 credit) + Residential proxy (4 credits) = **5 credits total**
+
+## Integration with Other Features
+
+### Proxy + Stealth Mode
+
+Combine for maximum success:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "residential",
+            "country": "US"
+        },
+        "stealth": True,  # Enable stealth fingerprinting
+        "javascript": True
+    }
+)
+```
+
+### Proxy + Browser Automation
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "residential"
+        },
+        "javascript": True,
+        "actions": [
+            {"type": "click", "selector": "#load-more"}
+        ]
+    }
+)
+```
+
+## Bulk Scraping with Proxies
+
+Distribute load across proxy pool:
+
+```python
+urls = ["https://example.com/page" + str(i) for i in range(100)]
+
+result = client.batch_scrape(
+    urls=urls,
+    options={
+        "proxy": {
+            "enabled": True,
+            "type": "datacenter",
+            "rotation": "random",
+            "maxConcurrentPerProxy": 3  # Limit concurrent requests per IP
+        },
+        "concurrency": 10
+    }
+)
+```
+
+## Proxy Allowlisting
+
+For improved reliability, allowlist WhizoAI IPs:
+
+```bash
+# If using custom proxy provider, allowlist these IPs
+# Contact support@whizo.ai for current IP ranges
+```
+
+## Common Use Cases
+
+<CardGroup cols={2}>
+<Card title="Geo-Restricted Content" icon="globe">
+Access region-specific pricing, products, or content
+</Card>
+
+<Card title="Avoid IP Bans" icon="shield">
+Distribute scraping load to prevent blocking
+</Card>
+
+<Card title="Price Monitoring" icon="chart-line">
+Check prices from different countries simultaneously
+</Card>
+
+<Card title="Ad Verification" icon="magnifying-glass">
+Verify ads shown in different locations
+</Card>
+</CardGroup>
+
+## Related Resources
+
+<Card title="Anti-Bot Stealth" icon="mask" href="/features/anti-bot-stealth">
+  Combine with stealth mode for best results
+</Card>
+
+<Card title="Browser Automation" icon="browser" href="/features/browser-automation">
+  Use proxies with JavaScript rendering
+</Card>
+
+<Card title="Rate Limits" icon="gauge" href="/guides/error-handling">
+  Understand rate limiting with proxies
+</Card>

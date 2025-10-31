@@ -22,6 +22,32 @@
     {
       "name": "API Reference",
       "url": "api-reference"
+    },
+    {
+      "name": "Features",
+      "url": "features"
+    },
+    {
+      "name": "Webhooks",
+      "url": "webhooks"
+    },
+    {
+      "name": "Developer Guides",
+      "url": "developer-guides"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/guides/web-scraping",
+      "destination": "/features/fast-scraping"
+    },
+    {
+      "source": "/guides/anti-bot-stealth",
+      "destination": "/features/anti-bot-stealth"
+    },
+    {
+      "source": "/api-reference/webhooks",
+      "destination": "/webhooks/overview"
     }
   ],
   "navigation": {
@@ -113,6 +139,75 @@
             "group": "AI Tools Integration",
             "pages": [
               "integrations/mcp"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Features",
+        "groups": [
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/batch-processing",
+              "features/ai-extraction",
+              "features/browser-automation",
+              "features/fast-scraping"
+            ]
+          },
+          {
+            "group": "Advanced Features",
+            "pages": [
+              "features/proxy-rotation",
+              "guides/anti-bot-stealth",
+              "features/document-parsing"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Webhooks",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "webhooks/overview",
+              "webhooks/events"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "webhooks/security",
+              "webhooks/testing"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developer Guides",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "guides/web-scraping",
+              "guides/data-extraction",
+              "guides/batch-processing",
+              "guides/error-handling"
+            ]
+          },
+          {
+            "group": "LLM Integrations",
+            "pages": [
+              "developer-guides/llm-integrations/langchain",
+              "developer-guides/llm-integrations/llamaindex"
+            ]
+          },
+          {
+            "group": "Workflow Automation",
+            "pages": [
+              "developer-guides/workflow-automation/zapier",
+              "developer-guides/workflow-automation/n8n"
             ]
           }
         ]

@@ -1,0 +1,379 @@
+---
+title: "Zapier Integration"
+description: "Automate web scraping workflows with WhizoAI and Zapier"
+icon: "bolt"
+---
+
+## Overview
+
+Connect WhizoAI with 5,000+ apps using Zapier to automate your web scraping workflows. Monitor websites, extract data, and send results to your favorite tools—all without code.
+
+## Prerequisites
+
+- WhizoAI account with API key
+- Zapier account (free tier works)
+- Basic understanding of Zapier workflows (Zaps)
+
+## Quick Start
+
+### Set Up WhizoAI in Zapier
+
+1. **Get Your API Key**
+   - Go to [WhizoAI Dashboard](https://whizo.ai/app/api-keys)
+   - Create a new API key
+   - Copy the key (starts with `whizo_`)
+
+2. **Add WhizoAI to Zapier**
+   - In Zapier, create a new Zap
+   - Search for "Webhooks by Zapier"
+   - Choose "POST" as the action
+   - Configure the webhook (see examples below)
+
+## Common Workflows
+
+### 1. Daily Website Monitor → Slack Notification
+
+**Use Case**: Monitor competitor pricing and get Slack alerts when prices change.
+
+**Setup:**
+
+**Trigger**: Schedule by Zapier (Daily at 9 AM)
+
+**Action 1**: Webhooks by Zapier - POST Request
+- URL: `https://api.whizo.ai/v1/scrape`
+- Headers:
+  ```
+  Authorization: Bearer whizo_YOUR-API-KEY
+  Content-Type: application/json
+  ```
+- Data:
+  ```json
+  {
+    "url": "https://competitor.com/pricing",
+    "options": {
+      "format": "markdown"
+    }
+  }
+  ```
+
+**Action 2**: Formatter by Zapier - Extract Pattern
+- Input: Response from Action 1
+- Pattern: Extract price using regex
+- Pattern: `\$(\d+\.?\d*)`
+
+**Action 3**: Slack - Send Channel Message
+- Channel: `#price-alerts`
+- Message: `Competitor price updated: ${{extracted_price}}`
+
+### 2. Form Submission → Web Scraping → Google Sheets
+
+**Use Case**: Research companies submitted via form, scrape their websites, save to spreadsheet.
+
+**Trigger**: Google Forms - New Response
+
+**Action 1**: Webhooks by Zapier - POST
+- URL: `https://api.whizo.ai/v1/scrape`
+- Data:
+  ```json
+  {
+    "url": "{{form_website_url}}",
+    "options": {
+      "format": "markdown"
+    }
+  }
+  ```
+
+**Action 2**: Webhooks by Zapier - POST (AI Extraction)
+- URL: `https://api.whizo.ai/v1/extract`
+- Data:
+  ```json
+  {
+    "url": "{{form_website_url}}",
+    "schema": {
+      "company_name": "Company name",
+      "industry": "Industry",
+      "employee_count": "Number of employees",
+      "description": "Company description"
+    }
+  }
+  ```
+
+**Action 3**: Google Sheets - Create Spreadsheet Row
+- Spreadsheet: `Company Research`
+- Row Data:
+  - Name: `{{extracted_company_name}}`
+  - Industry: `{{extracted_industry}}`
+  - Employees: `{{extracted_employee_count}}`
+  - Description: `{{extracted_description}}`
+  - Submitted By: `{{form_email}}`
+
+### 3. New Airtable Record → Batch Scrape → Update Record
+
+**Use Case**: Automatically scrape URLs added to Airtable and update with results.
+
+**Trigger**: Airtable - New Record
+
+**Action 1**: Webhooks by Zapier - POST
+- URL: `https://api.whizo.ai/v1/batch`
+- Data:
+  ```json
+  {
+    "urls": ["{{airtable_url1}}", "{{airtable_url2}}", "{{airtable_url3}}"],
+    "options": {
+      "format": "markdown"
+    }
+  }
+  ```
+
+**Action 2**: Delay by Zapier
+- Wait: `2 minutes` (for batch to complete)
+
+**Action 3**: Webhooks by Zapier - GET
+- URL: `https://api.whizo.ai/v1/jobs/{{job_id}}/results`
+- Headers: `Authorization: Bearer whizo_YOUR-API-KEY`
+
+**Action 4**: Airtable - Update Record
+- Record ID: `{{trigger_record_id}}`
+- Field: `Scraped Content` = `{{job_results}}`
+- Field: `Status` = `Completed`
+
+### 4. RSS Feed → Scrape Articles → Send Email Digest
+
+**Use Case**: Monitor industry blogs, scrape new articles, send weekly digest.
+
+**Trigger**: RSS by Zapier - New Item in Feed
+
+**Action 1**: Webhooks by Zapier - POST
+- URL: `https://api.whizo.ai/v1/scrape`
+- Data:
+  ```json
+  {
+    "url": "{{rss_item_link}}",
+    "options": {
+      "format": "markdown"
+    }
+  }
+  ```
+
+**Action 2**: Webhooks by Zapier - POST (Summarize with AI)
+- URL: `https://api.whizo.ai/v1/extract`
+- Data:
+  ```json
+  {
+    "content": "{{scraped_content}}",
+    "schema": {
+      "summary": "3-sentence summary of the article",
+      "key_points": "Main takeaways (array of strings)",
+      "relevant": "Is this relevant to AI/ML? (boolean)"
+    }
+  }
+  ```
+
+**Filter**: Only Continue If `{{extracted_relevant}}` is `true`
+
+**Action 3**: Gmail - Send Email
+- To: `your@email.com`
+- Subject: `Weekly Industry Digest - {{rss_item_title}}`
+- Body:
+  ```
+  {{rss_item_title}}
+  {{rss_item_link}}
+
+  Summary: {{extracted_summary}}
+
+  Key Points:
+  {{extracted_key_points}}
+
+  Full Content:
+  {{scraped_content}}
+  ```
+
+## Advanced Patterns
+
+### Webhook-Driven Scraping
+
+Use WhizoAI webhooks with Zapier for real-time notifications:
+
+**Step 1**: Create Webhook in WhizoAI
+```bash
+curl -X POST https://api.whizo.ai/v1/webhooks \
+  -H "Authorization: Bearer whizo_YOUR-API-KEY" \
+  -d '{
+    "url": "https://hooks.zapier.com/hooks/catch/YOUR_WEBHOOK_ID/",
+    "events": ["job.completed", "job.failed"]
+  }'
+```
+
+**Step 2**: Create Zap with Webhook Trigger
+- **Trigger**: Webhooks by Zapier - Catch Hook
+- **Action**: Process the webhook payload
+
+**Example - Job Completion Handler**:
+- Trigger: Catch Hook
+- Filter: Only continue if `event` equals `job.completed`
+- Action: Send to Slack/Email/Database based on results
+
+### Error Handling
+
+Add error handling to your Zaps:
+
+**Action**: Paths by Zapier
+- Path A: If `{{webhook_status}}` is `200`
+  - Continue with normal workflow
+- Path B: If `{{webhook_status}}` is not `200`
+  - Send error notification
+  - Log to error tracking tool
+
+### Multi-Step Extraction
+
+For complex data extraction:
+
+**Action 1**: Scrape page
+**Action 2**: Extract structured data with AI
+**Action 3**: Scrape related pages (using extracted URLs)
+**Action 4**: Combine and format data
+**Action 5**: Save to destination
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Rate Limiting">
+Be mindful of WhizoAI rate limits based on your plan:
+
+- **Free**: 10 requests/hour
+- **Starter**: 50 requests/hour
+- **Pro**: 200 requests/hour
+
+Use Zapier's "Delay" action to control request rate:
+```
+Trigger → Delay (6 minutes) → Scrape
+```
+</Accordion>
+
+<Accordion title="Credit Management">
+Monitor credit usage:
+- Check credits before running large batches
+- Use webhooks to get alerts when credits are low
+- Set up monthly budget alerts in WhizoAI dashboard
+</Accordion>
+
+<Accordion title="Error Handling">
+Always include error paths:
+
+1. Add a "Filter" step to check response status
+2. Create separate paths for success/failure
+3. Log errors to a tracking tool
+4. Send notifications for failures
+</Accordion>
+
+<Accordion title="Data Storage">
+Store results efficiently:
+- Short-term: Zapier Storage (limited)
+- Long-term: Google Sheets, Airtable, Database
+- Large files: Save to Google Drive or Dropbox
+</Accordion>
+</AccordionGroup>
+
+## Example Zap Templates
+
+### 1. Daily Competitor Monitoring
+
+```
+Schedule (Daily 9 AM)
+  → Scrape competitor.com/pricing
+  → Extract prices with AI
+  → Compare with stored prices (Google Sheets)
+  → If changed → Slack notification
+  → Update Google Sheets with new prices
+```
+
+### 2. Lead Enrichment
+
+```
+New lead in CRM (Salesforce/HubSpot)
+  → Scrape company website
+  → Extract company info (AI)
+  → Enrich CRM record
+  → Tag lead with industry/size
+  → Assign to appropriate sales rep
+```
+
+### 3. Content Aggregation
+
+```
+RSS feed (multiple sources)
+  → Scrape full articles
+  → Summarize with AI
+  → Filter by relevance
+  → Post to WordPress
+  → Share on Twitter
+```
+
+### 4. Price Monitoring
+
+```
+Schedule (Every 6 hours)
+  → Scrape product pages (batch)
+  → Extract prices
+  → Store in Airtable
+  → Calculate price trends
+  → Alert if drop > 10%
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+<Accordion title="Zap Not Triggering">
+- Check that trigger is properly configured
+- Verify API key is valid
+- Test the webhook manually with curl
+- Check Zapier task history for errors
+</Accordion>
+
+<Accordion title="Scraping Timeout">
+- Increase Zapier timeout (if on paid plan)
+- Use asynchronous scraping with webhooks
+- Split large jobs into smaller batches
+</Accordion>
+
+<Accordion title="Data Not Mapping Correctly">
+- Check webhook response format
+- Use Zapier's "Formatter" to transform data
+- Test with sample data first
+- Review Zapier task history for actual payloads
+</Accordion>
+</AccordionGroup>
+
+## Pricing Considerations
+
+| Zapier Plan | WhizoAI Plan | Recommended Use |
+|-------------|--------------|-----------------|
+| Free | Free | Testing, personal use |
+| Starter | Starter | Small business automation |
+| Professional | Pro | Medium-scale automation |
+| Team/Company | Enterprise | Large-scale workflows |
+
+**Cost Example**:
+- Zapier Professional: $49/month
+- WhizoAI Pro: $49/month
+- **Total**: $98/month for powerful automation
+
+## Related Resources
+
+<CardGroup cols={2}>
+<Card title="n8n Integration" icon="workflow" href="/developer-guides/workflow-automation/n8n">
+  Self-hosted workflow automation
+</Card>
+
+<Card title="Webhooks Guide" icon="webhook" href="/webhooks/overview">
+  Set up WhizoAI webhooks
+</Card>
+
+<Card title="Batch Processing" icon="layer-group" href="/features/batch-processing">
+  Process multiple URLs efficiently
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/scrape">
+  Complete API documentation
+</Card>
+</CardGroup>

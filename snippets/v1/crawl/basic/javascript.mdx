@@ -1,0 +1,19 @@
+```javascript Node.js
+import WhizoAI from '@whizoai/sdk';
+
+const client = new WhizoAI({ apiKey: 'whizo_YOUR-API-KEY' });
+
+// Crawl an entire website
+const result = await client.crawl({
+  url: 'https://example.com',
+  options: {
+    maxDepth: 2,
+    maxPages: 10,
+    format: 'markdown',
+    excludePaths: ['/admin', '/login']
+  }
+});
+
+console.log(`Job ID: ${result.jobId}`);
+console.log(`Status: ${result.status}`);
+```

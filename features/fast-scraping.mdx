@@ -1,0 +1,352 @@
+---
+title: "Fast Scraping Optimization"
+description: "Optimize scraping speed and reduce costs with lightweight engine"
+icon: "bolt"
+---
+
+## Overview
+
+WhizoAI's lightweight engine provides blazing-fast scraping for static websites that don't require JavaScript rendering. Perfect for content-heavy sites, APIs, and bulk data collection.
+
+## Lightweight vs Browser Engines
+
+| Feature | Lightweight | Playwright/Puppeteer |
+|---------|-------------|----------------------|
+| **Speed** | ⚡ 5-10x faster | Standard |
+| **Cost** | 1 credit | 2 credits (with JS) |
+| **JavaScript** | ❌ No | ✅ Yes |
+| **Best For** | Static HTML, APIs | SPAs, Dynamic content |
+| **Memory** | Low | High |
+| **Concurrent Requests** | Very High | Limited |
+
+## Basic Usage
+
+```python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Fast scraping with lightweight engine
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",  # Default for static sites
+        "format": "markdown"
+    }
+)
+
+print(f"Processing time: {result['metadata']['processingTime']}ms")
+```
+
+## Performance Optimization
+
+### Concurrent Processing
+
+Process multiple URLs simultaneously:
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+urls = ["https://example.com/page" + str(i) for i in range(100)]
+
+def scrape_url(url):
+    return client.scrape(url, options={"engine": "lightweight"})
+
+with ThreadPoolExecutor(max_workers=20) as executor:
+    results = list(executor.map(scrape_url, urls))
+
+print(f"Scraped {len(results)} pages in parallel")
+```
+
+### HTTP/2 Support
+
+Enable HTTP/2 for better performance:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",
+        "http2": True,  # Enable HTTP/2
+        "keepAlive": True  # Reuse connections
+    }
+)
+```
+
+### Compression
+
+Reduce bandwidth with compression:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",
+        "compression": True,  # Enable gzip/brotli
+        "headers": {
+            "Accept-Encoding": "gzip, deflate, br"
+        }
+    }
+)
+```
+
+## Selective Content Loading
+
+### Block Unnecessary Resources
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",
+        "blockResources": ["image", "font", "media"],  # Don't load images/fonts
+        "blockDomains": [
+            "analytics.google.com",
+            "facebook.com",
+            "doubleclick.net"
+        ]
+    }
+)
+```
+
+### Target Specific Elements
+
+Only extract what you need:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",
+        "targetSelector": "#main-content",  # Only extract this element
+        "removeSelectors": [".ads", ".sidebar", "footer"]  # Remove noise
+    }
+)
+```
+
+## Caching Strategy
+
+### Enable Result Caching
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",
+        "useCache": True,
+        "cacheTtl": 3600  # Cache for 1 hour
+    }
+)
+
+# Subsequent requests within 1 hour return cached result (no credits charged)
+```
+
+### Cache Control Headers
+
+Respect site's cache headers:
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",
+        "respectCacheHeaders": True,  # Follow Cache-Control headers
+        "headers": {
+            "Cache-Control": "max-age=3600"
+        }
+    }
+)
+```
+
+## Timeout Management
+
+### Optimize Timeouts
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",
+        "timeout": 10000,  # 10 second total timeout
+        "connectionTimeout": 5000,  # 5 second connection timeout
+        "readTimeout": 5000  # 5 second read timeout
+    }
+)
+```
+
+### Parallel Timeout Strategy
+
+```python
+from concurrent.futures import TimeoutError, ThreadPoolExecutor
+import time
+
+def scrape_with_timeout(url, timeout=15):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(client.scrape, url, {"engine": "lightweight"})
+        try:
+            return future.result(timeout=timeout)
+        except TimeoutError:
+            print(f"Timeout scraping {url}")
+            return None
+
+results = [scrape_with_timeout(url) for url in urls]
+```
+
+## Format Optimization
+
+### Choose Efficient Formats
+
+```python
+# Markdown - Balanced (default)
+result = client.scrape(url, options={"format": "markdown"})
+
+# HTML - Full content, larger size
+result = client.scrape(url, options={"format": "html"})
+
+# Text - Smallest, fastest
+result = client.scrape(url, options={"format": "text"})
+
+# JSON - Structured, easy to parse
+result = client.scrape(url, options={"format": "json"})
+```
+
+## Batch Processing Best Practices
+
+### Chunked Processing
+
+Process large batches in chunks:
+
+```python
+def chunk_list(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+all_urls = range(10000)  # 10,000 URLs
+chunk_size = 100
+
+for chunk in chunk_list(all_urls, chunk_size):
+    result = client.batch_scrape(
+        urls=[f"https://example.com/page{i}" for i in chunk],
+        options={
+            "engine": "lightweight",
+            "concurrency": 20
+        }
+    )
+    print(f"Processed chunk: {len(chunk)} URLs")
+```
+
+### Rate Limit Management
+
+Respect rate limits:
+
+```python
+import time
+
+for url in urls:
+    result = client.scrape(url, options={"engine": "lightweight"})
+
+    # Respect rate limits (adjust based on your plan)
+    time.sleep(0.1)  # 100ms delay between requests
+```
+
+## Performance Benchmarks
+
+### Speed Comparison
+
+| Pages | Lightweight | Playwright | Time Saved |
+|-------|-------------|------------|------------|
+| 10 | 5 seconds | 30 seconds | **83%** |
+| 100 | 45 seconds | 5 minutes | **85%** |
+| 1000 | 7 minutes | 50 minutes | **86%** |
+
+### Cost Comparison
+
+| Feature | Lightweight | With JavaScript |
+|---------|-------------|-----------------|
+| Base scraping | 1 credit | 2 credits |
+| 1000 pages | 1000 credits | 2000 credits |
+| **Savings** | - | **50%** |
+
+## When to Use Lightweight Engine
+
+<AccordionGroup>
+<Accordion title="Static Websites">
+News sites, blogs, documentation sites, government portals
+</Accordion>
+
+<Accordion title="API Scraping">
+REST APIs, XML feeds, JSON endpoints
+</Accordion>
+
+<Accordion title="Bulk Data Collection">
+Large-scale scraping where speed matters
+</Accordion>
+
+<Accordion title="Server-Side Rendered Pages">
+Traditional server-rendered HTML (PHP, Ruby, Python backends)
+</Accordion>
+</AccordionGroup>
+
+## When NOT to Use Lightweight
+
+<Warning>
+**Use browser engines instead for:**
+- Single Page Applications (React, Vue, Angular)
+- JavaScript-heavy websites
+- Sites requiring user interaction
+- Dynamic content that loads via AJAX
+- Infinite scroll pages
+</Warning>
+
+## Monitoring Performance
+
+```python
+result = client.scrape(
+    url="https://example.com",
+    options={
+        "engine": "lightweight",
+        "includeMetrics": True  # Include detailed metrics
+    }
+)
+
+metrics = result['metadata']['performance']
+print(f"DNS Lookup: {metrics['dnsTime']}ms")
+print(f"Connection: {metrics['connectionTime']}ms")
+print(f"TLS Handshake: {metrics['tlsTime']}ms")
+print(f"Download: {metrics['downloadTime']}ms")
+print(f"Total: {metrics['totalTime']}ms")
+```
+
+## Common Optimizations
+
+<CardGroup cols={2}>
+<Card title="Reduce Payload" icon="compress">
+Block images, fonts, and ads to load only essential content
+</Card>
+
+<Card title="Parallel Processing" icon="arrows-split-up-and-left">
+Use concurrent requests to maximize throughput
+</Card>
+
+<Card title="Smart Caching" icon="database">
+Cache frequently accessed pages to save credits
+</Card>
+
+<Card title="Efficient Formats" icon="file">
+Choose text/markdown over HTML for smaller payloads
+</Card>
+</CardGroup>
+
+## Related Resources
+
+<Card title="Batch Processing" icon="layer-group" href="/features/batch-processing">
+  Process thousands of pages efficiently
+</Card>
+
+<Card title="Browser Automation" icon="browser" href="/features/browser-automation">
+  When you need JavaScript rendering
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/scrape">
+  Full scraping API documentation
+</Card>

@@ -1,0 +1,29 @@
+```python Job Monitoring
+from whizoai import WhizoAI
+import time
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Start a crawl job
+job = client.crawl(url="https://example.com")
+job_id = job["jobId"]
+
+# Monitor job progress
+while True:
+    status = client.get_job_status(job_id)
+
+    print(f"Status: {status['status']}")
+    print(f"Progress: {status['progress']}%")
+    print(f"Pages Completed: {status['pagesCompleted']}/{status['totalPages']}")
+
+    if status['status'] in ['completed', 'failed']:
+        break
+
+    time.sleep(5)  # Check every 5 seconds
+
+# Get final results
+if status['status'] == 'completed':
+    results = client.get_job_results(job_id)
+    print(f"Total pages scraped: {len(results['pages'])}")
+    print(f"Credits used: {results['creditsUsed']}")
+```

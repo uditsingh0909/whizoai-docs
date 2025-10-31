@@ -1,0 +1,516 @@
+---
+title: "Webhook Events"
+description: "Complete reference of all webhook events and their payloads"
+icon: "bell"
+---
+
+## Event Types
+
+WhizoAI sends webhooks for the following event types:
+
+### Job Events
+
+Events related to scraping, crawling, and extraction jobs.
+
+### Credit Events
+
+Events related to credit usage and billing.
+
+### Monitor Events
+
+Events for website monitoring and change detection.
+
+### Account Events
+
+Events related to account activity and security.
+
+---
+
+## Job Events
+
+### `job.started`
+
+Triggered when a job begins processing.
+
+**Payload:**
+```json
+{
+  "id": "evt_abc123",
+  "event": "job.started",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "jobId": "job_xyz789",
+    "type": "scrape",  // "scrape", "crawl", "extract", "batch"
+    "url": "https://example.com",
+    "status": "running",
+    "createdAt": "2025-01-15T10:30:00Z",
+    "estimatedCompletionTime": "2025-01-15T10:31:00Z"
+  }
+}
+```
+
+### `job.progress`
+
+Triggered every 10% progress for long-running jobs.
+
+**Payload:**
+```json
+{
+  "id": "evt_def456",
+  "event": "job.progress",
+  "timestamp": "2025-01-15T10:30:30Z",
+  "apiVersion": "v1",
+  "data": {
+    "jobId": "job_xyz789",
+    "status": "running",
+    "progress": 50,  // Percentage (0-100)
+    "pagesCompleted": 50,
+    "totalPages": 100,
+    "pagesFailed": 2,
+    "creditsUsed": 50,
+    "currentUrl": "https://example.com/page50",
+    "estimatedTimeRemaining": 30  // seconds
+  }
+}
+```
+
+### `job.completed`
+
+Triggered when a job finishes successfully.
+
+**Payload:**
+```json
+{
+  "id": "evt_ghi789",
+  "event": "job.completed",
+  "timestamp": "2025-01-15T10:31:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "jobId": "job_xyz789",
+    "type": "crawl",
+    "status": "completed",
+    "url": "https://example.com",
+    "summary": {
+      "totalPages": 100,
+      "pagesCompleted": 98,
+      "pagesFailed": 2,
+      "creditsUsed": 100,
+      "processingTime": 60000,  // milliseconds
+      "dataExtracted": 2500000  // bytes
+    },
+    "resultUrl": "https://api.whizo.ai/v1/jobs/job_xyz789/results",
+    "expiresAt": "2025-02-15T10:31:00Z",  // Results expiry (30 days)
+    "createdAt": "2025-01-15T10:30:00Z",
+    "completedAt": "2025-01-15T10:31:00Z"
+  }
+}
+```
+
+### `job.failed`
+
+Triggered when a job fails due to an error.
+
+**Payload:**
+```json
+{
+  "id": "evt_jkl012",
+  "event": "job.failed",
+  "timestamp": "2025-01-15T10:30:45Z",
+  "apiVersion": "v1",
+  "data": {
+    "jobId": "job_xyz789",
+    "type": "scrape",
+    "status": "failed",
+    "url": "https://example.com",
+    "error": {
+      "code": "TIMEOUT",
+      "message": "Page took too long to load",
+      "details": "Request timed out after 30 seconds"
+    },
+    "summary": {
+      "totalPages": 1,
+      "pagesCompleted": 0,
+      "pagesFailed": 1,
+      "creditsUsed": 0,
+      "processingTime": 30000
+    },
+    "createdAt": "2025-01-15T10:30:00Z",
+    "failedAt": "2025-01-15T10:30:45Z"
+  }
+}
+```
+
+### `job.cancelled`
+
+Triggered when a user cancels a running job.
+
+**Payload:**
+```json
+{
+  "id": "evt_mno345",
+  "event": "job.cancelled",
+  "timestamp": "2025-01-15T10:30:30Z",
+  "apiVersion": "v1",
+  "data": {
+    "jobId": "job_xyz789",
+    "status": "cancelled",
+    "summary": {
+      "totalPages": 100,
+      "pagesCompleted": 25,
+      "pagesFailed": 0,
+      "creditsUsed": 25,
+      "processingTime": 15000
+    },
+    "cancelledBy": "user_abc123",
+    "cancelledAt": "2025-01-15T10:30:30Z"
+  }
+}
+```
+
+---
+
+## Credit Events
+
+### `credit.low`
+
+Triggered when account credits fall below 10% of monthly allowance.
+
+**Payload:**
+```json
+{
+  "id": "evt_pqr678",
+  "event": "credit.low",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "userId": "user_abc123",
+    "plan": "pro",
+    "credits": {
+      "remaining": 500,
+      "monthlyAllowance": 10000,
+      "percentageRemaining": 5,
+      "resetDate": "2025-02-01T00:00:00Z"
+    },
+    "recommendation": "Consider upgrading your plan or purchasing additional credits"
+  }
+}
+```
+
+### `credit.depleted`
+
+Triggered when account credits reach zero.
+
+**Payload:**
+```json
+{
+  "id": "evt_stu901",
+  "event": "credit.depleted",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "userId": "user_abc123",
+    "plan": "starter",
+    "credits": {
+      "remaining": 0,
+      "monthlyAllowance": 3000,
+      "resetDate": "2025-02-01T00:00:00Z"
+    },
+    "action": "All API requests will fail until credits are replenished"
+  }
+}
+```
+
+### `credit.reset`
+
+Triggered when monthly credits reset (first day of month).
+
+**Payload:**
+```json
+{
+  "id": "evt_vwx234",
+  "event": "credit.reset",
+  "timestamp": "2025-02-01T00:00:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "userId": "user_abc123",
+    "plan": "pro",
+    "credits": {
+      "previous": 1500,
+      "new": 10000,
+      "monthlyAllowance": 10000
+    },
+    "resetDate": "2025-02-01T00:00:00Z",
+    "nextResetDate": "2025-03-01T00:00:00Z"
+  }
+}
+```
+
+---
+
+## Monitor Events
+
+### `monitor.changed`
+
+Triggered when monitored website content changes.
+
+**Payload:**
+```json
+{
+  "id": "evt_yz1234",
+  "event": "monitor.changed",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "monitorId": "mon_abc123",
+    "url": "https://example.com",
+    "changes": {
+      "type": "content_changed",  // "content_changed", "element_added", "element_removed"
+      "selector": ".price",
+      "oldValue": "$99.99",
+      "newValue": "$79.99",
+      "changePercentage": 20,
+      "diffUrl": "https://api.whizo.ai/v1/monitors/mon_abc123/diff"
+    },
+    "lastChecked": "2025-01-15T10:30:00Z",
+    "previousCheck": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+### `monitor.failed`
+
+Triggered when monitor check fails.
+
+**Payload:**
+```json
+{
+  "id": "evt_abc567",
+  "event": "monitor.failed",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "monitorId": "mon_abc123",
+    "url": "https://example.com",
+    "error": {
+      "code": "PAGE_NOT_FOUND",
+      "message": "Page returned 404 Not Found",
+      "statusCode": 404
+    },
+    "failureCount": 3,  // Consecutive failures
+    "lastSuccessfulCheck": "2025-01-15T09:00:00Z"
+  }
+}
+```
+
+---
+
+## Account Events
+
+### `account.plan_upgraded`
+
+Triggered when user upgrades their plan.
+
+**Payload:**
+```json
+{
+  "id": "evt_def890",
+  "event": "account.plan_upgraded",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "userId": "user_abc123",
+    "previousPlan": "starter",
+    "newPlan": "pro",
+    "credits": {
+      "added": 7000,  // Additional credits from upgrade
+      "total": 10500  // Total after upgrade
+    },
+    "billing": {
+      "amount": 49.00,
+      "currency": "USD",
+      "nextBillingDate": "2025-02-15T00:00:00Z"
+    }
+  }
+}
+```
+
+### `account.api_key_created`
+
+Triggered when a new API key is created.
+
+**Payload:**
+```json
+{
+  "id": "evt_ghi123",
+  "event": "account.api_key_created",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "userId": "user_abc123",
+    "apiKeyId": "key_xyz789",
+    "name": "Production API Key",
+    "keyPrefix": "whizo_abc",  // First 10 chars for identification
+    "scopes": ["scrape:read", "scrape:write", "jobs:read"],
+    "createdAt": "2025-01-15T10:30:00Z",
+    "expiresAt": null  // No expiration
+  }
+}
+```
+
+### `account.api_key_deleted`
+
+Triggered when an API key is deleted or revoked.
+
+**Payload:**
+```json
+{
+  "id": "evt_jkl456",
+  "event": "account.api_key_deleted",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "apiVersion": "v1",
+  "data": {
+    "userId": "user_abc123",
+    "apiKeyId": "key_xyz789",
+    "name": "Old API Key",
+    "keyPrefix": "whizo_old",
+    "deletedBy": "user_abc123",  // User who deleted it
+    "deletedAt": "2025-01-15T10:30:00Z"
+  }
+}
+```
+
+---
+
+## Event Filtering
+
+When registering webhooks, you can subscribe to specific events:
+
+```python
+# Subscribe to all job events
+client.webhooks.create(
+    url="https://your-server.com/webhook",
+    events=["job.*"]  # Wildcard for all job events
+)
+
+# Subscribe to specific events
+client.webhooks.create(
+    url="https://your-server.com/webhook",
+    events=[
+        "job.completed",
+        "job.failed",
+        "credit.low"
+    ]
+)
+
+# Subscribe to all events (not recommended)
+client.webhooks.create(
+    url="https://your-server.com/webhook",
+    events=["*"]
+)
+```
+
+## Event Wildcards
+
+| Pattern | Matches |
+|---------|---------|
+| `*` | All events |
+| `job.*` | All job events |
+| `credit.*` | All credit events |
+| `monitor.*` | All monitor events |
+| `account.*` | All account events |
+
+## Handling Multiple Event Types
+
+```python
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    event = request.json
+    event_type = event['event']
+
+    # Route to appropriate handler
+    handlers = {
+        'job.completed': handle_job_completed,
+        'job.failed': handle_job_failed,
+        'job.progress': handle_job_progress,
+        'credit.low': handle_credit_low,
+        'monitor.changed': handle_monitor_changed
+    }
+
+    handler = handlers.get(event_type)
+    if handler:
+        handler(event['data'])
+    else:
+        print(f"Unhandled event type: {event_type}")
+
+    return jsonify({"received": True}), 200
+
+def handle_job_completed(data):
+    print(f"Job {data['jobId']} completed")
+    # Send notification, update database, etc.
+
+def handle_credit_low(data):
+    print(f"Credits low: {data['credits']['remaining']} remaining")
+    # Send alert email, display dashboard notification, etc.
+```
+
+## Event Ordering
+
+Events are delivered in the order they occur, but network conditions may cause out-of-order delivery. Use the `timestamp` field to determine event order:
+
+```python
+def process_event(event):
+    event_time = datetime.fromisoformat(event['timestamp'])
+
+    # Check if this event is newer than the last processed
+    last_processed = get_last_processed_time(event['data']['jobId'])
+
+    if event_time > last_processed:
+        # Process event
+        handle_event(event)
+        update_last_processed_time(event['data']['jobId'], event_time)
+    else:
+        print(f"Ignoring old event: {event['id']}")
+```
+
+## Event Deduplication
+
+Use the event `id` to prevent duplicate processing:
+
+```python
+processed_events = redis_client.get_set("processed_events")
+
+def process_event(event):
+    event_id = event['id']
+
+    if event_id in processed_events:
+        return  # Already processed
+
+    # Process the event
+    handle_event(event)
+
+    # Mark as processed
+    processed_events.add(event_id)
+    # Expire after 7 days
+    redis_client.expire("processed_events", 604800)
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Webhook Security" icon="shield" href="/webhooks/security">
+  Secure your webhook endpoints with signature verification
+</Card>
+
+<Card title="Testing Webhooks" icon="flask" href="/webhooks/testing">
+  Test webhooks locally during development
+</Card>
+
+<Card title="Webhooks API" icon="code" href="/api-reference/webhooks">
+  Complete API reference for webhook management
+</Card>
+
+<Card title="Overview" icon="webhook" href="/webhooks/overview">
+  Get started with webhooks
+</Card>
+</CardGroup>

@@ -1,0 +1,22 @@
+```python Python
+from whizoai import WhizoAI
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+# Extract structured data using AI
+result = client.extract(
+    url="https://example.com/product",
+    schema={
+        "name": "Product name",
+        "price": "Product price",
+        "description": "Product description",
+        "inStock": "Is the product in stock (boolean)"
+    },
+    options={
+        "model": "gpt-4",
+        "format": "json"
+    }
+)
+
+print(result["extractedData"])
+```

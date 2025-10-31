@@ -1,0 +1,19 @@
+```bash cURL
+curl -X POST https://api.whizo.ai/v1/scrape \
+  -H "Authorization: Bearer whizo_YOUR-API-KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "options": {
+      "format": "markdown",
+      "includeScreenshot": true,
+      "includePdf": true,
+      "javascript": true,
+      "waitTime": 5,
+      "mobile": false,
+      "headers": {
+        "User-Agent": "CustomBot/1.0"
+      }
+    }
+  }'
+```

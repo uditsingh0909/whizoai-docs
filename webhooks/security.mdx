@@ -1,0 +1,555 @@
+---
+title: "Webhook Security"
+description: "Secure your webhook endpoints with signature verification and best practices"
+icon: "shield"
+---
+
+## Overview
+
+Securing your webhook endpoints is critical to prevent:
+- **Unauthorized access** - Fake requests pretending to be from WhizoAI
+- **Replay attacks** - Attackers re-sending captured webhook payloads
+- **Man-in-the-middle attacks** - Intercepted and modified webhooks
+- **Data tampering** - Modified payload data
+
+## Signature Verification
+
+WhizoAI signs all webhook requests with HMAC-SHA256. Always verify the signature before processing events.
+
+### How Signatures Work
+
+1. WhizoAI creates an HMAC signature using your webhook secret
+2. Signature is sent in the `X-WhizoAI-Signature` header
+3. Your server recalculates the signature using the same secret
+4. Compare signatures - if they match, the request is authentic
+
+### Implementation
+
+<CodeGroup>
+```python Python
+import hmac
+import hashlib
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "your_webhook_secret"
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    # Get signature from header
+    signature = request.headers.get('X-WhizoAI-Signature')
+    if not signature:
+        return jsonify({"error": "No signature provided"}), 401
+
+    # Get raw payload (important: don't parse as JSON first!)
+    payload = request.get_data()
+
+    # Verify signature
+    if not verify_signature(payload, signature, WEBHOOK_SECRET):
+        return jsonify({"error": "Invalid signature"}), 401
+
+    # Now safe to process event
+    event = request.json
+    process_event(event)
+
+    return jsonify({"received": True}), 200
+
+def verify_signature(payload, signature, secret):
+    """
+    Verify webhook signature using HMAC-SHA256
+    """
+    expected_signature = hmac.new(
+        secret.encode('utf-8'),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+
+    # Use timing-safe comparison to prevent timing attacks
+    return hmac.compare_digest(signature, expected_signature)
+```
+
+```javascript Node.js
+const express = require('express');
+const crypto = require('crypto');
+
+const app = express();
+const WEBHOOK_SECRET = 'your_webhook_secret';
+
+// Important: Use express.raw() to preserve raw body
+app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
+  // Get signature from header
+  const signature = req.headers['x-whizoai-signature'];
+  if (!signature) {
+    return res.status(401).json({ error: 'No signature provided' });
+  }
+
+  // Get raw payload
+  const payload = req.body;
+
+  // Verify signature
+  if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  // Now safe to process event
+  const event = JSON.parse(payload.toString());
+  processEvent(event);
+
+  res.json({ received: true });
+});
+
+function verifySignature(payload, signature, secret) {
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  // Use timingSafeEqual to prevent timing attacks
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+```
+
+```go Go
+package main
+
+import (
+    "crypto/hmac"
+    "crypto/sha256"
+    "encoding/hex"
+    "encoding/json"
+    "io"
+    "net/http"
+)
+
+const webhookSecret = "your_webhook_secret"
+
+func webhookHandler(w http.ResponseWriter, r *http.Request) {
+    // Get signature from header
+    signature := r.Header.Get("X-WhizoAI-Signature")
+    if signature == "" {
+        http.Error(w, "No signature provided", http.StatusUnauthorized)
+        return
+    }
+
+    // Read raw body
+    body, err := io.ReadAll(r.Body)
+    if err != nil {
+        http.Error(w, "Failed to read body", http.StatusBadRequest)
+        return
+    }
+
+    // Verify signature
+    if !verifySignature(body, signature, webhookSecret) {
+        http.Error(w, "Invalid signature", http.StatusUnauthorized)
+        return
+    }
+
+    // Process event
+    var event map[string]interface{}
+    json.Unmarshal(body, &event)
+    processEvent(event)
+
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(map[string]bool{"received": true})
+}
+
+func verifySignature(payload []byte, signature, secret string) bool {
+    mac := hmac.New(sha256.New, []byte(secret))
+    mac.Write(payload)
+    expectedSignature := hex.EncodeToString(mac.Sum(nil))
+
+    return hmac.Equal([]byte(signature), []byte(expectedSignature))
+}
+```
+
+```php PHP
+<?php
+
+define('WEBHOOK_SECRET', 'your_webhook_secret');
+
+// Get raw POST data (don't use $_POST)
+$payload = file_get_contents('php://input');
+
+// Get signature from header
+$signature = $_SERVER['HTTP_X_WHIZOAI_SIGNATURE'] ?? '';
+
+if (empty($signature)) {
+    http_response_code(401);
+    echo json_encode(['error' => 'No signature provided']);
+    exit;
+}
+
+// Verify signature
+if (!verifySignature($payload, $signature, WEBHOOK_SECRET)) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Invalid signature']);
+    exit;
+}
+
+// Now safe to process event
+$event = json_decode($payload, true);
+processEvent($event);
+
+http_response_code(200);
+echo json_encode(['received' => true]);
+
+function verifySignature($payload, $signature, $secret) {
+    $expectedSignature = hash_hmac('sha256', $payload, $secret);
+
+    // Use hash_equals to prevent timing attacks
+    return hash_equals($signature, $expectedSignature);
+}
+?>
+```
+</CodeGroup>
+
+## Common Security Mistakes
+
+<Warning>
+**❌ Don't do this:**
+
+```python
+# WRONG: Parsing JSON before signature verification
+event = request.json  # Don't do this first!
+signature = request.headers.get('X-WhizoAI-Signature')
+if verify_signature(json.dumps(event), signature, secret):
+    # This is vulnerable!
+```
+
+**✅ Do this instead:**
+
+```python
+# CORRECT: Verify signature on raw payload
+payload = request.get_data()
+signature = request.headers.get('X-WhizoAI-Signature')
+if verify_signature(payload, signature, secret):
+    event = request.json  # Now safe to parse
+```
+</Warning>
+
+## Additional Security Measures
+
+### 1. HTTPS Only
+
+Always use HTTPS for webhook URLs. WhizoAI requires HTTPS in production:
+
+```python
+# ✅ Good
+webhook_url = "https://your-server.com/webhook"
+
+# ❌ Bad - will be rejected
+webhook_url = "http://your-server.com/webhook"
+```
+
+### 2. IP Allowlisting (Optional)
+
+For extra security, allowlist WhizoAI's IP addresses:
+
+```python
+WHIZOAI_IPS = [
+    "52.7.43.24",
+    "54.165.23.156",
+    "34.230.45.67",
+    # Add all WhizoAI IPs (contact support for full list)
+]
+
+@app.before_request
+def check_ip():
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if client_ip not in WHIZOAI_IPS:
+        return jsonify({"error": "Unauthorized IP"}), 403
+```
+
+<Note>
+Contact support@whizo.ai for the current list of WhizoAI IP addresses.
+</Note>
+
+### 3. Replay Attack Prevention
+
+Prevent replay attacks by checking timestamps:
+
+```python
+from datetime import datetime, timedelta
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    # Verify signature first
+    if not verify_signature(...):
+        return jsonify({"error": "Invalid signature"}), 401
+
+    event = request.json
+    timestamp = datetime.fromisoformat(event['timestamp'])
+    now = datetime.utcnow()
+
+    # Reject events older than 5 minutes
+    if now - timestamp > timedelta(minutes=5):
+        return jsonify({"error": "Event too old"}), 401
+
+    # Process event...
+    return jsonify({"received": True}), 200
+```
+
+### 4. Idempotency
+
+Prevent duplicate processing using event IDs:
+
+```python
+import redis
+
+redis_client = redis.Redis()
+PROCESSED_EVENTS_KEY = "processed_webhook_events"
+
+def process_event(event):
+    event_id = event['id']
+
+    # Check if already processed
+    if redis_client.sismember(PROCESSED_EVENTS_KEY, event_id):
+        print(f"Event {event_id} already processed, skipping")
+        return
+
+    # Process the event
+    handle_event(event)
+
+    # Mark as processed (expire after 7 days)
+    redis_client.sadd(PROCESSED_EVENTS_KEY, event_id)
+    redis_client.expire(PROCESSED_EVENTS_KEY, 604800)
+```
+
+### 5. Rate Limiting
+
+Implement rate limiting to prevent abuse:
+
+```python
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["100 per hour"]
+)
+
+@app.route('/webhook', methods=['POST'])
+@limiter.limit("200 per minute")  # Allow burst traffic
+def webhook():
+    # Handle webhook...
+    pass
+```
+
+## Secret Management
+
+### Best Practices
+
+<AccordionGroup>
+<Accordion title="Store Secrets Securely">
+Never hardcode secrets in your code. Use environment variables or secret management services:
+
+```python
+import os
+
+# ✅ Good - Use environment variables
+WEBHOOK_SECRET = os.environ.get('WEBHOOK_SECRET')
+
+# ❌ Bad - Hardcoded secret
+WEBHOOK_SECRET = "my_secret_key_123"  # Don't do this!
+```
+</Accordion>
+
+<Accordion title="Rotate Secrets Regularly">
+Rotate webhook secrets every 90 days:
+
+```python
+# Update webhook secret
+client.webhooks.update(
+    webhook_id="wh_123abc",
+    secret="new_secret_key"
+)
+```
+
+Support both old and new secrets during rotation period:
+
+```python
+def verify_signature(payload, signature, secrets):
+    # Try all active secrets (for rotation period)
+    for secret in secrets:
+        expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(signature, expected):
+            return True
+    return False
+
+# During rotation, accept both secrets
+WEBHOOK_SECRETS = [
+    os.environ.get('WEBHOOK_SECRET'),
+    os.environ.get('WEBHOOK_SECRET_OLD')  # Remove after rotation complete
+]
+```
+</Accordion>
+
+<Accordion title="Use Different Secrets Per Environment">
+Use separate secrets for development, staging, and production:
+
+```python
+# Development
+WEBHOOK_SECRET_DEV = os.environ.get('WEBHOOK_SECRET_DEV')
+
+# Staging
+WEBHOOK_SECRET_STAGING = os.environ.get('WEBHOOK_SECRET_STAGING')
+
+# Production
+WEBHOOK_SECRET_PROD = os.environ.get('WEBHOOK_SECRET_PROD')
+```
+</Accordion>
+</AccordionGroup>
+
+## Error Responses
+
+Return appropriate status codes for security errors:
+
+| Status Code | When to Use |
+|-------------|-------------|
+| `401 Unauthorized` | Missing or invalid signature |
+| `403 Forbidden` | IP not allowlisted |
+| `429 Too Many Requests` | Rate limit exceeded |
+| `500 Internal Server Error` | Server-side processing error |
+
+```python
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    # No signature provided
+    if 'X-WhizoAI-Signature' not in request.headers:
+        return jsonify({
+            "error": "Unauthorized",
+            "message": "No signature provided"
+        }), 401
+
+    # Invalid signature
+    if not verify_signature(...):
+        return jsonify({
+            "error": "Unauthorized",
+            "message": "Invalid signature"
+        }), 401
+
+    # IP not allowed
+    if not is_ip_allowed(request.remote_addr):
+        return jsonify({
+            "error": "Forbidden",
+            "message": "IP not allowlisted"
+        }), 403
+
+    # Success
+    return jsonify({"received": True}), 200
+```
+
+## Monitoring & Logging
+
+### Log Security Events
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+
+    if not verify_signature(...):
+        logger.warning(
+            f"Invalid webhook signature from IP: {client_ip}",
+            extra={
+                "ip": client_ip,
+                "user_agent": request.headers.get('User-Agent'),
+                "event_type": request.json.get('event') if request.is_json else None
+            }
+        )
+        return jsonify({"error": "Invalid signature"}), 401
+
+    logger.info(
+        f"Valid webhook received from IP: {client_ip}",
+        extra={"event": request.json}
+    )
+
+    return jsonify({"received": True}), 200
+```
+
+### Alert on Suspicious Activity
+
+```python
+def check_suspicious_activity():
+    # Alert if multiple failed signature verifications
+    failed_attempts = redis_client.incr('webhook_failed_signatures')
+    redis_client.expire('webhook_failed_signatures', 3600)  # 1 hour window
+
+    if failed_attempts > 10:
+        send_security_alert(
+            "Multiple failed webhook signature verifications",
+            details=f"{failed_attempts} failed attempts in the last hour"
+        )
+```
+
+## Security Checklist
+
+<Steps>
+<Step title="Enable HTTPS">
+Use HTTPS URLs for all webhook endpoints
+</Step>
+
+<Step title="Verify Signatures">
+Always verify `X-WhizoAI-Signature` header before processing
+</Step>
+
+<Step title="Use Raw Payload">
+Verify signature on raw request body, not parsed JSON
+</Step>
+
+<Step title="Timing-Safe Comparison">
+Use `hmac.compare_digest()` or equivalent to prevent timing attacks
+</Step>
+
+<Step title="Check Timestamps">
+Reject events older than 5 minutes to prevent replay attacks
+</Step>
+
+<Step title="Implement Idempotency">
+Track processed event IDs to prevent duplicate processing
+</Step>
+
+<Step title="Store Secrets Securely">
+Use environment variables or secret management services
+</Step>
+
+<Step title="Rate Limiting">
+Implement rate limiting on webhook endpoints
+</Step>
+
+<Step title="Monitor & Log">
+Log all webhook requests and alert on suspicious activity
+</Step>
+
+<Step title="Rotate Secrets">
+Rotate webhook secrets every 90 days
+</Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+<Card title="Testing Webhooks" icon="flask" href="/webhooks/testing">
+  Test webhook security locally
+</Card>
+
+<Card title="Webhook Events" icon="bell" href="/webhooks/events">
+  Complete event reference
+</Card>
+
+<Card title="Overview" icon="webhook" href="/webhooks/overview">
+  Get started with webhooks
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/webhooks">
+  Full webhooks API documentation
+</Card>
+</CardGroup>

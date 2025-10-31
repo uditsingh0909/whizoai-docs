@@ -1,0 +1,541 @@
+---
+title: "n8n Integration"
+description: "Build self-hosted web scraping workflows with WhizoAI and n8n"
+icon: "diagram-project"
+---
+
+## Overview
+
+n8n is a powerful, self-hosted workflow automation platform. Combine it with WhizoAI for complete control over your web scraping workflows—no vendor lock-in, unlimited executions, and full data privacy.
+
+## Why n8n + WhizoAI?
+
+<CardGroup cols={2}>
+<Card title="Self-Hosted" icon="server">
+Run on your own infrastructure for complete data control
+</Card>
+
+<Card title="Unlimited Executions" icon="infinity">
+No execution limits unlike cloud-based alternatives
+</Card>
+
+<Card title="Visual Workflows" icon="sitemap">
+Build complex workflows with drag-and-drop interface
+</Card>
+
+<Card title="Open Source" icon="code-branch">
+Customize and extend to fit your exact needs
+</Card>
+</CardGroup>
+
+## Installation
+
+### Quick Start with Docker
+
+```bash
+# Create docker-compose.yml
+cat > docker-compose.yml <<EOF
+version: '3'
+services:
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=your_password
+
+volumes:
+  n8n_data:
+EOF
+
+# Start n8n
+docker-compose up -d
+
+# Access at http://localhost:5678
+```
+
+### npm Installation
+
+```bash
+npm install -g n8n
+n8n start
+```
+
+## Setup WhizoAI in n8n
+
+### Method 1: HTTP Request Node (Recommended)
+
+1. Add "HTTP Request" node
+2. Configure:
+   - Method: `POST`
+   - URL: `https://api.whizo.ai/v1/scrape`
+   - Authentication: `Generic Credential Type`
+   - Add header: `Authorization` = `Bearer whizo_YOUR-API-KEY`
+   - Body: JSON with scraping options
+
+### Method 2: Webhook Node (For Webhooks)
+
+1. Add "Webhook" node to receive WhizoAI webhook events
+2. Copy the webhook URL
+3. Register in WhizoAI dashboard
+
+## Common Workflows
+
+### 1. Scheduled Website Monitoring
+
+**Use Case**: Monitor website daily and alert on changes.
+
+**Workflow**:
+
+```
+Cron Node (Daily at 9 AM)
+  ↓
+HTTP Request (WhizoAI Scrape)
+  ↓
+Compare with Previous Data
+  ↓
+[If Changed] → Send Alert
+  ↓
+Store New Data
+```
+
+**Implementation**:
+
+**Node 1**: Cron
+- Mode: Every day
+- Hour: 9
+- Minute: 0
+
+**Node 2**: HTTP Request (WhizoAI)
+- Method: `POST`
+- URL: `https://api.whizo.ai/v1/scrape`
+- Headers:
+  ```json
+  {
+    "Authorization": "Bearer whizo_YOUR-API-KEY",
+    "Content-Type": "application/json"
+  }
+  ```
+- Body:
+  ```json
+  {
+    "url": "https://competitor.com/pricing",
+    "options": {
+      "format": "markdown"
+    }
+  }
+  ```
+
+**Node 3**: Set (Store Current Data)
+- Add field: `currentContent` = `{{$json["content"]}}`
+
+**Node 4**: Read Binary File (Previous Data)
+- File Path: `/data/previous_scrape.json`
+
+**Node 5**: IF (Compare)
+- Condition: `{{$node["Set"].json["currentContent"]}}` ≠ `{{$node["Read Binary File"].json["content"]}}`
+
+**Node 6a**: Slack (Alert if Changed)
+- Channel: `#alerts`
+- Message: `Website changed! Previous: {{$node["Read Binary File"].json["content"][:100]}}... Current: {{$node["Set"].json["currentContent"][:100]}}...`
+
+**Node 6b**: Write Binary File (Update Stored Data)
+- File Path: `/data/previous_scrape.json`
+- Data: `{{$node["Set"].json}}`
+
+### 2. Form Submission → Research → CRM Update
+
+**Use Case**: Auto-research companies submitted via form.
+
+**Workflow**:
+
+```
+Webhook (Form Submission)
+  ↓
+HTTP Request (Scrape Website)
+  ↓
+HTTP Request (AI Extract Company Data)
+  ↓
+HTTP Request (Update CRM)
+  ↓
+Email (Confirmation)
+```
+
+**Node 1**: Webhook
+- Path: `/form-webhook`
+
+**Node 2**: HTTP Request (Scrape)
+- URL: `https://api.whizo.ai/v1/scrape`
+- Body:
+  ```json
+  {
+    "url": "{{$json["body"]["company_website"]}}",
+    "options": {
+      "format": "markdown"
+    }
+  }
+  ```
+
+**Node 3**: HTTP Request (AI Extract)
+- URL: `https://api.whizo.ai/v1/extract`
+- Body:
+  ```json
+  {
+    "content": "{{$node["HTTP Request"].json["content"]}}",
+    "schema": {
+      "company_name": "Company name",
+      "industry": "Industry",
+      "employee_count": "Number of employees (number)",
+      "description": "Brief description"
+    },
+    "options": {
+      "model": "gpt-4"
+    }
+  }
+  ```
+
+**Node 4**: HTTP Request (HubSpot CRM)
+- Method: `POST`
+- URL: `https://api.hubapi.com/crm/v3/objects/companies`
+- Body: Mapped from AI extraction
+
+**Node 5**: Send Email
+- To: `{{$node["Webhook"].json["body"]["email"]}}`
+- Subject: `Company Research Complete: {{$node["HTTP Request 1"].json["extractedData"]["company_name"]}}`
+
+### 3. RSS Feed → Scrape → Summarize → Publish
+
+**Use Case**: Aggregate industry news, scrape full articles, summarize, publish to blog.
+
+**Workflow**:
+
+```
+RSS Feed Read
+  ↓
+Loop through Items
+  ↓
+Scrape Full Article
+  ↓
+AI Summarize
+  ↓
+Post to WordPress
+```
+
+**Node 1**: RSS Feed Read
+- URL: `https://example.com/rss`
+
+**Node 2**: Split in Batches
+- Batch Size: 5
+
+**Node 3**: HTTP Request (Scrape)
+- URL: `https://api.whizo.ai/v1/batch`
+- Body:
+  ```json
+  {
+    "urls": {{$json["items"].map(item => item.link)}},
+    "options": {
+      "format": "markdown"
+    }
+  }
+  ```
+
+**Node 4**: Wait (For Batch Completion)
+- Amount: 2
+- Unit: minutes
+
+**Node 5**: HTTP Request (Get Results)
+- URL: `https://api.whizo.ai/v1/jobs/{{$node["HTTP Request"].json["jobId"]}}/results`
+
+**Node 6**: HTTP Request (AI Summarize Each)
+- URL: `https://api.whizo.ai/v1/extract`
+- Body:
+  ```json
+  {
+    "content": "{{$json["content"]}}",
+    "schema": {
+      "summary": "2-3 sentence summary",
+      "key_points": "3-5 bullet points (array)"
+    }
+  }
+  ```
+
+**Node 7**: WordPress
+- Operation: Create Post
+- Title: `{{$json["title"]}}`
+- Content: Formatted with summary and key points
+
+### 4. Batch URL Processing
+
+**Use Case**: Process list of URLs from CSV/database.
+
+**Workflow**:
+
+```
+Read CSV/Database
+  ↓
+Batch URLs (groups of 10)
+  ↓
+Scrape Batch
+  ↓
+Wait for Completion
+  ↓
+Get Results
+  ↓
+Save to Database/CSV
+```
+
+**Node 1**: Spreadsheet File (Read CSV)
+- File Path: `/data/urls.csv`
+
+**Node 2**: Function (Create Batches)
+```javascript
+const items = $input.all();
+const batchSize = 10;
+const batches = [];
+
+for (let i = 0; i < items.length; i += batchSize) {
+  batches.push({
+    urls: items.slice(i, i + batchSize).map(item => item.json.url)
+  });
+}
+
+return batches.map(batch => ({ json: batch }));
+```
+
+**Node 3**: HTTP Request (Batch Scrape)
+- URL: `https://api.whizo.ai/v1/batch`
+- Body: `{{$json["urls"]}}`
+
+**Node 4**: Wait
+- Amount: `{{Math.ceil($json["urls"].length / 5)}}` minutes
+
+**Node 5**: HTTP Request (Get Results)
+- URL: `https://api.whizo.ai/v1/jobs/{{$node["HTTP Request"].json["jobId"]}}/results`
+
+**Node 6**: Spreadsheet File (Write Results)
+- File Path: `/data/results.csv`
+
+## Advanced Patterns
+
+### Error Handling
+
+Add error handling to workflows:
+
+**Node**: IF (Check Status)
+- Condition 1: `{{$node["HTTP Request"].statusCode}}` = 200
+  - Success path
+- Condition 2: `{{$node["HTTP Request"].statusCode}}` ≠ 200
+  - Error path → Log → Alert → Retry
+
+**Retry Logic**:
+```javascript
+// In Function node
+const maxRetries = 3;
+const currentRetry = $json.retryCount || 0;
+
+if (currentRetry < maxRetries) {
+  return {
+    json: {
+      ...$ json,
+      retryCount: currentRetry + 1
+    }
+  };
+}
+
+// Give up after max retries
+throw new Error('Max retries exceeded');
+```
+
+### Webhook-Driven Workflows
+
+Receive WhizoAI job completion webhooks:
+
+**Node 1**: Webhook
+- Path: `/whizoai-webhook`
+- Authentication: Header Auth
+  - Name: `X-WhizoAI-Signature`
+  - Value: Verify with your secret
+
+**Node 2**: Function (Verify Signature)
+```javascript
+const crypto = require('crypto');
+
+const signature = $node["Webhook"].json.headers["x-whizoai-signature"];
+const payload = JSON.stringify($node["Webhook"].json.body);
+const secret = '{{$credentials.whizoaiWebhookSecret}}';
+
+const expectedSignature = crypto
+  .createHmac('sha256', secret)
+  .update(payload)
+  .digest('hex');
+
+if (signature !== expectedSignature) {
+  throw new Error('Invalid signature');
+}
+
+return { json: $node["Webhook"].json.body };
+```
+
+**Node 3**: Switch (Event Type)
+- Route by `{{$json["event"]}}`
+  - `job.completed` → Success handler
+  - `job.failed` → Error handler
+  - `credit.low` → Alert handler
+
+### Data Transformation
+
+Transform scraped data before saving:
+
+**Node**: Function (Transform Data)
+```javascript
+const items = $input.all();
+
+return items.map(item => ({
+  json: {
+    url: item.json.metadata.url,
+    title: item.json.metadata.title,
+    content: item.json.content,
+    wordCount: item.json.content.split(' ').length,
+    scrapedAt: item.json.metadata.extractedAt,
+    summary: item.json.content.substring(0, 200) + '...'
+  }
+}));
+```
+
+## Best Practices
+
+<AccordionGroup>
+<Accordion title="Credential Management">
+Store API keys securely:
+
+1. Go to n8n Settings → Credentials
+2. Add "Header Auth" credential
+3. Name: `WhizoAI API Key`
+4. Value: `Bearer whizo_YOUR-API-KEY`
+5. Use in HTTP Request nodes
+</Accordion>
+
+<Accordion title="Error Logging">
+Always log errors:
+
+- Add "Write Binary File" node to error paths
+- Log to file: `/logs/errors-{{$now.format("YYYY-MM-DD")}}.json`
+- Include full error context and request details
+</Accordion>
+
+<Accordion title="Performance Optimization">
+- Use batch operations when scraping multiple URLs
+- Implement rate limiting with "Wait" nodes
+- Cache results to avoid duplicate scraping
+- Use lazy loading for large datasets
+</Accordion>
+
+<Accordion title="Workflow Organization">
+- Use sticky notes to document complex logic
+- Group related nodes together
+- Name nodes descriptively
+- Version control your workflows (export JSON)
+</Accordion>
+</AccordionGroup>
+
+## Example Workflow JSON
+
+### Basic Scraping Workflow
+
+```json
+{
+  "name": "WhizoAI Scrape Example",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "hours", "hoursInterval": 24}]
+        }
+      },
+      "name": "Schedule",
+      "type": "n8n-nodes-base.cron",
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.whizo.ai/v1/scrape",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "headerAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "https://example.com"
+            },
+            {
+              "name": "options",
+              "value": {"format": "markdown"}
+            }
+          ]
+        }
+      },
+      "name": "WhizoAI Scrape",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [450, 300]
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [[{"node": "WhizoAI Scrape", "type": "main", "index": 0}]]
+    }
+  }
+}
+```
+
+Import this into n8n to get started quickly!
+
+## Monitoring & Debugging
+
+### Enable Execution Logging
+
+```bash
+# In docker-compose.yml or environment
+N8N_LOG_LEVEL=debug
+N8N_LOG_OUTPUT=console,file
+```
+
+### View Execution History
+
+1. Click "Executions" in n8n sidebar
+2. Filter by workflow
+3. Click execution to see detailed logs
+4. Review each node's input/output
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Authentication failed | Check API key format and credentials |
+| Timeout errors | Increase timeout in HTTP Request node settings |
+| Memory issues | Process data in smaller batches |
+| Webhook not receiving | Verify webhook URL and check firewall rules |
+
+## Related Resources
+
+<CardGroup cols={2}>
+<Card title="Zapier Integration" icon="bolt" href="/developer-guides/workflow-automation/zapier">
+  Cloud-based workflow automation
+</Card>
+
+<Card title="Webhooks Guide" icon="webhook" href="/webhooks/overview">
+  Set up WhizoAI webhooks
+</Card>
+
+<Card title="Batch Processing" icon="layer-group" href="/features/batch-processing">
+  Efficiently process multiple URLs
+</Card>
+
+<Card title="API Reference" icon="code" href="/api-reference/scrape">
+  Complete API documentation
+</Card>
+</CardGroup>

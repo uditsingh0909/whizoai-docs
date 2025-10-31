@@ -1,0 +1,26 @@
+```python Error Handling
+from whizoai import WhizoAI, WhizoAIError
+
+client = WhizoAI(api_key="whizo_YOUR-API-KEY")
+
+try:
+    result = client.scrape(url="https://example.com")
+    print(result["content"])
+
+except WhizoAIError as e:
+    # Handle WhizoAI specific errors
+    print(f"Error Code: {e.code}")
+    print(f"Error Message: {e.message}")
+    print(f"Status Code: {e.status_code}")
+
+    # Common error codes:
+    # 400 - Bad Request (invalid URL or parameters)
+    # 401 - Unauthorized (invalid API key)
+    # 402 - Payment Required (insufficient credits)
+    # 429 - Too Many Requests (rate limit exceeded)
+    # 500 - Internal Server Error
+
+except Exception as e:
+    # Handle general errors
+    print(f"Unexpected error: {str(e)}")
+```
