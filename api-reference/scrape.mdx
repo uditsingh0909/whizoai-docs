@@ -370,38 +370,246 @@ The Scrape API allows you to extract content from any webpage and convert it to 
 
     <ResponseField name="metadata" type="object">
       <Expandable title="metadata properties">
+
+        <ResponseField name="engine" type="string">
+          Scraping engine used (lightweight, playwright, stealth)
+        </ResponseField>
+        <ResponseField name="parserName" type="string">
+          Parser that extracted the content (matches engine name)
+        </ResponseField>
+        <ResponseField name="contentSource" type="string">
+          Source of content extraction ('browser' for Playwright/Stealth, 'http' for lightweight)
+        </ResponseField>
+        <ResponseField name="processingTime" type="number">
+          Processing time in milliseconds
+        </ResponseField>
+
         <ResponseField name="title" type="string">
-          Page title
+          Page title extracted from `<title>` tag
         </ResponseField>
         <ResponseField name="description" type="string">
-          Page meta description
+          Meta description from `<meta name="description">`
+        </ResponseField>
+        <ResponseField name="language" type="string">
+          Page language code (e.g., "en", "es", "fr")
+        </ResponseField>
+        <ResponseField name="keywords" type="string">
+          Meta keywords from `<meta name="keywords">`
+        </ResponseField>
+        <ResponseField name="robots" type="string">
+          Robot directives from `<meta name="robots">`
+        </ResponseField>
+        <ResponseField name="canonical" type="string">
+          Canonical URL from `<link rel="canonical">`
         </ResponseField>
         <ResponseField name="author" type="string">
-          Page author
+          Page author from `<meta name="author">`
         </ResponseField>
-        <ResponseField name="publishedDate" type="string">
-          Publication date
+        <ResponseField name="publisher" type="string">
+          Publisher name from meta tags
         </ResponseField>
+        <ResponseField name="favicon" type="string">
+          Favicon URL from `<link rel="icon">`
+        </ResponseField>
+
+        <ResponseField name="og" type="object">
+          Open Graph protocol metadata for social sharing
+          <Expandable title="Open Graph properties">
+            <ResponseField name="title" type="string">
+              OG title (`og:title`)
+            </ResponseField>
+            <ResponseField name="description" type="string">
+              OG description (`og:description`)
+            </ResponseField>
+            <ResponseField name="url" type="string">
+              Canonical OG URL (`og:url`)
+            </ResponseField>
+            <ResponseField name="image" type="string">
+              Primary OG image URL (`og:image`)
+            </ResponseField>
+            <ResponseField name="type" type="string">
+              Content type (`og:type`): website, article, video, etc.
+            </ResponseField>
+            <ResponseField name="siteName" type="string">
+              Site name (`og:site_name`)
+            </ResponseField>
+            <ResponseField name="locale" type="string">
+              Content locale (`og:locale`)
+            </ResponseField>
+            <ResponseField name="audio" type="string">
+              Audio URL (`og:audio`)
+            </ResponseField>
+            <ResponseField name="video" type="string">
+              Video URL (`og:video`)
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+
+        <ResponseField name="twitter" type="object">
+          Twitter Card metadata for Twitter sharing
+          <Expandable title="Twitter Card properties">
+            <ResponseField name="card" type="string">
+              Card type: summary, summary_large_image, app, player
+            </ResponseField>
+            <ResponseField name="site" type="string">
+              Twitter @username of website (`twitter:site`)
+            </ResponseField>
+            <ResponseField name="creator" type="string">
+              Twitter @username of content creator (`twitter:creator`)
+            </ResponseField>
+            <ResponseField name="title" type="string">
+              Twitter card title (`twitter:title`)
+            </ResponseField>
+            <ResponseField name="description" type="string">
+              Twitter card description (`twitter:description`)
+            </ResponseField>
+            <ResponseField name="image" type="string">
+              Twitter card image URL (`twitter:image`)
+            </ResponseField>
+            <ResponseField name="imageAlt" type="string">
+              Image alt text (`twitter:image:alt`)
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+
+        <ResponseField name="article" type="object">
+          Article-specific metadata (for news/blog content)
+          <Expandable title="Article metadata properties">
+            <ResponseField name="publishedTime" type="string">
+              Publication timestamp (`article:published_time`)
+            </ResponseField>
+            <ResponseField name="modifiedTime" type="string">
+              Last modification timestamp (`article:modified_time`)
+            </ResponseField>
+            <ResponseField name="expirationTime" type="string">
+              Expiration timestamp (`article:expiration_time`)
+            </ResponseField>
+            <ResponseField name="author" type="string">
+              Article author (`article:author`)
+            </ResponseField>
+            <ResponseField name="section" type="string">
+              Article section/category (`article:section`)
+            </ResponseField>
+            <ResponseField name="tags" type="array">
+              Article tags array (`article:tag`)
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+
+        <ResponseField name="structuredData" type="object">
+          Structured data extraction (Schema.org, JSON-LD, Microdata, RDFa)
+          <Expandable title="Structured data properties">
+            <ResponseField name="jsonLd" type="array">
+              JSON-LD structured data blocks
+            </ResponseField>
+            <ResponseField name="microdata" type="array">
+              Microdata items extracted from HTML
+            </ResponseField>
+            <ResponseField name="rdfa" type="array">
+              RDFa structured data
+            </ResponseField>
+            <ResponseField name="openGraph" type="object">
+              Open Graph structured data
+            </ResponseField>
+            <ResponseField name="schemaTypes" type="array">
+              Detected Schema.org types: Product, Recipe, Event, Review, FAQ, Article, Organization, Person, Video, Breadcrumb, Course, JobPosting, LocalBusiness, SoftwareApplication
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+
+        <ResponseField name="contentQuality" type="object">
+          Content quality and readability metrics (29 comprehensive metrics)
+          <Expandable title="Content quality metrics">
+            <ResponseField name="wordCount" type="number">
+              Total word count
+            </ResponseField>
+            <ResponseField name="sentenceCount" type="number">
+              Total number of sentences
+            </ResponseField>
+            <ResponseField name="characterCount" type="number">
+              Total character count
+            </ResponseField>
+            <ResponseField name="readabilityScore" type="number">
+              Flesch Reading Ease score (0-100, higher = easier)
+            </ResponseField>
+            <ResponseField name="fleschKincaidGrade" type="number">
+              Flesch-Kincaid grade level
+            </ResponseField>
+            <ResponseField name="averageSentenceLength" type="number">
+              Average characters per sentence
+            </ResponseField>
+            <ResponseField name="averageWordsPerSentence" type="number">
+              Average words per sentence
+            </ResponseField>
+            <ResponseField name="contentDensity" type="number">
+              Ratio of text content to total page content (0-1)
+            </ResponseField>
+            <ResponseField name="estimatedReadingTimeMinutes" type="number">
+              Estimated time to read (based on 200 words/minute)
+            </ResponseField>
+            <ResponseField name="isContentRich" type="boolean">
+              Whether content exceeds quality thresholds
+            </ResponseField>
+            <ResponseField name="headingCount" type="number">
+              Total number of headings (h1-h6)
+            </ResponseField>
+            <ResponseField name="paragraphCount" type="number">
+              Number of paragraphs
+            </ResponseField>
+            <ResponseField name="linkCount" type="number">
+              Number of hyperlinks
+            </ResponseField>
+            <ResponseField name="imageCount" type="number">
+              Number of images
+            </ResponseField>
+            <ResponseField name="listCount" type="number">
+              Number of lists (ul, ol)
+            </ResponseField>
+            <ResponseField name="tableCount" type="number">
+              Number of tables
+            </ResponseField>
+            <ResponseField name="quoteCount" type="number">
+              Number of blockquotes
+            </ResponseField>
+            <ResponseField name="codeBlockCount" type="number">
+              Number of code blocks
+            </ResponseField>
+            <ResponseField name="contentType" type="string">
+              Detected content type: article, blog, documentation, product, etc.
+            </ResponseField>
+            <ResponseField name="readingLevel" type="string">
+              Reading difficulty: low, medium, high
+            </ResponseField>
+            <ResponseField name="lexicalDiversity" type="number">
+              Unique words / total words ratio (0-1)
+            </ResponseField>
+            <ResponseField name="headingDistribution" type="object">
+              Distribution of heading levels (h1-h6 counts)
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+
+        <ResponseField name="wordCount" type="number">
+          Main content word count
+        </ResponseField>
+        <ResponseField name="characterCount" type="number">
+          Main content character count
+        </ResponseField>
+        <ResponseField name="linksCount" type="number">
+          Number of extracted links
+        </ResponseField>
+        <ResponseField name="imagesCount" type="number">
+          Number of extracted images
+        </ResponseField>
+
         <ResponseField name="url" type="string">
           Final URL after redirects
         </ResponseField>
         <ResponseField name="statusCode" type="number">
           HTTP response status code
         </ResponseField>
-        <ResponseField name="contentType" type="string">
-          Content-Type header value
-        </ResponseField>
-        <ResponseField name="language" type="string">
-          Detected language
-        </ResponseField>
-        <ResponseField name="extractedAt" type="string">
-          ISO timestamp of extraction
-        </ResponseField>
-        <ResponseField name="processingTime" type="number">
-          Processing time in milliseconds
-        </ResponseField>
         <ResponseField name="creditsUsed" type="number">
-          Number of credits consumed
+          Number of credits consumed for this request
         </ResponseField>
       </Expandable>
     </ResponseField>
@@ -578,6 +786,203 @@ console.log('Extracted:', data.data.extracted);
 }
 ```
 </ResponseExample>
+
+### Comprehensive Metadata Extraction
+
+WhizoAI extracts **61 comprehensive metadata fields** from every page, providing industry-leading metadata coverage that exceeds competitors like Firecrawl.
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "https://api.whizo.ai/v1/scrape" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/article",
+    "format": "markdown",
+    "engine": "stealth"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.whizo.ai/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com/article',
+    format: 'markdown',
+    engine: 'stealth'
+  })
+});
+
+const data = await response.json();
+console.log('Metadata fields:', Object.keys(data.data.metadata).length);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.whizo.ai/v1/scrape',
+    headers={
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://example.com/article',
+        'format': 'markdown',
+        'engine': 'stealth'
+    }
+)
+
+data = response.json()
+print(f"Extracted {len(data['data']['metadata'])} metadata fields")
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json Comprehensive Metadata Response
+{
+  "success": true,
+  "data": {
+    "content": "# Article Title\n\nArticle content in markdown...",
+    "metadata": {
+      // Engine Information (4 fields)
+      "engine": "stealth",
+      "parserName": "stealth",
+      "contentSource": "browser",
+      "processingTime": 8276,
+
+      // Basic Metadata (10 fields)
+      "title": "Example Article - Latest News",
+      "description": "A comprehensive article about web scraping and metadata extraction",
+      "language": "en",
+      "keywords": "web scraping, metadata, SEO, content extraction",
+      "robots": "index, follow",
+      "canonical": "https://example.com/article",
+      "author": "John Doe",
+      "publisher": "Example Publishing",
+      "favicon": "https://example.com/favicon.ico",
+
+      // Open Graph (9 fields)
+      "og": {
+        "title": "Example Article - Latest News",
+        "description": "A comprehensive article about web scraping",
+        "url": "https://example.com/article",
+        "image": "https://example.com/og-image.jpg",
+        "type": "article",
+        "siteName": "Example News",
+        "locale": "en_US",
+        "audio": null,
+        "video": null
+      },
+
+      // Twitter Cards (7 fields)
+      "twitter": {
+        "card": "summary_large_image",
+        "site": "@examplenews",
+        "creator": "@johndoe",
+        "title": "Example Article - Latest News",
+        "description": "A comprehensive article about web scraping",
+        "image": "https://example.com/twitter-image.jpg",
+        "imageAlt": "Article cover image"
+      },
+
+      // Article Metadata (7 fields)
+      "article": {
+        "publishedTime": "2025-01-15T10:30:00Z",
+        "modifiedTime": "2025-01-16T14:20:00Z",
+        "expirationTime": null,
+        "author": "John Doe",
+        "section": "Technology",
+        "tags": ["web scraping", "metadata", "SEO"]
+      },
+
+      // Structured Data (14 types)
+      "structuredData": {
+        "jsonLd": [
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Example Article",
+            "author": {
+              "@type": "Person",
+              "name": "John Doe"
+            }
+          }
+        ],
+        "microdata": [],
+        "rdfa": [],
+        "openGraph": {},
+        "schemaTypes": ["Article", "Person", "Organization"]
+      },
+
+      // Content Quality (29 metrics)
+      "contentQuality": {
+        "wordCount": 1250,
+        "sentenceCount": 45,
+        "characterCount": 6842,
+        "readabilityScore": 65.5,
+        "fleschKincaidGrade": 8.2,
+        "averageSentenceLength": 152.04,
+        "averageWordsPerSentence": 27.78,
+        "contentDensity": 0.87,
+        "estimatedReadingTimeMinutes": 6,
+        "isContentRich": true,
+        "headingCount": 8,
+        "paragraphCount": 22,
+        "linkCount": 15,
+        "imageCount": 4,
+        "listCount": 3,
+        "tableCount": 1,
+        "quoteCount": 2,
+        "codeBlockCount": 0,
+        "contentType": "article",
+        "readingLevel": "medium",
+        "lexicalDiversity": 0.68,
+        "headingDistribution": {
+          "h1": 1,
+          "h2": 4,
+          "h3": 3,
+          "h4": 0,
+          "h5": 0,
+          "h6": 0
+        }
+      },
+
+      // Counts (4 fields)
+      "wordCount": 1250,
+      "characterCount": 6842,
+      "linksCount": 15,
+      "imagesCount": 4,
+
+      // Request Information
+      "url": "https://example.com/article",
+      "statusCode": 200,
+      "creditsUsed": 3
+    }
+  }
+}
+```
+</ResponseExample>
+
+<Note>
+  **Industry-Leading Metadata Coverage**: WhizoAI extracts **61 comprehensive fields** including:
+  - Engine information (4 fields)
+  - Basic metadata (10 fields)
+  - Open Graph protocol (9 fields)
+  - Twitter Cards (7 fields)
+  - Article metadata (7 fields)
+  - Structured data (14 types)
+  - Content quality metrics (29 metrics)
+  - Counts and statistics (4 fields)
+
+  This comprehensive extraction surpasses competitors like Firecrawl, providing superior SEO analysis, content quality assessment, and social media optimization data.
+</Note>
 
 ## Error Responses
 
